@@ -99,8 +99,7 @@ O projeto está estruturado em **camadas (Layered Architecture)** com princípio
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/Diokenedy/VibecodingApi.git
-   cd VibecodingApi
+   git clone https://github.com/SOAT-FIAP-2026/fase1-tech-challenge.git  
    ```
 
 2. Navegue até a pasta da API:
