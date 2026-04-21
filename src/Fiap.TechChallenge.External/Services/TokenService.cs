@@ -23,7 +23,7 @@ namespace Fiap.TechChallenge.External.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, usuario.Login.Login),
+                    new Claim(ClaimTypes.Name, usuario.Nome.ToString()),
                     new Claim(ClaimTypes.Email, usuario.Email.Endereco),
                     new Claim("UsuarioId", usuario.Id.ToString())
                 }),

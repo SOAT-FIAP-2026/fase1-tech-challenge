@@ -32,15 +32,14 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
         public async Task Adicionar(Usuario usuario)
         {
             const string sql = 
-                @"INSERT INTO usuario (Id, Nome, Email, Login, Senha) 
-                  VALUES (@Id, @Nome, @Email, @Login, @Senha)";
+                @"INSERT INTO usuario (Id, Nome, Email, Senha) 
+                  VALUES (@Id, @Nome, @Email, @Senha)";
 
             DynamicParameters dynamicParameters = new DynamicParameters();
             dynamicParameters.AddDynamicParams(new { Id = usuario.Id });
             dynamicParameters.AddDynamicParams(new { Nome = usuario.Nome });
             dynamicParameters.AddDynamicParams(new { Email = usuario.Email });
-            dynamicParameters.AddDynamicParams(new { Login = usuario.Login.Login });
-            dynamicParameters.AddDynamicParams(new { Senha = usuario.Login.Senha });
+            dynamicParameters.AddDynamicParams(new { Senha = usuario.Senha });
 
             await _dbConnection.ExecuteAsync(sql, dynamicParameters, transaction: _transaction);
         }
