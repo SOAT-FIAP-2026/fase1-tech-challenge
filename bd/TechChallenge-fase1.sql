@@ -4,7 +4,8 @@ CREATE TABLE permissao (
     id UUID PRIMARY KEY,
     descricao VARCHAR(50) NOT NULL,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    apagado_em TIMESTAMP
 );
 
 ALTER TABLE permissao
@@ -17,7 +18,8 @@ CREATE TABLE usuario (
     senha_hash VARCHAR(255) NOT NULL,
     id_permissao UUID NOT NULL,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    apagado_em TIMESTAMP
 );
 
 ALTER TABLE usuario
@@ -35,7 +37,8 @@ CREATE TABLE cliente (
     email VARCHAR(255) NOT NULL,
     celular VARCHAR(20) NOT NULL,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    apagado_em TIMESTAMP
 );
 
 ALTER TABLE cliente
@@ -58,7 +61,8 @@ CREATE TABLE veiculo (
     modelo VARCHAR(100) NOT NULL,
     ano INT NOT NULL,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    apagado_em TIMESTAMP
 );
 
 ALTER TABLE veiculo
@@ -71,7 +75,8 @@ CREATE TABLE servico (
     descricao VARCHAR(255) NOT NULL,
     valor_unitario DECIMAL(10, 2) NOT NULL,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    apagado_em TIMESTAMP
 );
 
 ALTER TABLE servico
@@ -82,7 +87,8 @@ CREATE TABLE peca_insumo (
     descricao VARCHAR(255) NOT NULL,
     valor_unitario DECIMAL(10, 2) NOT NULL,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    apagado_em TIMESTAMP
 );
 
 ALTER TABLE peca_insumo
@@ -99,7 +105,8 @@ CREATE TABLE ordem_servico (
     data_abertura TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_conclusao TIMESTAMP,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    apagado_em TIMESTAMP
 );
 
 ALTER TABLE ordem_servico
@@ -116,7 +123,8 @@ CREATE TABLE estoque (
     id_peca_insumo UUID NOT NULL,
     quantidade INT NOT NULL,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    apagado_em TIMESTAMP
 );
 
 ALTER TABLE estoque
@@ -128,7 +136,8 @@ CREATE TABLE orcamento (
     id_ordem_servico UUID NOT NULL,
     valor_total DECIMAL(10, 2) NOT NULL,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    apagado_em TIMESTAMP
 );
 
 ALTER TABLE orcamento
@@ -166,3 +175,5 @@ ALTER TABLE item_peca_insumo
 
 CREATE INDEX idx_item_peca_insumo_ordem_servico ON item_peca_insumo(id_ordem_servico);
 CREATE INDEX idx_item_peca_insumo_peca_insumo ON item_peca_insumo(id_peca_insumo);
+
+
