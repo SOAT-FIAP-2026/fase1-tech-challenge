@@ -16,7 +16,7 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
             _transaction = unitOfWork.Transaction;
         }
 
-        public async Task<Usuario> ObterPorLogin(string login)
+        public async Task<Usuario?> ObterPorLogin(string login)
         {
             const string sql = "SELECT * FROM usuario WHERE Login = @login";
 

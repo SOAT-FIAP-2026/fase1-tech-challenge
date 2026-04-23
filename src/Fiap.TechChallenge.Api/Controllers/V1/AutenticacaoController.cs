@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Fiap.TechChallenge.Api.Controllers.V1
 {
     [ApiController]
-    [Route("api/v{version}/[controller]")]
+    [Route("api/v1/[controller]")]
     public class AutenticacaoController : ControllerBase
     {
         private readonly ILogger<AutenticacaoController> _logger;
