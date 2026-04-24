@@ -13,9 +13,6 @@ namespace Fiap.TechChallenge.Infrastructure.Configurations
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            //services.AddScoped<IDbConnection>(sp =>
-            //new Npgsql.NpgsqlConnection(configuration.GetConnectionString("DefaultConnection")));
-
             services.AddScoped<IDbConnection>(sp =>
             {
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
@@ -26,6 +23,17 @@ namespace Fiap.TechChallenge.Infrastructure.Configurations
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+            services.AddScoped<IPermissaoRepository, PermissaoRepository>();
+            services.AddScoped<IClienteRepository, ClienteRepository>();
+            services.AddScoped<IStatusOrdemServicoRepository, StatusOrdemServicoRepository>();
+            services.AddScoped<IVeiculoRepository, VeiculoRepository>();
+            services.AddScoped<IServicoRepository, ServicoRepository>();
+            services.AddScoped<IPecaInsumoRepository, PecaInsumoRepository>();
+            services.AddScoped<IOrdemServicoRepository, OrdemServicoRepository>();
+            services.AddScoped<IEstoqueRepository, EstoqueRepository>();
+            services.AddScoped<IOrcamentoRepository, OrcamentoRepository>();
+            services.AddScoped<IItemServicoRepository, ItemServicoRepository>();
+            services.AddScoped<IItemPecaInsumoRepository, ItemPecaInsumoRepository>();
             services.AddScoped<ICrypto, Crypto>();
 
             return services;
