@@ -1,10 +1,8 @@
-using Fiap.TechChallenge.Domain.Interfaces.Security;
 using Fiap.TechChallenge.Domain.ValueObjects;
-using Moq;
 
 namespace Fiap.TechChallenge.Domain.Tests.ValueObjects
 {
-    public class NomeUsuarioVOTests
+    public class NomeVOTests
     {
         [Fact]
         public void Construtor_NomeValido_DeveCriarObjeto()
@@ -13,10 +11,10 @@ namespace Fiap.TechChallenge.Domain.Tests.ValueObjects
             string nomeValido = "Junior";
 
             // 2. Act (Agir)
-            NomeUsuarioVO nomeUsuarioVO = new NomeUsuarioVO(nomeValido);
+            NomeVO nomeVO = new NomeVO(nomeValido);
 
             // 3. Assert (Verificar)
-            Assert.Equal(nomeValido, nomeUsuarioVO.Valor);
+            Assert.Equal(nomeValido, nomeVO.Valor);
         }
 
         [Fact]
@@ -26,7 +24,7 @@ namespace Fiap.TechChallenge.Domain.Tests.ValueObjects
             string nomeInvalido = "Ju";
 
             // 2 e 3. Act & Assert
-            Assert.Throws<ArgumentException>(() => new NomeUsuarioVO(nomeInvalido));
+            Assert.Throws<ArgumentException>(() => new NomeVO(nomeInvalido));
         }
 
         [Fact]
@@ -36,17 +34,17 @@ namespace Fiap.TechChallenge.Domain.Tests.ValueObjects
             string nomeVazio = "";
 
             // 2 e 3. Act & Assert
-            Assert.Throws<ArgumentException>(() => new NomeUsuarioVO(nomeVazio));
+            Assert.Throws<ArgumentException>(() => new NomeVO(nomeVazio));
         }
 
         [Fact]
         public void Construtor_NomeGrandeDemais_DeveLancarExcecao()
         {
             // 1. Arrange
-            string nomeInvalido = "diogenes kenedy nascimento oliveira junior friboi com123";
+            string nomeInvalido = new string('a', 256);
 
             // 2 e 3. Act & Assert
-            Assert.Throws<ArgumentException>(() => new NomeUsuarioVO(nomeInvalido));
+            Assert.Throws<ArgumentException>(() => new NomeVO(nomeInvalido));
         }
     }
 }

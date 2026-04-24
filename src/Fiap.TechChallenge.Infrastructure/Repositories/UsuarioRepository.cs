@@ -1,61 +1,38 @@
-using Dapper;
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
-using System.Data;
+using Fiap.TechChallenge.Domain.ValueObjects;
+using Fiap.TechChallenge.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fiap.TechChallenge.Infrastructure.Repositories
 {
     public class UsuarioRepository : IUsuarioRepository
     {
-        private readonly IDbConnection _dbConnection;
-        private readonly IDbTransaction _transaction;
+        private readonly ApplicationDbContext _context;
 
-        public UsuarioRepository(IUnitOfWork unitOfWork)
+        public UsuarioRepository(ApplicationDbContext context)
         {
-            _dbConnection = unitOfWork.Connection;
-            _transaction = unitOfWork.Transaction;
+            _context = context;
         }
 
         public async Task<Usuario?> ObterPorLogin(string login)
         {
-            const string sql = "SELECT * FROM usuario WHERE Login = @login";
-
-            DynamicParameters dynamicParameters = new DynamicParameters();
-            dynamicParameters.AddDynamicParams(new { Login = login });
-
-            Usuario result = await _dbConnection.QueryFirstOrDefaultAsync<Usuario>(
-                sql, dynamicParameters, transaction: _transaction);
-
-            return result;
-        }
-
-        public async Task Adicionar(Usuario usuario)
-        {
-            const string sql = 
-                @"INSERT INTO usuario (Id, Nome, Email, Senha) 
-                  VALUES (@Id, @Nome, @Email, @Senha)";
-
-            DynamicParameters dynamicParameters = new DynamicParameters();
-            dynamicParameters.AddDynamicParams(new { Id = usuario.Id });
-            dynamicParameters.AddDynamicParams(new { Nome = usuario.Nome });
-            dynamicParameters.AddDynamicParams(new { Email = usuario.Email });
-            dynamicParameters.AddDynamicParams(new { Senha = usuario.Senha });
-
-            await _dbConnection.ExecuteAsync(sql, dynamicParameters, transaction: _transaction);
+            return await _context.Usuarios
+                .Include(u => u.Permissao)
+                .FirstOrDefaultAsync(u => EF.Property<string>(u, "email") == login.Trim().ToLower());
         }
 
         public async Task<bool> ExisteEmail(string email)
         {
-            const string sql =
-                @"SELECT count(1) > 0 FROM usuario WHERE Email = @Email";
+            string emailNormalizado = email.Trim().ToLower();
+            return await _context.Usuarios
+                .AnyAsync(u => EF.Property<string>(u, "email") == emailNormalizado);
+        }
 
-            DynamicParameters dynamicParameters = new DynamicParameters();
-            dynamicParameters.AddDynamicParams(new { Email = email });
-
-            bool result = await _dbConnection.QueryFirstOrDefaultAsync<bool>(
-                sql, dynamicParameters, transaction: _transaction);
-
-            return result;
+        public async Task Adicionar(Usuario usuario)
+        {
+            await _context.Usuarios.AddAsync(usuario);
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -6,5 +6,6 @@ namespace Fiap.TechChallenge.Application.DTOs.Requests
         public string Email { get; set; }
         public string Login { get; set; }
         public string Senha { get; set; }
+        public Guid IdPermissao { get; set; }
     }
 }

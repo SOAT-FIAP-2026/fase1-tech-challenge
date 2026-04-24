@@ -2,26 +2,34 @@ using Fiap.TechChallenge.Domain.ValueObjects;
 
 namespace Fiap.TechChallenge.Domain.Entities
 {
-    public class Usuario
+    public class Usuario : EntidadeAuditavel
     {
-        public Guid Id { get; private set; }
-        public NomeUsuarioVO Nome { get; private set; }
-        public EmailUsuarioVO Email { get; private set; }
-        public SenhaUsuarioVO Senha { get; private set; }
+        public NomeVO Nome { get; private set; } = null!;
+        public EmailVO Email { get; private set; } = null!;
+        public SenhaUsuarioVO Senha { get; private set; } = null!;
+        public Guid IdPermissao { get; private set; }
+        public Permissao Permissao { get; private set; } = null!;
 
         protected Usuario() { }
 
-        public Usuario(string nome, string email, SenhaUsuarioVO senha)
+        public Usuario(string nome, string email, SenhaUsuarioVO senha, Guid idPermissao) : base()
         {
-            Id = Guid.NewGuid();
-            Nome = new NomeUsuarioVO(nome);
-            Email = new EmailUsuarioVO(email);
+            Nome = new NomeVO(nome);
+            Email = new EmailVO(email);
             Senha = senha;
+            IdPermissao = idPermissao;
         }
 
-        public void AlterarNome(NomeUsuarioVO novoNome)
+        public void AlterarNome(string novoNome)
         {
-            Nome = novoNome;
+            Nome = new NomeVO(novoNome);
+            AtualizarTimestamp();
+        }
+
+        public void AlterarEmail(string novoEmail)
+        {
+            Email = new EmailVO(novoEmail);
+            AtualizarTimestamp();
         }
     }
 }

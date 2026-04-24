@@ -28,7 +28,8 @@ namespace Fiap.TechChallenge.Domain.Entities
             SenhaUsuarioVO senhaVO = SenhaUsuarioVO.CriarNova(senhaValida, cryptoMock.Object);
 
             // 2. Act (Agir)
-            var usuario = new Usuario(nomeValido, emailValido, senhaVO);
+            var idPermissao = Guid.NewGuid();
+            var usuario = new Usuario(nomeValido, emailValido, senhaVO, idPermissao);
 
             // 3. Assert (Verificar)
             Assert.NotEqual(Guid.Empty, usuario.Id);
@@ -37,6 +38,7 @@ namespace Fiap.TechChallenge.Domain.Entities
             Assert.Equal(emailValido, usuario.Email.Endereco);
 
             Assert.Equal(hashEsperado, usuario.Senha.Hash);
+            Assert.Equal(idPermissao, usuario.IdPermissao);
         }
         
         [Fact]
@@ -53,9 +55,9 @@ namespace Fiap.TechChallenge.Domain.Entities
             SenhaUsuarioVO senhaVO = SenhaUsuarioVO.CriarNova(senhaValida, cryptoMock.Object);
 
             // 2. Act (Agir)
-            var usuario = new Usuario(nomeValido, emailValido, senhaVO);
+            var usuario = new Usuario(nomeValido, emailValido, senhaVO, Guid.NewGuid());
 
-            usuario.AlterarNome(new NomeUsuarioVO(novoNome));
+            usuario.AlterarNome(novoNome);
 
             // 3. Assert (Verificar)
             Assert.Equal(usuario.Nome.Valor, novoNome);
