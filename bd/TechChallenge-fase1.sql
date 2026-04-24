@@ -72,6 +72,7 @@ CREATE UNIQUE INDEX idx_veiculo_placa ON veiculo(placa);
 
 CREATE TABLE servico (
     id UUID PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL,
     descricao VARCHAR(255) NOT NULL,
     valor_unitario DECIMAL(10, 2) NOT NULL,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
