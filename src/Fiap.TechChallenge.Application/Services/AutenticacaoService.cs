@@ -27,12 +27,15 @@ namespace Fiap.TechChallenge.Application.Services
 
         public async Task<Guid> Cadastrar(CadastrarRequest request)
         {
-            if (await _usuarioRepository.ExisteEmail(request.Email))
+
+            EmailVO email = new(request.Email);
+
+            if (await _usuarioRepository.ExisteEmail(email))
                 throw new Exception("E-mail já cadastrado.");
 
             SenhaUsuarioVO hashSenha = SenhaUsuarioVO.CriarNova(request.Senha, _cryptoService);
 
-            var usuario = new Usuario(request.Nome, request.Email, hashSenha, request.IdPermissao);
+            var usuario = new Usuario(request.Nome, email.ToString(), hashSenha, request.IdPermissao);
 
             await _usuarioRepository.Adicionar(usuario);
 
@@ -41,7 +44,9 @@ namespace Fiap.TechChallenge.Application.Services
 
         public async Task<LoginResponse> Login(LoginRequest request)
         {
-            var usuario = await _usuarioRepository.ObterPorLogin(request.Login);
+
+            EmailVO email = new(request.Login);
+            var usuario = await _usuarioRepository.ObterPorLogin(email);
 
             if (usuario == null || 
                 !_cryptoService.VerificarSenha(request.Senha, usuario.Senha.Hash))

@@ -6,27 +6,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Fiap.TechChallenge.Infrastructure.Repositories
 {
-    public class UsuarioRepository : IUsuarioRepository
+    public class UsuarioRepository(ApplicationDbContext context) : IUsuarioRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context = context;
 
-        public UsuarioRepository(ApplicationDbContext context)
+        public async Task<Usuario?> ObterPorLogin(EmailVO email)
         {
-            _context = context;
-        }
-
-        public async Task<Usuario?> ObterPorLogin(string login)
-        {
+        
             return await _context.Usuarios
                 .Include(u => u.Permissao)
-                .FirstOrDefaultAsync(u => EF.Property<string>(u, "email") == login.Trim().ToLower());
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public async Task<bool> ExisteEmail(string email)
+        public async Task<bool> ExisteEmail(EmailVO email)
         {
-            string emailNormalizado = email.Trim().ToLower();
             return await _context.Usuarios
-                .AnyAsync(u => EF.Property<string>(u, "email") == emailNormalizado);
+                .AnyAsync(u => u.Email == email);
         }
 
         public async Task Adicionar(Usuario usuario)
