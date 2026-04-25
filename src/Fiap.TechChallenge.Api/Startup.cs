@@ -1,4 +1,5 @@
 using Fiap.TechChallenge.Api.Configurations;
+using Fiap.TechChallenge.Api.Middlewares;
 
 namespace Fiap.TechChallenge.Api
 {
@@ -20,6 +21,8 @@ namespace Fiap.TechChallenge.Api
 
         public void Configure(WebApplication app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
+
             if (env.IsDevelopment())
             {
                 app.UseSwagger();

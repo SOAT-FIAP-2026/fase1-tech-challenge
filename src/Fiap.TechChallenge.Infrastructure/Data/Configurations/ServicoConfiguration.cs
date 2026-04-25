@@ -13,6 +13,12 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Configurations
             builder.HasKey(s => s.Id);
             builder.Property(s => s.Id).HasColumnName("id");
 
+            builder.Property(s => s.Nome)
+                .HasConversion(v => v.Valor, v => new NomeVO(v))
+                .HasColumnName("nome")
+                .HasMaxLength(255)
+                .IsRequired();
+
             builder.Property(s => s.Descricao)
                 .HasConversion(v => v.Valor, v => new DescricaoVO(v, 255))
                 .HasColumnName("descricao")
