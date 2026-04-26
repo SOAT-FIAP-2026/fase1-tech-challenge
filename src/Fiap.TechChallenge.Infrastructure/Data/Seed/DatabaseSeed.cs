@@ -7,12 +7,13 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
     {
         public static readonly Guid PermissaoAdminId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
         public static readonly Guid PermissaoOperadorId = Guid.Parse("b2c3d4e5-f6a7-8901-bcde-f12345678901");
-
-        public static readonly Guid StatusAbertaId = Guid.Parse("c3d4e5f6-a7b8-9012-cdef-123456789012");
-        public static readonly Guid StatusEmAndamentoId = Guid.Parse("d4e5f6a7-b8c9-0123-defa-234567890123");
-        public static readonly Guid StatusConcluidaId = Guid.Parse("e5f6a7b8-c9d0-1234-efab-345678901234");
+        public static readonly Guid StatusRecebidaId = Guid.Parse("c3d4e5f6-a7b8-9012-cdef-123456789012");
+        public static readonly Guid StatusEmDiagnosticoId = Guid.Parse("d3e4f5a6-b7c8-9012-defa-234567890123");
+        public static readonly Guid StatusEmAguardandoAprovacaoId = Guid.Parse("e3f4a5b6-c7d8-9012-efab-345678901234");
+        public static readonly Guid StatusFinalizadaId = Guid.Parse("d4e5f6a7-b8c9-0123-defa-234567890123");
+        public static readonly Guid StatusEmExecucaoId = Guid.Parse("f4a5b6c7-d8e9-0123-efab-345678901234");
+        public static readonly Guid StatusEntregueId = Guid.Parse("e5f6a7b8-c9d0-1234-efab-345678901234");
         public static readonly Guid StatusCanceladaId = Guid.Parse("f6a7b8c9-d0e1-2345-fabc-456789012345");
-
         public static readonly Guid UsuarioAdminId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
         public static void Apply(ApplicationDbContext context)
@@ -42,19 +43,29 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
         {
             if (context.StatusOrdensServico.Any()) return;
 
-            var aberta = new StatusOrdemServico("Aberta");
-            context.Entry(aberta).Property(s => s.Id).CurrentValue = StatusAbertaId;
+            var recebida = new StatusOrdemServico("Recebida");
+            context.Entry(recebida).Property(s => s.Id).CurrentValue = StatusRecebidaId;
 
-            var emAndamento = new StatusOrdemServico("Em Andamento");
-            context.Entry(emAndamento).Property(s => s.Id).CurrentValue = StatusEmAndamentoId;
+            var emDiagnostico = new StatusOrdemServico("Em Diagnóstico");
+            context.Entry(emDiagnostico).Property(s => s.Id).CurrentValue = StatusEmDiagnosticoId;
 
-            var concluida = new StatusOrdemServico("Concluída");
-            context.Entry(concluida).Property(s => s.Id).CurrentValue = StatusConcluidaId;
+            var aguardandoAprovacao = new StatusOrdemServico("Aguardando aprovação");
+            context.Entry(aguardandoAprovacao).Property(s => s.Id).CurrentValue = StatusEmAguardandoAprovacaoId;
+
+            var emExecucao = new StatusOrdemServico("Em Execução");
+            context.Entry(emExecucao).Property(s => s.Id).CurrentValue = StatusEmExecucaoId;
+
+            var finalizada = new StatusOrdemServico("Finalizada");
+            context.Entry(finalizada).Property(s => s.Id).CurrentValue = StatusFinalizadaId;
+
+            var entregue = new StatusOrdemServico("Entregue");
+            context.Entry(entregue).Property(s => s.Id).CurrentValue = StatusEntregueId;
 
             var cancelada = new StatusOrdemServico("Cancelada");
             context.Entry(cancelada).Property(s => s.Id).CurrentValue = StatusCanceladaId;
+            
 
-            context.StatusOrdensServico.AddRange(aberta, emAndamento, concluida, cancelada);
+            context.StatusOrdensServico.AddRange(recebida, emDiagnostico, aguardandoAprovacao, emExecucao, finalizada, entregue, cancelada);
             context.SaveChanges();
         }
 
