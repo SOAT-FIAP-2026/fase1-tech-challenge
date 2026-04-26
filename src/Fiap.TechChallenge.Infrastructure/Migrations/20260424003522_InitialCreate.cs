@@ -65,6 +65,7 @@ namespace Fiap.TechChallenge.Infrastructure.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
+                    nome = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     descricao = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     valor_unitario = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
                     criado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),

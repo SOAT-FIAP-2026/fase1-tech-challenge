@@ -20,6 +20,8 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
             SeedPermissoes(context);
             SeedStatusOrdemServico(context);
             SeedUsuarioAdmin(context);
+            SeedClientes(context);
+            SeedServicos(context);
         }
 
         private static void SeedPermissoes(ApplicationDbContext context)
@@ -67,6 +69,33 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
             context.Entry(admin).Property(u => u.Id).CurrentValue = UsuarioAdminId;
 
             context.Usuarios.Add(admin);
+            context.SaveChanges();
+        }
+
+        private static void SeedClientes(ApplicationDbContext context)
+        {
+            if (context.Clientes.Any()) return;
+
+            var cliente1 = new Cliente("João Silva", "282.027.830-20", "joao.silva@example.com", "11987654321");
+            var cliente2 = new Cliente("Maria Oliveira", "312.408.510-81", "maria.oliveira@example.com", "11987654321");
+            context.Clientes.Add(cliente1);
+            context.Clientes.Add(cliente2);
+            context.SaveChanges();
+        }
+
+         private static void SeedServicos(ApplicationDbContext context)
+        {
+            if (context.Servicos.Any()) return;
+
+            var servico1 = new Servico("Troca de Pneus", "Descrição do serviço 1",100);
+            var servico2 = new Servico("Troca de Óleo", "Descrição do serviço 2",200);
+            var servico3 = new Servico("Alinhamento", "Descrição do serviço 3",150);
+            var servico4 = new Servico("Balanceamento", "Descrição do serviço 4",120);
+            
+            context.Servicos.Add(servico1);
+            context.Servicos.Add(servico2);
+            context.Servicos.Add(servico3);
+            context.Servicos.Add(servico4);
             context.SaveChanges();
         }
     }

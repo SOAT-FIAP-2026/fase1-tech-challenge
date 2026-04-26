@@ -348,6 +348,18 @@ namespace Fiap.TechChallenge.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("criado_em");
 
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nome");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("descricao");
+
                     b.Property<string>("Descricao")
                         .IsRequired()
                         .HasMaxLength(255)
