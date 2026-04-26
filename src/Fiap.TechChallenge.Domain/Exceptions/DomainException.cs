@@ -40,4 +40,20 @@ namespace Fiap.TechChallenge.Domain.Exceptions
         public ErroGerarTokenException() 
             : base("Erro ao gerar token de autenticação.") { }
     }
+
+    /// <summary>
+    /// Exceção lançada quando um serviço não é encontrado.
+    /// </summary>
+    public class ServicoNaoEncontradoException(Guid id) : DomainException($"Serviço com id '{id}' não encontrado.")
+    {
+    }
+
+    /// <summary>
+    /// Exceção lançada quando o nome do serviço já existe.
+    /// </summary>
+    public class ServicoNomeJaExisteException : DomainException
+    {
+        public ServicoNomeJaExisteException(string nome)
+            : base($"Já existe um serviço com o nome '{nome}'.") { }
+    }
 }

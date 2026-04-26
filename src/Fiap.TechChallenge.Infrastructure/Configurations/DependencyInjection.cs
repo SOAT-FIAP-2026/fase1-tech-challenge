@@ -17,6 +17,7 @@ namespace Fiap.TechChallenge.Infrastructure.Configurations
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+            services.AddScoped<IServicoRepository, ServicoRepository>();
             services.AddScoped<ICrypto, Crypto>();
 
             return services;

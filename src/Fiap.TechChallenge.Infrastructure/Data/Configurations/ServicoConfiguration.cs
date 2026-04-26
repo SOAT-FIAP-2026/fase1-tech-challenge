@@ -25,7 +25,7 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Configurations
                 .HasMaxLength(255)
                 .IsRequired();
 
-            builder.HasIndex(s => s.Descricao).IsUnique();
+            builder.HasIndex(s => s.Nome).IsUnique();
 
             builder.Property(s => s.ValorUnitario)
                 .HasConversion(v => v.Valor, v => new ValorMonetarioVO(v))

@@ -342,9 +342,9 @@ namespace Fiap.TechChallenge.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_servico_descricao",
+                name: "IX_servico_nome",
                 table: "servico",
-                column: "descricao",
+                column: "nome",
                 unique: true);
 
             migrationBuilder.CreateIndex(

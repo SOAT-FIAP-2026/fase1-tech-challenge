@@ -363,7 +363,7 @@ namespace Fiap.TechChallenge.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Descricao")
+                    b.HasIndex("Nome")
                         .IsUnique();
 
                     b.ToTable("servico", (string)null);
