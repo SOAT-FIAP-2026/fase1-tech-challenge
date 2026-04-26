@@ -3,18 +3,15 @@ namespace Fiap.TechChallenge.Domain.Exceptions
     /// <summary>
     /// Exceção de domínio base para todas as exceptions de negócio.
     /// </summary>
-    public abstract class DomainException : Exception
+    public abstract class DomainException(string message) : Exception(message)
     {
-        public DomainException(string message) : base(message) { }
     }
 
     /// <summary>
     /// Exceção lançada quando um email já existe no sistema.
     /// </summary>
-    public class EmailJaExisteException : DomainException
+    public class EmailJaExisteException(string email) : DomainException($"O email '{email}' já está cadastrado no sistema.")
     {
-        public EmailJaExisteException(string email) 
-            : base($"O email '{email}' já está cadastrado no sistema.") { }
     }
 
     /// <summary>

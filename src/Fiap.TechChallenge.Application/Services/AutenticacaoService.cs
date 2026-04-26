@@ -50,7 +50,7 @@ namespace Fiap.TechChallenge.Application.Services
 
             if (usuario == null || 
                 !_cryptoService.VerificarSenha(request.Senha, usuario.Senha.Hash))
-                throw new Exception("Usuário ou senha inválidos.");
+                throw new UnauthorizedAccessException("Usuário ou senha inválidos.");
 
             var token = _tokenService.GerarToken(usuario);
             return new LoginResponse(token, usuario.Nome.Valor);

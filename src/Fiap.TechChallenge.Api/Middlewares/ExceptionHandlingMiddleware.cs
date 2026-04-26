@@ -37,9 +37,9 @@ namespace Fiap.TechChallenge.Api.Middlewares
 
                 var payload = new ErrorResponse(
                     context.Response.StatusCode,
-                    GetMessage(ex),
-                    context.TraceIdentifier,
-                    DateTime.UtcNow
+                    GetMessage(ex)
+                    // context.TraceIdentifier,
+                    // DateTime.UtcNow
                 );
 
                 var json = JsonSerializer.Serialize(payload, JsonOptions);
@@ -73,9 +73,9 @@ namespace Fiap.TechChallenge.Api.Middlewares
 
         private sealed record ErrorResponse(
             int StatusCode,
-            string Message,
-            string TraceId,
-            DateTime TimestampUtc
+            string Message
+            // string TraceId,
+            // DateTime TimestampUtc
         );
     }
 }
