@@ -7,16 +7,9 @@ using Fiap.TechChallenge.Domain.Interfaces.Repository;
 
 namespace Fiap.TechChallenge.Application.Services
 {
-    public class ServicoService : IServicoService
+    public class ServicoService( IServicoRepository servicoRepository) : IServicoService
     {
-        private readonly IServicoRepository _servicoRepository;
-
-        public ServicoService(
-            IServicoRepository servicoRepository
-        ) 
-        { 
-            _servicoRepository = servicoRepository;
-        }
+        private readonly IServicoRepository _servicoRepository = servicoRepository;
 
         public async Task<Guid> Criar(ServicoRequest request)
         {

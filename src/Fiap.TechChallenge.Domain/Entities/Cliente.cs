@@ -36,5 +36,14 @@ namespace Fiap.TechChallenge.Domain.Entities
             Celular = new CelularVO(celular);
             AtualizarTimestamp();
         }
+
+        public void Atualizar(string nome, string cpfCnpj, string email, string celular)
+        {
+            Nome = new NomeVO(nome);
+            CpfCnpj = new CpfCnpjVO(cpfCnpj);
+            Email = new EmailVO(email);
+            Celular = new CelularVO(celular);
+            AtualizarTimestamp();
+        }
     }
 }

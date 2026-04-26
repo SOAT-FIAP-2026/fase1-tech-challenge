@@ -56,4 +56,20 @@ namespace Fiap.TechChallenge.Domain.Exceptions
         public ServicoNomeJaExisteException(string nome)
             : base($"Já existe um serviço com o nome '{nome}'.") { }
     }
+
+    /// <summary>
+    /// Exceção lançada quando um cliente não é encontrado.
+    /// </summary>
+    public class ClienteNaoEncontradoException(Guid id) : DomainException($"Cliente com id '{id}' não encontrado.")
+    {
+    }
+
+    /// <summary>
+    /// Exceção lançada quando o CPF/CNPJ já existe.
+    /// </summary>
+    public class ClienteCpfCnpjJaExisteException : DomainException
+    {
+        public ClienteCpfCnpjJaExisteException(string cpfCnpj)
+            : base($"Já existe um cliente com o CPF/CNPJ '{cpfCnpj}'.") { }
+    }
 }

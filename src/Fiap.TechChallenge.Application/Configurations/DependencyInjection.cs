@@ -10,6 +10,7 @@ namespace Fiap.TechChallenge.Application.Configurations
         {
             services.AddScoped<IAutenticacaoService, AutenticacaoService>();
             services.AddScoped<IServicoService, ServicoService>();
+            services.AddScoped<IClienteService, ClienteService>();
 
             return services;
         }
