@@ -15,6 +15,28 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
         public static readonly Guid StatusEntregueId = Guid.Parse("e5f6a7b8-c9d0-1234-efab-345678901234");
         public static readonly Guid StatusCanceladaId = Guid.Parse("f6a7b8c9-d0e1-2345-fabc-456789012345");
         public static readonly Guid UsuarioAdminId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        
+        // GUIDs das Peças e Insumos
+        public static readonly Guid PecaOleoMotoId = Guid.Parse("550e8400-e29b-41d4-a716-446655440000");
+        public static readonly Guid PecaPastilhaFreioId = Guid.Parse("a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6");
+        public static readonly Guid PecaAguaRadiadorId = Guid.Parse("0a1b2c3d-4e5f-6789-abcd-ef0123456789");
+        public static readonly Guid PecaFiltroArId = Guid.Parse("f47ac10b-58cc-4372-a567-0e02b2c3d479");
+        public static readonly Guid PecaBateria60AhId = Guid.Parse("9c858901-8a57-4791-81fe-4c455b099bc9");
+        public static readonly Guid PecaPneu205Id = Guid.Parse("123e4567-e89b-12d3-a456-426614174000");
+        public static readonly Guid PecaAmortecedorId = Guid.Parse("987e6543-e21b-12d3-a456-426614174001");
+        public static readonly Guid PecaVelasIgnicaoId = Guid.Parse("abcdefab-cdef-1234-5678-abcdefabcdef");
+        public static readonly Guid PecaCorreibaDentadaId = Guid.Parse("fedcba98-7654-3210-4321-fedcba987654");
+        
+        // GUIDs dos Estoques
+        public static readonly Guid EstoqueOleoMotoId = Guid.Parse("111e8400-e29b-41d4-a716-446655440000");
+        public static readonly Guid EstoquePastilhaFreioId = Guid.Parse("222e8400-e29b-41d4-a716-446655440000");
+        public static readonly Guid EstoqueAguaRadiadorId = Guid.Parse("8e9d0c1b-2a3f-4e5d-6c7b-8a90b1c2d3e4");
+        public static readonly Guid EstoqueFiltroArId = Guid.Parse("333e8400-e29b-41d4-a716-446655440000");
+        public static readonly Guid EstoqueBateria60AhId = Guid.Parse("444e8400-e29b-41d4-a716-446655440000");
+        public static readonly Guid EstoquePneu205Id = Guid.Parse("555e8400-e29b-41d4-a716-446655440000");
+        public static readonly Guid EstoqueAmortecedorId = Guid.Parse("666e8400-e29b-41d4-a716-446655440000");
+        public static readonly Guid EstoqueVelasIgnicaoId = Guid.Parse("777e8400-e29b-41d4-a716-446655440000");
+        public static readonly Guid EstoqueCorreibaDentadaId = Guid.Parse("888e8400-e29b-41d4-a716-446655440000");
 
         public static void Apply(ApplicationDbContext context)
         {
@@ -23,6 +45,8 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
             SeedUsuarioAdmin(context);
             SeedClientes(context);
             SeedServicos(context);
+            SeedPecasInsumo(context);
+            SeedEstoque(context);
         }
 
         private static void SeedPermissoes(ApplicationDbContext context)
@@ -107,6 +131,60 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
             context.Servicos.Add(servico2);
             context.Servicos.Add(servico3);
             context.Servicos.Add(servico4);
+            context.SaveChanges();
+        }
+
+        private static void SeedPecasInsumo(ApplicationDbContext context)
+        {
+            if (context.PecasInsumo.Any()) return;
+
+            var pecas = new List<(Guid Id, string Descricao, decimal Valor)>
+            {
+                (PecaOleoMotoId, "Óleo de Motor", 29.99m),
+                (PecaPastilhaFreioId, "Pastilha de Freio", 49.99m),
+                (PecaAguaRadiadorId, "Água Radiador", 24.99m),
+                (PecaFiltroArId, "Filtro de Ar", 19.99m),
+                (PecaBateria60AhId, "Bateria 60Ah", 389.99m),
+                (PecaPneu205Id, "Pneu 205/55 R16", 299.99m),
+                (PecaAmortecedorId, "Amortecedor Dianteiro", 199.99m),
+                (PecaVelasIgnicaoId, "Velas de Ignição", 79.99m),
+                (PecaCorreibaDentadaId, "Correia Dentada", 149.99m)
+            };
+
+            foreach (var (id, descricao, valor) in pecas)
+            {
+                var peca = new PecaInsumo(descricao, valor);
+                context.Entry(peca).Property(p => p.Id).CurrentValue = id;
+                context.PecasInsumo.Add(peca);
+            }
+
+            context.SaveChanges();
+        }
+
+        private static void SeedEstoque(ApplicationDbContext context)
+        {
+            if (context.Estoques.Any()) return;
+
+            var estoques = new List<(Guid Id, Guid IdPecaInsumo, int Quantidade)>
+            {
+                (EstoqueOleoMotoId, PecaOleoMotoId, 100),
+                (EstoquePastilhaFreioId, PecaPastilhaFreioId, 50),
+                (EstoqueAguaRadiadorId, PecaAguaRadiadorId, 90),
+                (EstoqueFiltroArId, PecaFiltroArId, 200),
+                (EstoqueBateria60AhId, PecaBateria60AhId, 30),
+                (EstoquePneu205Id, PecaPneu205Id, 80),
+                (EstoqueAmortecedorId, PecaAmortecedorId, 40),
+                (EstoqueVelasIgnicaoId, PecaVelasIgnicaoId, 150),
+                (EstoqueCorreibaDentadaId, PecaCorreibaDentadaId, 60)
+            };
+
+            foreach (var (id, idPecaInsumo, quantidade) in estoques)
+            {
+                var estoque = new Estoque(idPecaInsumo, quantidade);
+                context.Entry(estoque).Property(e => e.Id).CurrentValue = id;
+                context.Estoques.Add(estoque);
+            }
+
             context.SaveChanges();
         }
     }
