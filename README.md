@@ -81,96 +81,86 @@ O projeto está estruturado nas seguintes camadas, garantindo baixo acoplamento 
 ## 🚀 Como Executar o Projeto
 
 ### Pré-requisitos
-*   [.NET 8 SDK](https://dotnet.microsoft.com/download) ou superior
-*   [Docker](https://www.docker.com/products/docker-desktop) (para execução containerizada)
-*   [Docker Compose](https://docs.docker.com/compose/install/) ( para ambiente completo)
+* [.NET 8 SDK](https://dotnet.microsoft.com/download)
+* [Docker](https://www.docker.com/products/docker-desktop) (opcional)
+* [Docker Compose](https://docs.docker.com/compose/install/) (opcional)
 
-### Passos para rodar localmente - Modo Debug
+### Setup inicial (na raiz do repositório)
 
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/SOAT-FIAP-2026/fase1-tech-challenge.git  
-   ```
+```bash
+dotnet restore
+dotnet build fase1-tech-challenge.sln
+```
 
-2. Navegue até a pasta da API:
-   ```bash
-   cd src/Fiap.TechChallenge.Api
-   ```
+### Rodar API (modo normal)
 
-3. Restaure os pacotes:
-   ```bash
-   dotnet restore
-   ```
+```bash
+dotnet run --project src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj
+```
 
-4. Execute o projeto:
-   ```bash
-   dotnet run
-   ```
+### Rodar API com Hot Reload
 
-5. Acesse a aplicação:
-   * Aplicação: `https://localhost:7XXX` ou `http://localhost:5XXX`
-   * Swagger UI: `https://localhost:7XXX/swagger/index.html`
+```bash
+dotnet watch --project src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj run
+```
 
-### Execução com Docker
+Alternativa, se estiver dentro de src/Fiap.TechChallenge.Api:
 
-1. Build da imagem:
-   ```bash
-   docker build -t fiap-techchallenge-api .
-   ```
+```bash
+dotnet watch run
+```
 
-2. Execução do container:
-   ```bash
-   docker run -p 8080:80 fiap-techchallenge-api
-   ```
+### Endpoints locais
 
-3. Acesse em: `http://localhost:8080/swagger/index.html`
+* Swagger UI: https://localhost:5001/swagger (ou porta definida no launchSettings)
+* HTTP local: http://localhost:5000
 
 ### Execução com Docker Compose
 
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
-Isso orquestrará a aplicação junto com o banco de dados e outras dependências.
-
-## 🧪 Executando os Testes e Cobertura
-
-O projeto conta com uma estrutura de testes separada na pasta `tests`, com cobertura mínima de **80% nos domínios críticos**.
-
-### Rodar todos os testes
+Se seu ambiente ainda usar o comando legado:
 
 ```bash
-dotnet test
+docker-compose up -d --build
 ```
 
-### Rodar testes de um projeto específico
+## 🧪 Testes e Cobertura
+
+### Rodar todos os testes da solução
 
 ```bash
-dotnet test tests/Fiap.TechChallenge.Domain.Tests/
+dotnet test fase1-tech-challenge.sln
 ```
 
-### Rodar com filtro por nome de teste
+### Rodar apenas o projeto de testes
 
 ```bash
-dotnet test --filter "MethodName~NomeDoTeste"
+dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Domain.Tests.csproj
 ```
 
-### Gerando o Relatório de Cobertura de Código
+### Rodar teste por filtro
 
-Você pode gerar um painel HTML interativo para visualizar a cobertura de código dos testes.
+```bash
+dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Domain.Tests.csproj --filter "NomeDoTeste"
+```
 
-1. Rode os testes solicitando a coleta de dados de cobertura:
-   ```bash
-   dotnet test --collect:"XPlat Code Coverage"
-   ```
+### Coleta de cobertura
 
-2. Em seguida, gere o relatório HTML utilizando o ReportGenerator:
-   ```bash
-   dotnet tool install -g dotnet-reportgenerator-globaltool
-   reportgenerator -reports:"tests/**/coverage.cobertura.xml" -targetdir:"coveragereport" -reporttypes:Html
-   ```
+```bash
+dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Domain.Tests.csproj --collect:"XPlat Code Coverage"
+```
 
-3. O relatório será criado na pasta `coveragereport`. Basta abrir o arquivo `index.html` em seu navegador padrão.
+### Gerar relatório HTML de cobertura
+
+```bash
+dotnet tool install -g dotnet-reportgenerator-globaltool
+reportgenerator -reports:"tests/**/coverage.cobertura.xml" -targetdir:"coveragereport" -reporttypes:Html
+```
+
+Abra o arquivo coveragereport/index.html no navegador.
 
 
 ## 📁 Estrutura do Projeto

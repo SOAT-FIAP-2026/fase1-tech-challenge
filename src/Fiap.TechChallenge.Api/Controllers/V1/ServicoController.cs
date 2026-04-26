@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Fiap.TechChallenge.Api.Controllers.V1
 {
     [ApiController]
-    [Route("api/v1/servico")]
+    [Route("api/v1/servicos")]
     public class ServicoController(IServicoService servicoService) : ControllerBase
     {
         private readonly IServicoService _servicoService = servicoService;
