@@ -15,8 +15,8 @@ namespace Fiap.TechChallenge.Application.Services
         {
             var pecaInsumo = await _pecaInsumoRepository.ObterPorId(request.IdPecaInsumo);
 
-            if (pecaInsumo == null)
-                throw new DomainException($"Peça/Insumo com ID {request.IdPecaInsumo} não encontrada.");
+            // if (pecaInsumo == null)
+            //     throw new DomainException($"Peça/Insumo com ID {request.IdPecaInsumo} não encontrada.");
 
             var estoque = new Estoque(request.IdPecaInsumo, request.Quantidade);
 
@@ -39,13 +39,13 @@ namespace Fiap.TechChallenge.Application.Services
         {
             var pecaInsumo = await _pecaInsumoRepository.ObterPorId(idPecaInsumo);
 
-            if (pecaInsumo == null)
-                throw new DomainException($"Peça/Insumo com ID {idPecaInsumo} não encontrada.");
+            // if (pecaInsumo == null)
+            //     throw new DomainException($"Peça/Insumo com ID {idPecaInsumo} não encontrada.");
 
             var estoque = await _estoqueRepository.ObterPorIdPecaInsumo(idPecaInsumo);
 
-            if (estoque == null)
-                throw new DomainException($"Estoque não encontrado para a peça/insumo com ID {idPecaInsumo}.");
+            // if (estoque == null)
+            //     throw new DomainException($"Estoque não encontrado para a peça/insumo com ID {idPecaInsumo}.");
 
             estoque.AdicionarQuantidade(quantidade);
 
@@ -56,17 +56,17 @@ namespace Fiap.TechChallenge.Application.Services
         {
             var pecaInsumo = await _pecaInsumoRepository.ObterPorId(idPecaInsumo);
 
-            if (pecaInsumo == null)
-                throw new DomainException($"Peça/Insumo com ID {idPecaInsumo} não encontrada.");
+            // if (pecaInsumo == null)
+            //     throw new DomainException($"Peça/Insumo com ID {idPecaInsumo} não encontrada.");
 
-            var estoque = await _estoqueRepository.ObterPorIdPecaInsumo(idPecaInsumo);
+            // var estoque = await _estoqueRepository.ObterPorIdPecaInsumo(idPecaInsumo);
 
-            if (estoque == null)
-                throw new DomainException($"Estoque não encontrado para a peça/insumo com ID {idPecaInsumo}.");
+            // if (estoque == null)
+            //     throw new DomainException($"Estoque não encontrado para a peça/insumo com ID {idPecaInsumo}.");
 
-            estoque.RemoverQuantidade(quantidade);
+            // estoque.RemoverQuantidade(quantidade);
 
-            await _estoqueRepository.Atualizar(estoque);
+            // await _estoqueRepository.Atualizar(estoque);
         }
 
         public async Task Deletar(Guid idEstoque)

@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          cache: true
+          cache-dependency-path: |
+            fase1-tech-challenge.sln
+            **/*.csproj
+
+      - name: Restore
+        run: dotnet restore fase1-tech-challenge.sln
+
+      - name: Build
+        run: dotnet build fase1-tech-challenge.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test fase1-tech-challenge.sln --configuration Release --no-build --verbosity normal

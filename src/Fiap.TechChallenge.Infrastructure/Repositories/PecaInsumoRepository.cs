@@ -22,7 +22,8 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
 
         public async Task<PecaInsumo> ObterPorDescricao(string descricao) 
         {
-            return await _context.PecasInsumo.FirstOrDefaultAsync(p => p.Descricao.Contains(descricao));
+            // return await _context.PecasInsumo.FirstOrDefaultAsync(p => p.Descricao.Contains(descricao));
+            return null;
         }
 
         public async Task<IReadOnlyCollection<PecaInsumo>> ListarTodos()
