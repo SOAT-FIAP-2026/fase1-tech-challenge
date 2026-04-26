@@ -1,16 +1,34 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:16
     container_name: techchallenge_postgres
     restart: always
     environment:
-      POSTGRES_DB: techchallengedb
+      POSTGRES_DB: techchallengedb-dev
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  api:
+    container_name: techchallenge_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER: "1"
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=techchallengedb-dev;Username=postgres;Password=postgres
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/src
+    working_dir: /src
 volumes:
   postgres_data:
