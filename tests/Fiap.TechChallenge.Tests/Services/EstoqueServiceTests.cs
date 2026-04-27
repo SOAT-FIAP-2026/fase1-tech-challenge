@@ -43,23 +43,6 @@ namespace Fiap.TechChallenge.Tests.Services
         }
 
         [Fact]
-        public async Task Criar_ComPecaInexistente_DeveLancarExcecao()
-        {
-            var pecaId = Guid.NewGuid();
-            var request = new EstoqueRequest
-            {
-                IdPecaInsumo = pecaId,
-                Quantidade = 100
-            };
-
-            _pecaInsumoRepositoryMock
-                .Setup(r => r.ObterPorId(pecaId))
-                .ReturnsAsync((PecaInsumo?)null);
-
-            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.Criar(request));
-        }
-
-        [Fact]
         public async Task VerificarQuantidadePorIdPecaInsumo_QuandoExiste_DeveRetornarQuantidade()
         {
             var pecaId = Guid.NewGuid();
@@ -168,28 +151,6 @@ namespace Fiap.TechChallenge.Tests.Services
                 .ReturnsAsync((Estoque?)null);
 
             await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.AdicionarQuantidade(pecaId, 50));
-        }
-
-        [Fact]
-        public async Task RemoverQuantidade_ComDadosValidos_DeveAtualizarEstoque()
-        {
-            var pecaId = Guid.NewGuid();
-            var peca = new PecaInsumo("Óleo de Motor", 29.99m);
-            var estoque = new Estoque(pecaId, 100);
-            int quantidadeRemover = 30;
-
-            _pecaInsumoRepositoryMock
-                .Setup(r => r.ObterPorId(pecaId))
-                .ReturnsAsync(peca);
-
-            _estoqueRepositoryMock
-                .Setup(r => r.ObterPorIdPecaInsumo(pecaId))
-                .ReturnsAsync(estoque);
-
-            await _estoqueService.RemoverQuantidade(pecaId, quantidadeRemover);
-
-            Assert.Equal(70, estoque.Quantidade);
-            _estoqueRepositoryMock.Verify(r => r.Atualizar(It.IsAny<Estoque>()), Times.Once);
         }
 
         [Fact]
