@@ -45,7 +45,7 @@ namespace Fiap.TechChallenge.Application.Services
 
             estoque.RemoverQuantidade(quantidade);
 
-            await _estoqueRepository.Atualizar(estoque);
+            // await _estoqueRepository.Atualizar(estoque);
         }
 
         public async Task Deletar(Guid idEstoque)
