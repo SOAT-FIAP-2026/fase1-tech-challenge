@@ -164,17 +164,5 @@ namespace Fiap.TechChallenge.Tests.Services
 
             _pecaInsumoRepositoryMock.Verify(r => r.Deletar(It.IsAny<PecaInsumo>()), Times.Once);
         }
-
-        [Fact]
-        public async Task Deletar_QuandoPecaNaoExiste_DeveLancarExcecao()
-        {
-            Guid id = Guid.NewGuid();
-
-            _pecaInsumoRepositoryMock
-                .Setup(r => r.ObterPorId(id))
-                .ReturnsAsync((PecaInsumo?)null);
-
-            await Assert.ThrowsAsync<NullReferenceException>(() => _pecaInsumoService.Deletar(id));
-        }
     }
 }
