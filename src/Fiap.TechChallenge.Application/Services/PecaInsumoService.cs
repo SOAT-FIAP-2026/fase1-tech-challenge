@@ -31,9 +31,6 @@ namespace Fiap.TechChallenge.Application.Services
         {
             PecaInsumo? pecaInsumo = await _pecaInsumoRepository.ObterPorDescricao(descricao);
 
-            // if (pecaInsumo == null)
-            //     throw new DomainException($"Peça/Insumo com descrição contendo '{descricao}' não encontrada.");
-
             return ToResponse(pecaInsumo);
         }
 
@@ -66,9 +63,6 @@ namespace Fiap.TechChallenge.Application.Services
         private async Task<PecaInsumo> ObterEntidadePorId(Guid id)
         {
             PecaInsumo? pecaInsumo = await _pecaInsumoRepository.ObterPorId(id);
-
-            // if (pecaInsumo == null)
-            //     throw new DomainException($"Peça/Insumo com ID {id} não encontrada.");
 
             return pecaInsumo;
         }
