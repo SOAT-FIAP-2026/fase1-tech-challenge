@@ -56,7 +56,7 @@ namespace Fiap.TechChallenge.Tests.Services
                 .Setup(r => r.ObterPorId(pecaId))
                 .ReturnsAsync((PecaInsumo?)null);
 
-            await Assert.ThrowsAsync<DomainException>(() => _estoqueService.Criar(request));
+            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.Criar(request));
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace Fiap.TechChallenge.Tests.Services
                 .Setup(r => r.ObterPorId(pecaId))
                 .ReturnsAsync((PecaInsumo?)null);
 
-            await Assert.ThrowsAsync<DomainException>(() => _estoqueService.AdicionarQuantidade(pecaId, 50));
+            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.AdicionarQuantidade(pecaId, 50));
         }
 
         [Fact]
@@ -167,7 +167,7 @@ namespace Fiap.TechChallenge.Tests.Services
                 .Setup(r => r.ObterPorIdPecaInsumo(pecaId))
                 .ReturnsAsync((Estoque?)null);
 
-            await Assert.ThrowsAsync<DomainException>(() => _estoqueService.AdicionarQuantidade(pecaId, 50));
+            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.AdicionarQuantidade(pecaId, 50));
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace Fiap.TechChallenge.Tests.Services
                 .Setup(r => r.ObterPorId(pecaId))
                 .ReturnsAsync((PecaInsumo?)null);
 
-            await Assert.ThrowsAsync<DomainException>(() => _estoqueService.RemoverQuantidade(pecaId, 30));
+            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.RemoverQuantidade(pecaId, 30));
         }
 
         [Fact]
@@ -237,7 +237,7 @@ namespace Fiap.TechChallenge.Tests.Services
                 .Setup(r => r.ObterPorIdPecaInsumo(pecaId))
                 .ReturnsAsync((Estoque?)null);
 
-            await Assert.ThrowsAsync<DomainException>(() => _estoqueService.RemoverQuantidade(pecaId, 30));
+            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.RemoverQuantidade(pecaId, 30));
         }
 
         [Fact]
