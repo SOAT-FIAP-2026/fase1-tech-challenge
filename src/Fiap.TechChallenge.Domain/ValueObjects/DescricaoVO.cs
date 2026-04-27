@@ -16,5 +16,10 @@ namespace Fiap.TechChallenge.Domain.ValueObjects
 
             Valor = valor.Trim();
         }
+
+        public bool Contains(string termo)
+        {
+            return Valor.Contains(termo, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

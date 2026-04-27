@@ -13,11 +13,6 @@ namespace Fiap.TechChallenge.Application.Services
 
         public async Task<Guid> Criar(EstoqueRequest request)
         {
-            var pecaInsumo = await _pecaInsumoRepository.ObterPorId(request.IdPecaInsumo);
-
-            if (pecaInsumo == null)
-                throw new DomainException($"Peça/Insumo com ID {request.IdPecaInsumo} não encontrada.");
-
             var estoque = new Estoque(request.IdPecaInsumo, request.Quantidade);
 
             await _estoqueRepository.Adicionar(estoque);
@@ -37,15 +32,7 @@ namespace Fiap.TechChallenge.Application.Services
 
         public async Task AdicionarQuantidade(Guid idPecaInsumo, int quantidade)
         {
-            var pecaInsumo = await _pecaInsumoRepository.ObterPorId(idPecaInsumo);
-
-            if (pecaInsumo == null)
-                throw new DomainException($"Peça/Insumo com ID {idPecaInsumo} não encontrada.");
-
             var estoque = await _estoqueRepository.ObterPorIdPecaInsumo(idPecaInsumo);
-
-            if (estoque == null)
-                throw new DomainException($"Estoque não encontrado para a peça/insumo com ID {idPecaInsumo}.");
 
             estoque.AdicionarQuantidade(quantidade);
 
@@ -54,15 +41,7 @@ namespace Fiap.TechChallenge.Application.Services
 
         public async Task RemoverQuantidade(Guid idPecaInsumo, int quantidade)
         {
-            var pecaInsumo = await _pecaInsumoRepository.ObterPorId(idPecaInsumo);
-
-            if (pecaInsumo == null)
-                throw new DomainException($"Peça/Insumo com ID {idPecaInsumo} não encontrada.");
-
             var estoque = await _estoqueRepository.ObterPorIdPecaInsumo(idPecaInsumo);
-
-            if (estoque == null)
-                throw new DomainException($"Estoque não encontrado para a peça/insumo com ID {idPecaInsumo}.");
 
             estoque.RemoverQuantidade(quantidade);
 

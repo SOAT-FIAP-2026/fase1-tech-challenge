@@ -15,12 +15,12 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
             _context = context;
         }
         
-        public async Task<PecaInsumo> ObterPorId(Guid id)
+        public async Task<PecaInsumo?> ObterPorId(Guid id)
         {
             return await _context.PecasInsumo.FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<PecaInsumo> ObterPorDescricao(string descricao) 
+        public async Task<PecaInsumo?> ObterPorDescricao(string descricao) 
         {
             return await _context.PecasInsumo.FirstOrDefaultAsync(p => p.Descricao.Contains(descricao));
         }
