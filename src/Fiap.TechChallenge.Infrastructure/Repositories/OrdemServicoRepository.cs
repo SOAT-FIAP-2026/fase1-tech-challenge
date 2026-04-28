@@ -15,6 +15,12 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task Atualizar(OrdemServico ordemServico)
+        {
+            _context.OrdensServico.Update(ordemServico);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<OrdemServico?> ObterPorId(Guid id)
         {
             return await _context.OrdensServico

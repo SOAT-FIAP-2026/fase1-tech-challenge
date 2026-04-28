@@ -45,22 +45,31 @@ namespace Fiap.TechChallenge.Application.Services
 
             OrdemServico ordemServico = new(request.ClienteId, request.VeiculoId, statusInicial.Id, request.Observacao);
 
-            foreach (Servico servico in servicos)
-            {
-                ordemServico.AdicionarItemServico(new ItemServico(ordemServico.Id, servico.Id));
-            }
-
-            foreach (PecaInsumo peca in pecas)
-            {
-                ordemServico.AdicionarItemPecaInsumo(new ItemPecaInsumo(ordemServico.Id, peca.Id));
-            }
-
-            decimal valorTotal = servicos.Sum(s => s.ValorUnitario.Valor) + pecas.Sum(p => p.ValorUnitario.Valor);
-            ordemServico.DefinirOrcamento(new Orcamento(ordemServico.Id, valorTotal));
+            ordemServico.SincronizarItens(servicos, pecas);
 
             await _ordemServicoRepository.Adicionar(ordemServico);
 
             return ordemServico.Id;
+        }
+
+        public async Task<OrdemServicoResponse> IncluirItens(Guid id, OrdemServicoItensRequest request)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            IReadOnlyCollection<Guid> servicosIds = [.. ordemServico.ItensServico.Select(item => item.IdServico).Concat(request.ServicosIds).Distinct()];
+            IReadOnlyCollection<Guid> pecasIds = [.. ordemServico.ItensPecaInsumo.Select(item => item.IdPecaInsumo).Concat(request.PecasInsumoIds).Distinct()];
+
+            IReadOnlyCollection<Servico> servicos = await _servicoRepository.ObterPorIds(servicosIds);
+            ValidarEntidadesEncontradas(servicosIds, servicos.Select(s => s.Id), idServico => new ServicoNaoEncontradoException(idServico));
+
+            IReadOnlyCollection<PecaInsumo> pecas = await _pecaInsumoRepository.ObterPorIds(pecasIds);
+            ValidarEntidadesEncontradas(pecasIds, pecas.Select(p => p.Id), idPeca => new PecaInsumoNaoEncontradaException(idPeca));
+
+            ordemServico.SincronizarItens(servicos, pecas);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+
+            return ToResponse(ordemServico);
         }
 
         public async Task<OrdemServicoResponse> ObterPorId(Guid id)

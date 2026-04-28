@@ -55,6 +55,40 @@ namespace Fiap.TechChallenge.Domain.Entities
             AtualizarTimestamp();
         }
 
+        public void SincronizarItens(IReadOnlyCollection<Servico> servicos, IReadOnlyCollection<PecaInsumo> pecasInsumo)
+        {
+            HashSet<Guid> servicosExistentes = _itensServico.Select(item => item.IdServico).ToHashSet();
+            HashSet<Guid> pecasExistentes = _itensPecaInsumo.Select(item => item.IdPecaInsumo).ToHashSet();
+
+            foreach (Servico servico in servicos)
+            {
+                if (servicosExistentes.Add(servico.Id))
+                    _itensServico.Add(new ItemServico(Id, servico.Id));
+            }
+
+            foreach (PecaInsumo pecaInsumo in pecasInsumo)
+            {
+                if (pecasExistentes.Add(pecaInsumo.Id))
+                    _itensPecaInsumo.Add(new ItemPecaInsumo(Id, pecaInsumo.Id));
+            }
+
+            RecalcularOrcamento(servicos, pecasInsumo);
+        }
+
+        public void RecalcularOrcamento(IReadOnlyCollection<Servico> servicos, IReadOnlyCollection<PecaInsumo> pecasInsumo)
+        {
+            decimal valorTotal = servicos.Sum(servico => servico.ValorUnitario.Valor) + pecasInsumo.Sum(peca => peca.ValorUnitario.Valor);
+
+            if (Orcamento == null)
+            {
+                DefinirOrcamento(new Orcamento(Id, valorTotal));
+                return;
+            }
+
+            Orcamento.AlterarValorTotal(valorTotal);
+            AtualizarTimestamp();
+        }
+
         public void DefinirOrcamento(Orcamento orcamento)
         {
             Orcamento = orcamento;

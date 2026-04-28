@@ -42,6 +42,26 @@ namespace Fiap.TechChallenge.Tests.Controllers
         }
 
         [Fact]
+        public async Task IncluirItens_DeveRetornar200ComOrdemAtualizada()
+        {
+            Guid id = Guid.NewGuid();
+            var request = new OrdemServicoItensRequest
+            {
+                ServicosIds = [Guid.NewGuid()],
+                PecasInsumoIds = [Guid.NewGuid()]
+            };
+            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Recebida", "Teste", DateTime.UtcNow, null, 205m, [], []);
+
+            _serviceMock.Setup(s => s.IncluirItens(id, request)).ReturnsAsync(response);
+
+            IActionResult result = await _controller.IncluirItens(id, request);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var retorno = Assert.IsType<OrdemServicoResponse>(ok.Value);
+            Assert.Equal(205m, retorno.ValorTotal);
+        }
+
+        [Fact]
         public async Task ObterPorId_DeveRetornar200ComDetalhe()
         {
             Guid id = Guid.NewGuid();
