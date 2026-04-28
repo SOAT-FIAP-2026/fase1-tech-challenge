@@ -1,11 +1,10 @@
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.Services;
 using Fiap.TechChallenge.Domain.Entities;
-using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
 using Moq;
 
-namespace Fiap.TechChallenge.Tests.Services
+namespace Fiap.TechChallenge.Domain.Tests.Services
 {
     public class PecaInsumoServiceTests
     {

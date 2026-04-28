@@ -51,10 +51,8 @@ namespace Fiap.TechChallenge.Domain.Exceptions
     /// <summary>
     /// Exceção lançada quando o nome do serviço já existe.
     /// </summary>
-    public class ServicoNomeJaExisteException : DomainException
+    public class ServicoNomeJaExisteException(string nome) : DomainException($"Já existe um serviço com o nome '{nome}'.")
     {
-        public ServicoNomeJaExisteException(string nome)
-            : base($"Já existe um serviço com o nome '{nome}'.") { }
     }
 
     /// <summary>
@@ -67,9 +65,35 @@ namespace Fiap.TechChallenge.Domain.Exceptions
     /// <summary>
     /// Exceção lançada quando o CPF/CNPJ já existe.
     /// </summary>
-    public class ClienteCpfCnpjJaExisteException : DomainException
+    public class ClienteCpfCnpjJaExisteException(string cpfCnpj) : DomainException($"Já existe um cliente com o CPF/CNPJ '{cpfCnpj}'.")
     {
-        public ClienteCpfCnpjJaExisteException(string cpfCnpj)
-            : base($"Já existe um cliente com o CPF/CNPJ '{cpfCnpj}'.") { }
+    }
+
+    /// <summary>
+    /// Exceção lançada quando um veículo não é encontrado.
+    /// </summary>
+    public class VeiculoNaoEncontradoException(Guid id) : DomainException($"Veículo com id '{id}' não encontrado.")
+    {
+    }
+
+    /// <summary>
+    /// Exceção lançada quando um status de ordem de serviço não é encontrado.
+    /// </summary>
+    public class StatusOrdemServicoNaoEncontradoException(string descricao) : DomainException($"Status de ordem de serviço '{descricao}' não encontrado.")
+    {
+    }
+
+    /// <summary>
+    /// Exceção lançada quando uma peça ou insumo não é encontrado.
+    /// </summary>
+    public class PecaInsumoNaoEncontradaException(Guid id) : DomainException($"Peça/Insumo com id '{id}' não encontrado.")
+    {
+    }
+
+    /// <summary>
+    /// Exceção lançada quando uma ordem de serviço não é encontrada.
+    /// </summary>
+    public class OrdemServicoNaoEncontradaException(Guid id) : DomainException($"Ordem de serviço com id '{id}' não encontrada.")
+    {
     }
 }

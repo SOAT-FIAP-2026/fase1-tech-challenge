@@ -30,6 +30,15 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
         {
             return await _context.PecasInsumo.ToListAsync();
         }
+
+        public async Task<IReadOnlyCollection<PecaInsumo>> ObterPorIds(IReadOnlyCollection<Guid> ids)
+        {
+            Guid[] idsDistinctos = ids.Distinct().ToArray();
+
+            return await _context.PecasInsumo
+                .Where(p => idsDistinctos.Contains(p.Id))
+                .ToListAsync();
+        }
         
         public async Task Adicionar(PecaInsumo pecaInsumo)
         {

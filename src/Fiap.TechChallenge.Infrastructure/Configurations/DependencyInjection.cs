@@ -21,6 +21,9 @@ namespace Fiap.TechChallenge.Infrastructure.Configurations
             services.AddScoped<IClienteRepository, ClienteRepository>();
             services.AddScoped<IPecaInsumoRepository, PecaInsumoRepository>();
             services.AddScoped<IEstoqueRepository, EstoqueRepository>();
+            services.AddScoped<IVeiculoRepository, VeiculoRepository>();
+            services.AddScoped<IStatusOrdemServicoRepository, StatusOrdemServicoRepository>();
+            services.AddScoped<IOrdemServicoRepository, OrdemServicoRepository>();
             services.AddScoped<ICrypto, Crypto>();
 
             return services;

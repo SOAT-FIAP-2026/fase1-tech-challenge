@@ -6,6 +6,7 @@ namespace Fiap.TechChallenge.Domain.Interfaces.Repository
     {
         Task<Servico?> ObterPorId(Guid id);
         Task<IReadOnlyCollection<Servico>> ObterTodos();
+        Task<IReadOnlyCollection<Servico>> ObterPorIds(IReadOnlyCollection<Guid> ids);
         Task<bool> ExisteNome(string nome, Guid? ignorarId = null);
         Task Adicionar(Servico servico);
         Task Atualizar(Servico servico);

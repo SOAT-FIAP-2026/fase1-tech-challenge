@@ -22,6 +22,15 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IReadOnlyCollection<Servico>> ObterPorIds(IReadOnlyCollection<Guid> ids)
+        {
+            Guid[] idsDistinctos = [.. ids.Distinct()];
+
+            return await _context.Servicos
+                .Where(s => idsDistinctos.Contains(s.Id))
+                .ToListAsync();
+        }
+
         public async Task<bool> ExisteNome(string nome, Guid? ignorarId = null)
         {
             NomeVO nomeVO = new(nome);

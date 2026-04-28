@@ -54,5 +54,11 @@ namespace Fiap.TechChallenge.Domain.Entities
             _itensPecaInsumo.Add(item);
             AtualizarTimestamp();
         }
+
+        public void DefinirOrcamento(Orcamento orcamento)
+        {
+            Orcamento = orcamento;
+            AtualizarTimestamp();
+        }
     }
 }

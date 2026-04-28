@@ -1,0 +1,40 @@
+using Fiap.TechChallenge.Application.DTOs.Requests;
+using Fiap.TechChallenge.Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Fiap.TechChallenge.Api.Controllers.V1
+{
+    [ApiController]
+    [Route("api/v1/ordens-servico")]
+    public class OrdemServicoController(IOrdemServicoService ordemServicoService) : ControllerBase
+    {
+        private readonly IOrdemServicoService _ordemServicoService = ordemServicoService;
+
+        [HttpPost]
+        public async Task<IActionResult> Criar(OrdemServicoRequest request)
+        {
+            Guid id = await _ordemServicoService.Criar(request);
+
+            return StatusCode(201, new
+            {
+                id
+            });
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> ObterPorId(Guid id)
+        {
+            var ordemServico = await _ordemServicoService.ObterPorId(id);
+
+            return Ok(ordemServico);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObterTodos()
+        {
+            var ordensServico = await _ordemServicoService.ObterTodos();
+
+            return Ok(ordensServico);
+        }
+    }
+}

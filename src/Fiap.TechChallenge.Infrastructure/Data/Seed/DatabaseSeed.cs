@@ -47,6 +47,7 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
             SeedServicos(context);
             SeedPecasInsumo(context);
             SeedEstoque(context);
+            SeedVeiculos(context);
         }
 
         private static void SeedPermissoes(ApplicationDbContext context)
@@ -156,6 +157,29 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
                 var peca = new PecaInsumo(descricao, valor);
                 context.Entry(peca).Property(p => p.Id).CurrentValue = id;
                 context.PecasInsumo.Add(peca);
+            }
+
+            context.SaveChanges();
+        }
+
+        private static void SeedVeiculos (ApplicationDbContext context)
+        {
+            if (context.Veiculos.Any()) return;
+
+            var veiculos = new List<(Guid Id, string Placa, string Marca, string Modelo, int Ano)>
+            {
+                (Guid.NewGuid(), "ABC1D23", "Fiat", "Marea", 2005),
+                (Guid.NewGuid(), "XYZ9Z99", "Volkswagen", "Gol", 2010),
+                (Guid.NewGuid(), "DEF4G56", "Chevrolet", "Opala", 1985),
+                (Guid.NewGuid(), "GHI7J89", "Jeep", "Rural willys", 1970),
+                (Guid.NewGuid(), "JKL0M12", "Ford", "Corcel", 1975),
+            };
+
+            foreach (var (id, placa, marca, modelo, ano) in veiculos)
+            {
+                var veiculo = new Veiculo(placa, marca, modelo, ano);
+                context.Entry(veiculo).Property(v => v.Id).CurrentValue = id;
+                context.Veiculos.Add(veiculo);
             }
 
             context.SaveChanges();

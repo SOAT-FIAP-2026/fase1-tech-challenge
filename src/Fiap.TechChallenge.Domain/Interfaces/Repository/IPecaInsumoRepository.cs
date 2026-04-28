@@ -6,6 +6,7 @@ namespace Fiap.TechChallenge.Domain.Interfaces.Repository {
         Task<PecaInsumo?> ObterPorId(Guid id);
         Task<PecaInsumo?> ObterPorDescricao(string descricao);
         Task<IReadOnlyCollection<PecaInsumo>> ListarTodos();
+        Task<IReadOnlyCollection<PecaInsumo>> ObterPorIds(IReadOnlyCollection<Guid> ids);
         Task Adicionar(PecaInsumo pecaInsumo);
         Task Atualizar(PecaInsumo pecaInsumo);
         Task Deletar(PecaInsumo pecaInsumo);

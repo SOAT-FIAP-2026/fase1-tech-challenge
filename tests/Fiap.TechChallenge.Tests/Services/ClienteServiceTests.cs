@@ -5,7 +5,7 @@ using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
 using Moq;
 
-namespace Fiap.TechChallenge.Tests.Services
+namespace Fiap.TechChallenge.Domain.Tests.Services
 {
     public class ClienteServiceTests
     {

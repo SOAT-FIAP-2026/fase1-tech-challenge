@@ -4,8 +4,6 @@ namespace Fiap.TechChallenge.Domain.ValueObjects
     {
         public string Valor { get; }
 
-        protected DescricaoVO() { }
-
         public DescricaoVO(string valor, int tamanhoMaximo = 255)
         {
             if (string.IsNullOrWhiteSpace(valor))

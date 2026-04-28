@@ -1,13 +1,9 @@
+using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Interfaces.Security;
 using Fiap.TechChallenge.Domain.ValueObjects;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Fiap.TechChallenge.Domain.Entities
+namespace Fiap.TechChallenge.Domain.Tests.Entities
 {
     public class UsuarioTests
     {

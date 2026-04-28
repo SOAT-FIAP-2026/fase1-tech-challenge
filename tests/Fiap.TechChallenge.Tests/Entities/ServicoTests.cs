@@ -1,4 +1,6 @@
-namespace Fiap.TechChallenge.Domain.Entities
+using Fiap.TechChallenge.Domain.Entities;
+
+namespace Fiap.TechChallenge.Domain.Tests.Entities
 {
     public class ServicoTests
     {

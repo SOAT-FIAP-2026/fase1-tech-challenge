@@ -11,7 +11,7 @@ namespace Fiap.TechChallenge.Domain.Tests.ValueObjects
             string nomeValido = "Junior";
 
             // 2. Act (Agir)
-            NomeVO nomeVO = new NomeVO(nomeValido);
+            NomeVO nomeVO = new(nomeValido);
 
             // 3. Assert (Verificar)
             Assert.Equal(nomeValido, nomeVO.Valor);
@@ -41,7 +41,7 @@ namespace Fiap.TechChallenge.Domain.Tests.ValueObjects
         public void Construtor_NomeGrandeDemais_DeveLancarExcecao()
         {
             // 1. Arrange
-            string nomeInvalido = new string('a', 256);
+            string nomeInvalido = new('a', 256);
 
             // 2 e 3. Act & Assert
             Assert.Throws<ArgumentException>(() => new NomeVO(nomeInvalido));
