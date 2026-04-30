@@ -21,6 +21,14 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             });
         }
 
+        [HttpPost("{id:guid}/itens")]
+        public async Task<IActionResult> IncluirItens(Guid id, OrdemServicoItensRequest request)
+        {
+            var ordemServico = await _ordemServicoService.IncluirItens(id, request);
+
+            return Ok(ordemServico);
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {

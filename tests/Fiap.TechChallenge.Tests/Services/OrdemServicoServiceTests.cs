@@ -92,6 +92,41 @@ namespace Fiap.TechChallenge.Domain.Tests.Services
         }
 
         [Fact]
+        public async Task IncluirItens_QuandoDadosValidos_DeveAtualizarOrdemComNovoOrcamento()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+            var servicoExistente = new Servico("Troca de Oleo", "Troca completa", 100m);
+            var pecaExistente = new PecaInsumo("Filtro de Ar", 25m);
+            ordemServico.SincronizarItens([servicoExistente], [pecaExistente]);
+
+            var servicoNovo = new Servico("Alinhamento", "Alinhamento dianteiro", 50m);
+            var pecaNova = new PecaInsumo("Oleo Motor", 30m);
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _servicoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([servicoExistente, servicoNovo]);
+            _pecaInsumoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([pecaExistente, pecaNova]);
+
+            OrdemServico? captured = null;
+            _ordemServicoRepositoryMock
+                .Setup(r => r.Atualizar(It.IsAny<OrdemServico>()))
+                .Callback<OrdemServico>(ordem => captured = ordem)
+                .Returns(Task.CompletedTask);
+
+            OrdemServicoResponse response = await _service.IncluirItens(ordemServico.Id, new OrdemServicoItensRequest
+            {
+                ServicosIds = [servicoNovo.Id],
+                PecasInsumoIds = [pecaNova.Id]
+            });
+
+            Assert.NotNull(captured);
+            Assert.Equal(2, captured!.ItensServico.Count);
+            Assert.Equal(2, captured.ItensPecaInsumo.Count);
+            Assert.Equal(205m, captured.Orcamento!.ValorTotal.Valor);
+            Assert.Equal(205m, response.ValorTotal);
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Once);
+        }
+
+        [Fact]
         public async Task ObterPorId_QuandoExiste_DeveRetornarDetalhe()
         {
             var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");

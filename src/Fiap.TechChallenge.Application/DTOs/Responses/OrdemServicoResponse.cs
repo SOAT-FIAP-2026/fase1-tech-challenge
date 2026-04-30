@@ -5,6 +5,7 @@ namespace Fiap.TechChallenge.Application.DTOs.Responses
         Guid idCliente,
         Guid idVeiculo,
         Guid idStatus,
+        string clienteNome,
         string statusDescricao,
         string? observacao,
         DateTime dataAbertura,
@@ -16,6 +17,7 @@ namespace Fiap.TechChallenge.Application.DTOs.Responses
         public Guid Id { get; set; } = id;
         public Guid IdCliente { get; set; } = idCliente;
         public Guid IdVeiculo { get; set; } = idVeiculo;
+        public string ClienteNome { get; set; } = clienteNome;
         public Guid IdStatus { get; set; } = idStatus;
         public string StatusDescricao { get; set; } = statusDescricao;
         public string? Observacao { get; set; } = observacao;
