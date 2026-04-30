@@ -14,10 +14,10 @@ namespace Fiap.TechChallenge.Domain.Entities
         public StatusOrdemServico Status { get; private set; } = null!;
         public Orcamento? Orcamento { get; private set; }
 
-        private readonly List<ItemServico> _itensServico = new();
+        private readonly List<ItemServico> _itensServico = [];
         public IReadOnlyCollection<ItemServico> ItensServico => _itensServico.AsReadOnly();
 
-        private readonly List<ItemPecaInsumo> _itensPecaInsumo = new();
+        private readonly List<ItemPecaInsumo> _itensPecaInsumo = [];
         public IReadOnlyCollection<ItemPecaInsumo> ItensPecaInsumo => _itensPecaInsumo.AsReadOnly();
 
         protected OrdemServico() { }

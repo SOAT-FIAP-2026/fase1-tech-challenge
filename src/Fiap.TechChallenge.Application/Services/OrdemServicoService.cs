@@ -136,13 +136,14 @@ namespace Fiap.TechChallenge.Application.Services
                 ordemServico.Id,
                 ordemServico.IdCliente,
                 ordemServico.IdVeiculo,
+                ordemServico.Cliente.Nome.Valor,
                 ordemServico.IdStatus,
                 ordemServico.Status?.Descricao.Valor ?? string.Empty,
                 ordemServico.Observacao,
                 ordemServico.DataAbertura,
                 ordemServico.DataConclusao,
                 ordemServico.Orcamento?.ValorTotal.Valor,
-                [.. ordemServico.ItensServico.Select(item => new OrdemServicoItemServicoResponse(item.Id, item.IdServico, item.DataHoraInicio, item.DataHoraFim))],
+                [.. ordemServico.ItensServico.Select(item => new OrdemServicoItemServicoResponse(item.Id, item.IdServico, item.DataHoraInicio, item.DataHoraFim))],            
                 [.. ordemServico.ItensPecaInsumo.Select(item => new OrdemServicoItemPecaInsumoResponse(item.Id, item.IdPecaInsumo))]
             );
         }
