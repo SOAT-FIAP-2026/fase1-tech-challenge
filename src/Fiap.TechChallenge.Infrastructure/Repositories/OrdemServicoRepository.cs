@@ -2,6 +2,7 @@ using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
 using Fiap.TechChallenge.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Fiap.TechChallenge.Infrastructure.Repositories
 {
@@ -17,7 +18,54 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
 
         public async Task Atualizar(OrdemServico ordemServico)
         {
-            _context.OrdensServico.Update(ordemServico);
+            // If the aggregate was not loaded by this DbContext (detached), attach it.
+            var entry = _context.Entry(ordemServico);
+
+            if (entry.State == EntityState.Detached)
+            {
+                _context.OrdensServico.Attach(ordemServico);
+            }
+
+            // Ensure new child items are inserted. New Item entities are created with GUIDs,
+            // so EF cannot rely on default key values to infer state. Detect items that do
+            // not exist in the database and add them explicitly to the DbContext so they
+            // produce INSERT statements instead of problematic UPDATEs.
+            foreach (var item in ordemServico.ItensServico)
+            {
+                bool exists = await _context.ItensServico.AnyAsync(i => i.Id == item.Id);
+                if (!exists)
+                {
+                    _context.ItensServico.Add(item);
+                }
+                else
+                {
+                    _context.Entry(item).State = EntityState.Unchanged;
+                }
+            }
+
+            foreach (var item in ordemServico.ItensPecaInsumo)
+            {
+                bool exists = await _context.ItensPecaInsumo.AnyAsync(i => i.Id == item.Id);
+                if (!exists)
+                {
+                    _context.ItensPecaInsumo.Add(item);
+                }
+                else
+                {
+                    _context.Entry(item).State = EntityState.Unchanged;
+                }
+            }
+
+            // Also ensure Orcamento is added/updated appropriately.
+            if (ordemServico.Orcamento != null)
+            {
+                bool orcExists = await _context.Orcamentos.AnyAsync(o => o.Id == ordemServico.Orcamento.Id);
+                if (!orcExists)
+                    _context.Orcamentos.Add(ordemServico.Orcamento);
+                else
+                    _context.Entry(ordemServico.Orcamento).State = EntityState.Modified;
+            }
+
             await _context.SaveChangesAsync();
         }
 
