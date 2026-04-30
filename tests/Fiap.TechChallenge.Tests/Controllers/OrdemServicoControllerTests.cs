@@ -50,7 +50,7 @@ namespace Fiap.TechChallenge.Tests.Controllers
                 ServicosIds = [Guid.NewGuid()],
                 PecasInsumoIds = [Guid.NewGuid()]
             };
-            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Recebida", "Teste", DateTime.UtcNow, null, 205m, [], []);
+            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(),Guid.NewGuid(),"Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 205m, [], []);
 
             _serviceMock.Setup(s => s.IncluirItens(id, request)).ReturnsAsync(response);
 
@@ -65,7 +65,7 @@ namespace Fiap.TechChallenge.Tests.Controllers
         public async Task ObterPorId_DeveRetornar200ComDetalhe()
         {
             Guid id = Guid.NewGuid();
-            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Recebida", "Teste", DateTime.UtcNow, null, 10m, [], []);
+            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(),Guid.NewGuid(),"Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 10m, [], []);
 
             _serviceMock.Setup(s => s.ObterPorId(id)).ReturnsAsync(response);
 
@@ -79,7 +79,7 @@ namespace Fiap.TechChallenge.Tests.Controllers
         [Fact]
         public async Task ObterTodos_DeveRetornar200ComLista()
         {
-            var response = new OrdemServicoResponse(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Recebida", null, DateTime.UtcNow, null, null, [], []);
+            var response = new OrdemServicoResponse(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),"Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, null, [], []);
 
             _serviceMock.Setup(s => s.ObterTodos()).ReturnsAsync([response]);
 
