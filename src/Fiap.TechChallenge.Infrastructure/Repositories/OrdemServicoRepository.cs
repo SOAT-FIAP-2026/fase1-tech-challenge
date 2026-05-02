@@ -33,18 +33,18 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
                 // detection and fail on required relationships if dependents are only severed.
                 foreach (EntityEntry<ItemServico> trackedItem in _context.ChangeTracker.Entries<ItemServico>()
                              .Where(e => e.Entity.IdOrdemServico == ordemServico.Id)
+                             .Where(e => !ordemServico.ItensServico.Any(item => item.Id == e.Entity.Id))
                              .ToList())
                 {
-                    if (!ordemServico.ItensServico.Any(item => item.Id == trackedItem.Entity.Id))
-                        trackedItem.State = EntityState.Deleted;
+                    trackedItem.State = EntityState.Deleted;
                 }
 
                 foreach (EntityEntry<ItemPecaInsumo> trackedItem in _context.ChangeTracker.Entries<ItemPecaInsumo>()
                              .Where(e => e.Entity.IdOrdemServico == ordemServico.Id)
+                             .Where(e => !ordemServico.ItensPecaInsumo.Any(item => item.Id == e.Entity.Id))
                              .ToList())
                 {
-                    if (!ordemServico.ItensPecaInsumo.Any(item => item.Id == trackedItem.Entity.Id))
-                        trackedItem.State = EntityState.Deleted;
+                    trackedItem.State = EntityState.Deleted;
                 }
             }
             finally
