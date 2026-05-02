@@ -81,5 +81,37 @@ namespace Fiap.TechChallenge.Domain.Entities
             Assert.Equal(2, ordemServico.ItensPecaInsumo.Count);
             Assert.Equal(205m, ordemServico.Orcamento!.ValorTotal.Valor);
         }
+
+        [Fact]
+        public void RemoverItemServico_DeveRemoverEAtualizarTimestamp()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+            var servico = new Servico("Troca de Oleo", "Troca completa", 100m);
+            ordemServico.SincronizarItens([servico], []);
+
+            DateTime timestampAntes = ordemServico.AtualizadoEm;
+
+            bool removido = ordemServico.RemoverItemServico(servico.Id);
+
+            Assert.True(removido);
+            Assert.Empty(ordemServico.ItensServico);
+            Assert.True(ordemServico.AtualizadoEm >= timestampAntes);
+        }
+
+        [Fact]
+        public void RemoverItemPecaInsumo_DeveRemoverEAtualizarTimestamp()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+            var peca = new PecaInsumo("Filtro de Ar", 25m);
+            ordemServico.SincronizarItens([], [peca]);
+
+            DateTime timestampAntes = ordemServico.AtualizadoEm;
+
+            bool removido = ordemServico.RemoverItemPecaInsumo(peca.Id);
+
+            Assert.True(removido);
+            Assert.Empty(ordemServico.ItensPecaInsumo);
+            Assert.True(ordemServico.AtualizadoEm >= timestampAntes);
+        }
     }
 }

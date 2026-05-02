@@ -62,6 +62,34 @@ namespace Fiap.TechChallenge.Tests.Controllers
         }
 
         [Fact]
+        public async Task RemoverItemServico_DeveRetornar204()
+        {
+            Guid id = Guid.NewGuid();
+            Guid idServico = Guid.NewGuid();
+
+            _serviceMock.Setup(s => s.RemoverItemServico(id, idServico)).Returns(Task.CompletedTask);
+
+            IActionResult result = await _controller.RemoverItemServico(id, idServico);
+
+            Assert.IsType<NoContentResult>(result);
+            _serviceMock.Verify(s => s.RemoverItemServico(id, idServico), Times.Once);
+        }
+
+        [Fact]
+        public async Task RemoverItemPecaInsumo_DeveRetornar204()
+        {
+            Guid id = Guid.NewGuid();
+            Guid idPecaInsumo = Guid.NewGuid();
+
+            _serviceMock.Setup(s => s.RemoverItemPecaInsumo(id, idPecaInsumo)).Returns(Task.CompletedTask);
+
+            IActionResult result = await _controller.RemoverItemPecaInsumo(id, idPecaInsumo);
+
+            Assert.IsType<NoContentResult>(result);
+            _serviceMock.Verify(s => s.RemoverItemPecaInsumo(id, idPecaInsumo), Times.Once);
+        }
+
+        [Fact]
         public async Task ObterPorId_DeveRetornar200ComDetalhe()
         {
             Guid id = Guid.NewGuid();

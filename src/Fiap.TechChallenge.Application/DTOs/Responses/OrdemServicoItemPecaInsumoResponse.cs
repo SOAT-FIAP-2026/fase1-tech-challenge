@@ -1,9 +1,9 @@
 namespace Fiap.TechChallenge.Application.DTOs.Responses
 {
-    public class OrdemServicoItemPecaInsumoResponse(Guid id, Guid idPecaInsumo/* string pecaInsumoDescricao*/)
+    public class OrdemServicoItemPecaInsumoResponse(Guid idPecaInsumo, string descricao, decimal valor)
     {
-        public Guid Id { get; set; } = id;
         public Guid IdPecaInsumo { get; set; } = idPecaInsumo;
-        // public string PecaInsumoDescricao { get; set; } = pecaInsumoDescricao;
+        public string Descricao { get; set; } = descricao;
+        public decimal Valor { get; set; } = valor;
     }
 }

@@ -29,6 +29,22 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
+        [HttpDelete("{id:guid}/itens/servicos/{idServico:guid}")]
+        public async Task<IActionResult> RemoverItemServico(Guid id, Guid idServico)
+        {
+            await _ordemServicoService.RemoverItemServico(id, idServico);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id:guid}/itens/pecas-insumos/{idPecaInsumo:guid}")]
+        public async Task<IActionResult> RemoverItemPecaInsumo(Guid id, Guid idPecaInsumo)
+        {
+            await _ordemServicoService.RemoverItemPecaInsumo(id, idPecaInsumo);
+
+            return NoContent();
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {

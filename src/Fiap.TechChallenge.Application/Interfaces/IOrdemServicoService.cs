@@ -7,6 +7,8 @@ namespace Fiap.TechChallenge.Application.Interfaces
     {
         Task<Guid> Criar(OrdemServicoRequest request);
         Task<OrdemServicoResponse> IncluirItens(Guid id, OrdemServicoItensRequest request);
+        Task RemoverItemServico(Guid id, Guid idServico);
+        Task RemoverItemPecaInsumo(Guid id, Guid idPecaInsumo);
         Task<OrdemServicoResponse> ObterPorId(Guid id);
         Task<IReadOnlyCollection<OrdemServicoResponse>> ObterTodos();
     }

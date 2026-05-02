@@ -127,6 +127,44 @@ namespace Fiap.TechChallenge.Domain.Tests.Services
         }
 
         [Fact]
+        public async Task RemoverItemServico_QuandoDadosValidos_DeveAtualizarOrdemComNovoOrcamento()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+            var servico1 = new Servico("Troca de Oleo", "Troca completa", 100m);
+            var servico2 = new Servico("Alinhamento", "Alinhamento dianteiro", 50m);
+            ordemServico.SincronizarItens([servico1, servico2], []);
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _servicoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([servico2]);
+
+            await _service.RemoverItemServico(ordemServico.Id, servico1.Id);
+
+            Assert.Single(ordemServico.ItensServico);
+            Assert.Equal(servico2.Id, ordemServico.ItensServico.First().IdServico);
+            Assert.Equal(50m, ordemServico.Orcamento!.ValorTotal.Valor);
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RemoverItemPecaInsumo_QuandoDadosValidos_DeveAtualizarOrdemComNovoOrcamento()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+            var peca1 = new PecaInsumo("Filtro de Ar", 25m);
+            var peca2 = new PecaInsumo("Oleo Motor", 30m);
+            ordemServico.SincronizarItens([], [peca1, peca2]);
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _pecaInsumoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([peca2]);
+
+            await _service.RemoverItemPecaInsumo(ordemServico.Id, peca1.Id);
+
+            Assert.Single(ordemServico.ItensPecaInsumo);
+            Assert.Equal(peca2.Id, ordemServico.ItensPecaInsumo.First().IdPecaInsumo);
+            Assert.Equal(30m, ordemServico.Orcamento!.ValorTotal.Valor);
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Once);
+        }
+
+        [Fact]
         public async Task ObterPorId_QuandoExiste_DeveRetornarDetalhe()
         {
             var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
@@ -158,6 +196,24 @@ namespace Fiap.TechChallenge.Domain.Tests.Services
 
             Assert.Single(response);
             Assert.Equal(50m, response.First().ValorTotal);
+        }
+
+        [Fact]
+        public async Task RemoverItemServico_QuandoItemNaoExiste_DeveLancarExcecao()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+
+            await Assert.ThrowsAsync<ItemServicoNaoEncontradoException>(() => _service.RemoverItemServico(ordemServico.Id, Guid.NewGuid()));
+        }
+
+        [Fact]
+        public async Task RemoverItemPecaInsumo_QuandoItemNaoExiste_DeveLancarExcecao()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+
+            await Assert.ThrowsAsync<ItemPecaInsumoNaoEncontradoException>(() => _service.RemoverItemPecaInsumo(ordemServico.Id, Guid.NewGuid()));
         }
     }
 }

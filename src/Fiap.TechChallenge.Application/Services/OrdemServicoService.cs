@@ -72,6 +72,28 @@ namespace Fiap.TechChallenge.Application.Services
             return ToResponse(ordemServico);
         }
 
+        public async Task RemoverItemServico(Guid id, Guid idServico)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            if (!ordemServico.RemoverItemServico(idServico))
+                throw new ItemServicoNaoEncontradoException(idServico);
+
+            await RecalcularOrcamentoDaOrdem(ordemServico);
+            await _ordemServicoRepository.Atualizar(ordemServico);
+        }
+
+        public async Task RemoverItemPecaInsumo(Guid id, Guid idPecaInsumo)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            if (!ordemServico.RemoverItemPecaInsumo(idPecaInsumo))
+                throw new ItemPecaInsumoNaoEncontradoException(idPecaInsumo);
+
+            await RecalcularOrcamentoDaOrdem(ordemServico);
+            await _ordemServicoRepository.Atualizar(ordemServico);
+        }
+
         public async Task<OrdemServicoResponse> ObterPorId(Guid id)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
@@ -130,6 +152,26 @@ namespace Fiap.TechChallenge.Application.Services
             return ordemServico;
         }
 
+        private async Task RecalcularOrcamentoDaOrdem(OrdemServico ordemServico)
+        {
+            IReadOnlyCollection<Guid> servicosIds = [.. ordemServico.ItensServico.Select(item => item.IdServico)];
+            IReadOnlyCollection<Guid> pecasIds = [.. ordemServico.ItensPecaInsumo.Select(item => item.IdPecaInsumo)];
+
+            IReadOnlyCollection<Servico> servicos = servicosIds.Count == 0
+                ? []
+                : await _servicoRepository.ObterPorIds(servicosIds);
+
+            ValidarEntidadesEncontradas(servicosIds, servicos.Select(s => s.Id), idServico => new ServicoNaoEncontradoException(idServico));
+
+            IReadOnlyCollection<PecaInsumo> pecas = pecasIds.Count == 0
+                ? []
+                : await _pecaInsumoRepository.ObterPorIds(pecasIds);
+
+            ValidarEntidadesEncontradas(pecasIds, pecas.Select(p => p.Id), idPeca => new PecaInsumoNaoEncontradaException(idPeca));
+
+            ordemServico.RecalcularOrcamento(servicos, pecas);
+        }
+
         private static OrdemServicoResponse ToResponse(OrdemServico ordemServico)
         {
             return new OrdemServicoResponse(
@@ -143,8 +185,16 @@ namespace Fiap.TechChallenge.Application.Services
                 ordemServico.DataAbertura,
                 ordemServico.DataConclusao,
                 ordemServico.Orcamento?.ValorTotal.Valor,
-                [.. ordemServico.ItensServico.Select(item => new OrdemServicoItemServicoResponse(item.Id, item.IdServico, item.DataHoraInicio, item.DataHoraFim))],            
-                [.. ordemServico.ItensPecaInsumo.Select(item => new OrdemServicoItemPecaInsumoResponse(item.Id, item.IdPecaInsumo))]
+                [.. ordemServico.ItensServico.Select(item => new OrdemServicoItemServicoResponse(
+                    item.IdServico,
+                    item.DataHoraInicio,
+                    item.DataHoraFim,
+                    item.Servico?.Nome?.Valor ?? string.Empty,
+                    item.Servico?.ValorUnitario.Valor ?? 0m))],
+                [.. ordemServico.ItensPecaInsumo.Select(item => new OrdemServicoItemPecaInsumoResponse(
+                    item.IdPecaInsumo,
+                    item.PecaInsumo?.Descricao?.Valor ?? string.Empty,
+                    item.PecaInsumo?.ValorUnitario.Valor ?? 0m))]
             );
         }
 
