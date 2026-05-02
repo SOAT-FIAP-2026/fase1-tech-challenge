@@ -70,6 +70,40 @@ namespace Fiap.TechChallenge.Domain.Tests.Services
         }
 
         [Fact]
+        public async Task ObterPorCpfCnpj_QuandoEncontrado_DeveRetornarResponse()
+        {
+            var cliente = new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999");
+            string cpfCnpj = "529.982.247-25";
+
+            _clienteRepositoryMock
+                .Setup(r => r.ObterPorCpfCnpj(cpfCnpj))
+                .ReturnsAsync(cliente);
+
+            var response = await _clienteService.ObterPorCpfCnpj(cpfCnpj);
+
+            Assert.NotNull(response);
+            Assert.Equal(cliente.Id, response!.Id);
+            Assert.Equal("Joao Silva", response.Nome);
+            Assert.Equal("52998224725", response.CpfCnpj);
+            Assert.Equal("joao@email.com", response.Email);
+            Assert.Equal("11999999999", response.Celular);
+        }
+
+        [Fact]
+        public async Task ObterPorCpfCnpj_QuandoNaoEncontrado_DeveRetornarNull()
+        {
+            string cpfCnpj = "52998224725";
+
+            _clienteRepositoryMock
+                .Setup(r => r.ObterPorCpfCnpj(cpfCnpj))
+                .ReturnsAsync((Cliente?)null);
+
+            var response = await _clienteService.ObterPorCpfCnpj(cpfCnpj);
+
+            Assert.Null(response);
+        }
+
+        [Fact]
         public async Task Atualizar_QuandoClienteExiste_DeveRetornarResponseAtualizado()
         {
             var cliente = new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999");
