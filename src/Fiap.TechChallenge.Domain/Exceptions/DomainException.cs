@@ -49,6 +49,13 @@ namespace Fiap.TechChallenge.Domain.Exceptions
     }
 
     /// <summary>
+    /// Exceção lançada quando um item de serviço não é encontrado na ordem de serviço.
+    /// </summary>
+    public class ItemServicoNaoEncontradoException(Guid idServico) : DomainException($"Item de serviço com id '{idServico}' não encontrado na ordem de serviço.")
+    {
+    }
+
+    /// <summary>
     /// Exceção lançada quando o nome do serviço já existe.
     /// </summary>
     public class ServicoNomeJaExisteException(string nome) : DomainException($"Já existe um serviço com o nome '{nome}'.")
@@ -87,6 +94,13 @@ namespace Fiap.TechChallenge.Domain.Exceptions
     /// Exceção lançada quando uma peça ou insumo não é encontrado.
     /// </summary>
     public class PecaInsumoNaoEncontradaException(Guid id) : DomainException($"Peça/Insumo com id '{id}' não encontrado.")
+    {
+    }
+
+    /// <summary>
+    /// Exceção lançada quando um item de peça/insumo não é encontrado na ordem de serviço.
+    /// </summary>
+    public class ItemPecaInsumoNaoEncontradoException(Guid idPecaInsumo) : DomainException($"Item de peça/insumo com id '{idPecaInsumo}' não encontrado na ordem de serviço.")
     {
     }
 

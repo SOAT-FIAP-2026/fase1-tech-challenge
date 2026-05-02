@@ -1,18 +1,12 @@
 namespace Fiap.TechChallenge.Application.DTOs.Responses
 {
-    public class OrdemServicoItemServicoResponse
+    public class OrdemServicoItemServicoResponse( Guid idServico, DateTime? dataHoraInicio, DateTime? dataHoraFim, string descricao, decimal valor)
     {
-        public Guid Id { get; set; }
-        public Guid IdServico { get; set; }
-        public DateTime? DataHoraInicio { get; set; }
-        public DateTime? DataHoraFim { get; set; }
-
-        public OrdemServicoItemServicoResponse(Guid id, Guid idServico, DateTime? dataHoraInicio, DateTime? dataHoraFim)
-        {
-            Id = id;
-            IdServico = idServico;
-            DataHoraInicio = dataHoraInicio;
-            DataHoraFim = dataHoraFim;
-        }
+        
+        public Guid IdServico { get; set; } = idServico;
+        public string Descricao { get; set; } = descricao;
+        public decimal Valor { get; set; } = valor;
+        public DateTime? DataHoraInicio { get; set; } = dataHoraInicio;
+        public DateTime? DataHoraFim { get; set; } = dataHoraFim;
     }
 }

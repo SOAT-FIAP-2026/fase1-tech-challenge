@@ -55,6 +55,26 @@ namespace Fiap.TechChallenge.Domain.Entities
             AtualizarTimestamp();
         }
 
+        public bool RemoverItemServico(Guid idServico)
+        {
+            int itensRemovidos = _itensServico.RemoveAll(item => item.IdServico == idServico);
+
+            if (itensRemovidos > 0)
+                AtualizarTimestamp();
+
+            return itensRemovidos > 0;
+        }
+
+        public bool RemoverItemPecaInsumo(Guid idPecaInsumo)
+        {
+            int itensRemovidos = _itensPecaInsumo.RemoveAll(item => item.IdPecaInsumo == idPecaInsumo);
+
+            if (itensRemovidos > 0)
+                AtualizarTimestamp();
+
+            return itensRemovidos > 0;
+        }
+
         public void SincronizarItens(IReadOnlyCollection<Servico> servicos, IReadOnlyCollection<PecaInsumo> pecasInsumo)
         {
             HashSet<Guid> servicosExistentes = _itensServico.Select(item => item.IdServico).ToHashSet();

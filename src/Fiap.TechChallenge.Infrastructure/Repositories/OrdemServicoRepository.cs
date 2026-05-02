@@ -15,15 +15,41 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
             await _context.OrdensServico.AddAsync(ordemServico);
             await _context.SaveChangesAsync();
         }
-
+//@todo  revisar
         public async Task Atualizar(OrdemServico ordemServico)
         {
-            // If the aggregate was not loaded by this DbContext (detached), attach it.
-            var entry = _context.Entry(ordemServico);
-
-            if (entry.State == EntityState.Detached)
+            bool autoDetectChangesOriginal = _context.ChangeTracker.AutoDetectChangesEnabled;
+            _context.ChangeTracker.AutoDetectChangesEnabled = false;
+            try
             {
-                _context.OrdensServico.Attach(ordemServico);
+                // If the aggregate was not loaded by this DbContext (detached), attach it.
+                if (!_context.OrdensServico.Local.Any(o => o.Id == ordemServico.Id))
+                {
+                    _context.OrdensServico.Attach(ordemServico);
+                }
+
+                // Remove child entities that were removed from the aggregate collections.
+                // This must happen before any query (AnyAsync), because EF will run change
+                // detection and fail on required relationships if dependents are only severed.
+                foreach (EntityEntry<ItemServico> trackedItem in _context.ChangeTracker.Entries<ItemServico>()
+                             .Where(e => e.Entity.IdOrdemServico == ordemServico.Id)
+                             .ToList())
+                {
+                    if (!ordemServico.ItensServico.Any(item => item.Id == trackedItem.Entity.Id))
+                        trackedItem.State = EntityState.Deleted;
+                }
+
+                foreach (EntityEntry<ItemPecaInsumo> trackedItem in _context.ChangeTracker.Entries<ItemPecaInsumo>()
+                             .Where(e => e.Entity.IdOrdemServico == ordemServico.Id)
+                             .ToList())
+                {
+                    if (!ordemServico.ItensPecaInsumo.Any(item => item.Id == trackedItem.Entity.Id))
+                        trackedItem.State = EntityState.Deleted;
+                }
+            }
+            finally
+            {
+                _context.ChangeTracker.AutoDetectChangesEnabled = autoDetectChangesOriginal;
             }
 
             // Ensure new child items are inserted. New Item entities are created with GUIDs,
@@ -77,7 +103,9 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
                 .Include(o => o.Status)
                 .Include(o => o.Orcamento)
                 .Include(o => o.ItensServico)
+                    .ThenInclude(item => item.Servico)
                 .Include(o => o.ItensPecaInsumo)
+                    .ThenInclude(item => item.PecaInsumo)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
@@ -89,7 +117,9 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
                 .Include(o => o.Status)
                 .Include(o => o.Orcamento)
                 .Include(o => o.ItensServico)
+                    .ThenInclude(item => item.Servico)
                 .Include(o => o.ItensPecaInsumo)
+                    .ThenInclude(item => item.PecaInsumo)
                 .OrderByDescending(o => o.DataAbertura)
                 .ToListAsync();
         }
