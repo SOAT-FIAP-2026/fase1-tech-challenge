@@ -12,6 +12,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         private readonly IOrdemServicoService _ordemServicoService = ordemServicoService;
 
         [HttpPost]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Criar(OrdemServicoRequest request)
         {
             Guid id = await _ordemServicoService.Criar(request);
@@ -23,6 +24,8 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPost("{id:guid}/itens")]
+        [Authorize(Roles = "Administrador")]
+
         public async Task<IActionResult> IncluirItens(Guid id, OrdemServicoItensRequest request)
         {
             var ordemServico = await _ordemServicoService.IncluirItens(id, request);
@@ -31,6 +34,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("{id:guid}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {
             var ordemServico = await _ordemServicoService.ObterPorId(id);

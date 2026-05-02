@@ -4,5 +4,5 @@
   <Project Path="src/Fiap.TechChallenge.Domain/Fiap.TechChallenge.Domain.csproj" Id="0c8496c2-c3b0-4949-8de5-f708a7649c9f" />
   <Project Path="src/Fiap.TechChallenge.External/Fiap.TechChallenge.External.csproj" Id="ec020808-549e-4698-848c-ce212b572451" />
   <Project Path="src/Fiap.TechChallenge.Infrastructure/Fiap.TechChallenge.Infrastructure.csproj" Id="c3eae5ff-123f-4838-ba80-550ebb7911bb" />
-  <Project Path="tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Domain.Tests.csproj" Id="2ddaa56f-b9cf-4357-b4f6-0a7d6dd30032" />
+  <Project Path="tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Tests.csproj" Id="2ddaa56f-b9cf-4357-b4f6-0a7d6dd30032" />
 </Solution>

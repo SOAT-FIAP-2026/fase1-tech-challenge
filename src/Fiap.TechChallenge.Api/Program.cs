@@ -10,7 +10,6 @@ startup.ConfigureServices(builder.Services);
 
 var app = builder.Build();
 
-// Apply migrations and seed automatically
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -21,3 +20,5 @@ using (var scope = app.Services.CreateScope())
 startup.Configure(app, app.Environment);
 
 app.Run();
+
+public partial class Program { }

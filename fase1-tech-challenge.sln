@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Fiap.TechChallenge.Tests", "Fiap.TechChallenge.Tests", "{79F45784-9005-5FE5-BAD7-8EDCB3CBBD3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.TechChallenge.Domain.Tests", "tests\Fiap.TechChallenge.Tests\Fiap.TechChallenge.Domain.Tests.csproj", "{E196DBDA-C140-7464-8469-0BE5CA27EF16}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.TechChallenge.Tests", "tests\Fiap.TechChallenge.Tests\Fiap.TechChallenge.Tests.csproj", "{E196DBDA-C140-7464-8469-0BE5CA27EF16}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.TechChallenge.Domain", "src\Fiap.TechChallenge.Domain\Fiap.TechChallenge.Domain.csproj", "{D9EE3072-22CA-6344-0C88-E42248CA90C3}"
 EndProject

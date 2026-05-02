@@ -1,5 +1,6 @@
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fiap.TechChallenge.Api.Controllers.V1
@@ -11,6 +12,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         private readonly IClienteService _clienteService = clienteService;
 
         [HttpPost]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Criar(ClienteRequest request)
         {
             Guid id = await _clienteService.Criar(request);
@@ -22,6 +24,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("{id:guid}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {
             var cliente = await _clienteService.ObterPorId(id);
@@ -30,6 +33,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> ObterTodos()
         {
             var clientes = await _clienteService.ObterTodos();
@@ -38,6 +42,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Atualizar(Guid id, ClienteRequest request)
         {
             var cliente = await _clienteService.Atualizar(id, request);
@@ -46,6 +51,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Deletar(Guid id)
         {
             await _clienteService.Deletar(id);

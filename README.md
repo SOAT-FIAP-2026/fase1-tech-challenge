@@ -16,6 +16,7 @@ A oficina mecânica enfrenta desafios operacionais significativos:
 
 **Solução:** Um sistema integrado que permite aos clientes acompanhar em tempo real o andamento do serviço, autorizar reparos adicionais via API e garantir uma gestão interna eficiente e segura.
 
+## ✅ Funcionalidades
 
 ### 1️⃣ Criação da Ordem de Serviço (OS)
 
@@ -60,60 +61,59 @@ A oficina mecânica enfrenta desafios operacionais significativos:
 
 O projeto está estruturado nas seguintes camadas, garantindo baixo acoplamento e alta coesão:
 
-*   **Domain (`Fiap.TechChallenge.Domain`)**: Contém as entidades (ex: `Usuario`), interfaces, enums, exceções e regras de negócio essenciais. É o núcleo do sistema e não possui dependências de outras camadas.
-*   **Application (`Fiap.TechChallenge.Application`)**: Contém os casos de uso da aplicação, DTOs e orquestra a lógica de negócio utilizando as entidades do domínio.
-*   **Infrastructure (`Fiap.TechChallenge.Infrastructure`)**: Implementação de acesso a dados, repositórios e outras preocupações de infraestrutura.
-*   **External (`Fiap.TechChallenge.External`)**: Camada designada para integrações com serviços e APIs de terceiros.
-*   **Api (`Fiap.TechChallenge.Api`)**: O ponto de entrada (Entrypoint) da aplicação. Contém os Controllers, Middlewares, configurações do Swagger e a configuração da injeção de dependência (Startup/Program).
-
+- **Domain (`Fiap.TechChallenge.Domain`)**: Contém as entidades, interfaces, enums, exceções e regras de negócio essenciais. É o núcleo do sistema e não possui dependências de outras camadas.
+- **Application (`Fiap.TechChallenge.Application`)**: Contém os casos de uso da aplicação, DTOs e orquestra a lógica de negócio utilizando as entidades do domínio.
+- **Infrastructure (`Fiap.TechChallenge.Infrastructure`)**: Implementação de acesso a dados, repositórios e outras preocupações de infraestrutura.
+- **External (`Fiap.TechChallenge.External`)**: Camada designada para integrações com serviços e APIs de terceiros.
+- **Api (`Fiap.TechChallenge.Api`)**: Ponto de entrada da aplicação. Contém os Controllers, Middlewares, configurações do Swagger e injeção de dependência.
 
 ## 🛠️ Stack
 
-*   **.NET 8** com C# 12
-*   **Clean Architecture** + **Domain-Driven Design (DDD)**
-*   **JWT** para autenticação
-*   **Swagger/OpenAPI** para documentação
-*   **Testes Unitários e de Integração**
-*   **Docker** e **docker-compose** para containerização
-*   **Banco de dados** Postgres
-*   **ReportGenerator** para análise de cobertura de testes
+- **.NET 8** com C# 12
+- **Clean Architecture** + **Domain-Driven Design (DDD)**
+- **xUnit** + **Moq** + **FluentAssertions** para testes
+- **coverlet** + **ReportGenerator** para cobertura de testes
+- **JWT** para autenticação
+- **Swagger/OpenAPI** para documentação
+- **PostgreSQL** como banco de dados
+- **Docker** e **docker-compose** para containerização
 
 ## 🚀 Como Executar o Projeto
 
 ### Pré-requisitos
-* [.NET 8 SDK](https://dotnet.microsoft.com/download)
-* [Docker](https://www.docker.com/products/docker-desktop) (opcional)
-* [Docker Compose](https://docs.docker.com/compose/install/) (opcional)
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- [Docker](https://www.docker.com/products/docker-desktop) e [Docker Compose](https://docs.docker.com/compose/install/) (opcional)
 
 ### Setup inicial (na raiz do repositório)
 
 ```bash
-dotnet restore
+dotnet restore fase1-tech-challenge.sln
 dotnet build fase1-tech-challenge.sln
 ```
 
-### Rodar API (modo normal)
+### Rodar a API
 
 ```bash
 dotnet run --project src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj
 ```
 
-### Rodar API com Hot Reload
+### Rodar a API com Hot Reload
 
 ```bash
+# Na raiz do repositório
 dotnet watch --project src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj run
-```
 
-Alternativa, se estiver dentro de src/Fiap.TechChallenge.Api:
-
-```bash
+# Ou, se já estiver dentro de src/Fiap.TechChallenge.Api/
 dotnet watch run
 ```
 
 ### Endpoints locais
 
-* Swagger UI: https://localhost:5001/swagger (ou porta definida no launchSettings)
-* HTTP local: http://localhost:5000
+| Serviço | URL |
+|---|---|
+| Swagger UI | https://localhost:5001/swagger |
+| HTTP | http://localhost:5000 |
 
 ### Execução com Docker Compose
 
@@ -121,13 +121,17 @@ dotnet watch run
 docker compose up -d --build
 ```
 
-Se seu ambiente ainda usar o comando legado:
-
-```bash
-docker-compose up -d --build
-```
+> Se seu ambiente ainda usar o comando legado: `docker-compose up -d --build`
 
 ## 🧪 Testes e Cobertura
+
+O projeto usa **xUnit** como framework de testes e **coverlet** para coleta de cobertura. O `reportgenerator` está configurado como ferramenta local via `dotnet-tools.json`.
+
+### Pré-requisito: restaurar ferramentas locais
+
+```bash
+dotnet tool restore
+```
 
 ### Rodar todos os testes da solução
 
@@ -138,35 +142,38 @@ dotnet test fase1-tech-challenge.sln
 ### Rodar apenas o projeto de testes
 
 ```bash
-dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Domain.Tests.csproj
+dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Tests.csproj
 ```
 
-### Rodar teste por filtro
+### Rodar testes por filtro (nome ou trait)
 
 ```bash
-dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Domain.Tests.csproj --filter "NomeDoTeste"
+dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Tests.csproj --filter "NomeDoTeste"
 ```
 
-### Coleta de cobertura
+### Coletar cobertura e gerar relatório HTML
+
+Execute os comandos abaixo na raiz do repositório:
 
 ```bash
-dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Domain.Tests.csproj --collect:"XPlat Code Coverage"
+# 1. Restaurar ferramentas locais (necessário apenas na primeira vez)
+dotnet tool restore
+
+# 2. Rodar os testes coletando a cobertura
+dotnet test fase1-tech-challenge.sln --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+# 3. Gerar o relatório HTML
+dotnet reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html;HtmlSummary"
 ```
 
-### Gerar relatório HTML de cobertura
+Abra `TestResults/CoverageReport/index.html` no navegador para visualizar o relatório.
 
-```bash
-dotnet tool install -g dotnet-reportgenerator-globaltool
-reportgenerator -reports:"tests/**/coverage.cobertura.xml" -targetdir:"coveragereport" -reporttypes:Html
-```
-
-Abra o arquivo coveragereport/index.html no navegador.
-
+> 💡 Este mesmo fluxo é executado automaticamente pelo pipeline de CI a cada push na branch `main`.
 
 ## 📁 Estrutura do Projeto
 
 ```
-Fiap.TechChallenge/
+fase1-tech-challenge/
 ├── src/
 │   ├── Fiap.TechChallenge.Domain/          # Camada de Domínio (DDD)
 │   ├── Fiap.TechChallenge.Application/     # Camada de Aplicação
@@ -174,12 +181,13 @@ Fiap.TechChallenge/
 │   ├── Fiap.TechChallenge.External/        # Camada de Integrações Externas
 │   └── Fiap.TechChallenge.Api/             # Camada de API (Controllers, Swagger)
 ├── tests/
-│   └── Fiap.TechChallenge.Domain.Tests/    # Testes Unitários e de Integração
-├── Dockerfile                               # Configuração para build do container
-├── docker-compose.yml                       # Orquestração de containers
-└── README.md                                # Este arquivo
+│   └── Fiap.TechChallenge.Tests/           # Testes Unitários e de Integração
+├── .github/workflows/ci.yml                # Pipeline de CI (GitHub Actions)
+├── Dockerfile                              # Configuração para build do container
+├── docker-compose.yml                      # Orquestração de containers
+├── dotnet-tools.json                       # Ferramentas locais do projeto
+└── README.md                               # Este arquivo
 ```
-
 
 ## 🚀 Entregáveis da Fase 1
 
@@ -192,9 +200,9 @@ Fiap.TechChallenge/
 - ⏳ Vídeo de demonstração (até 15 minutos)
 - ⏳ Documentação DDD (Miro)
 
-## 📖 Como Usar a API
+## 📖 Exemplos de Uso da API
 
-### Exemplo 1: Cadastro e Login
+### Cadastro e Login
 
 ```bash
 # Cadastrar novo usuário
@@ -206,7 +214,7 @@ curl -X POST http://localhost:5000/api/v1/autenticacao/cadastrar \
     "senha": "SenhaSegura123!"
   }'
 
-# Fazer login
+# Fazer login e obter o JWT
 curl -X POST http://localhost:5000/api/v1/autenticacao/login \
   -H "Content-Type: application/json" \
   -d '{
@@ -215,7 +223,7 @@ curl -X POST http://localhost:5000/api/v1/autenticacao/login \
   }'
 ```
 
-### Exemplo 2: Criar Ordem de Serviço
+### Criar Ordem de Serviço
 
 ```bash
 curl -X POST http://localhost:5000/api/v1/ordens-servico \
