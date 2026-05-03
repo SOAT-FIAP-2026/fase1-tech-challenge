@@ -84,6 +84,13 @@ namespace Fiap.TechChallenge.Domain.Exceptions
     }
 
     /// <summary>
+    /// Exceção lançada quando a placa do veículo já existe.
+    /// </summary>
+    public class VeiculoPlacaJaExisteException(string placa) : DomainException($"Já existe um veículo com a placa '{placa}'.")
+    {
+    }
+
+    /// <summary>
     /// Exceção lançada quando um status de ordem de serviço não é encontrado.
     /// </summary>
     public class StatusOrdemServicoNaoEncontradoException(string descricao) : DomainException($"Status de ordem de serviço '{descricao}' não encontrado.")

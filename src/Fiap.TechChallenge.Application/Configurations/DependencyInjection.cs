@@ -14,6 +14,7 @@ namespace Fiap.TechChallenge.Application.Configurations
             services.AddScoped<IOrdemServicoService, OrdemServicoService>();
             services.AddScoped<IPecaInsumoService, PecaInsumoService>();
             services.AddScoped<IEstoqueService, EstoqueService>();
+            services.AddScoped<IVeiculoService, VeiculoService>();
 
             return services;
         }
