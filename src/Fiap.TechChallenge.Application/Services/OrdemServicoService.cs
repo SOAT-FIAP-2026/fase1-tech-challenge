@@ -72,6 +72,24 @@ namespace Fiap.TechChallenge.Application.Services
             return ToResponse(ordemServico);
         }
 
+        public async Task<OrdemServicoResponse> FinalizarDiagnostico(Guid id)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            StatusOrdemServico statusEmDiagnostico = await GarantirStatusEmDiagnosticoExiste();
+
+            if (ordemServico.IdStatus != statusEmDiagnostico.Id)
+                throw new InvalidOperationException("A ordem de serviço precisa estar no status Em Diagnóstico para finalizar o diagnóstico.");
+
+            StatusOrdemServico statusAguardandoAprovacao = await GarantirStatusAguardandoAprovacaoExiste();
+
+            ordemServico.AlterarStatus(statusAguardandoAprovacao);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+
+            return ToResponse(ordemServico);
+        }
+
         public async Task<OrdemServicoResponse> IncluirItens(Guid id, OrdemServicoItensRequest request)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
@@ -151,6 +169,12 @@ namespace Fiap.TechChallenge.Application.Services
         private async Task<StatusOrdemServico> GarantirStatusEmDiagnosticoExiste()
         {
             StatusOrdemServico? status = await _statusRepository.ObterPorCodigo(new CodigoVO(StatusOS.EmDiagnostico.Codigo)) ?? throw new StatusOrdemServicoNaoEncontradoException(StatusOS.EmDiagnostico.Codigo);
+            return status;
+        }
+
+        private async Task<StatusOrdemServico> GarantirStatusAguardandoAprovacaoExiste()
+        {
+            StatusOrdemServico? status = await _statusRepository.ObterPorCodigo(new CodigoVO(StatusOS.AguardandoAprovacao.Codigo)) ?? throw new StatusOrdemServicoNaoEncontradoException(StatusOS.AguardandoAprovacao.Codigo);
             return status;
         }
 
