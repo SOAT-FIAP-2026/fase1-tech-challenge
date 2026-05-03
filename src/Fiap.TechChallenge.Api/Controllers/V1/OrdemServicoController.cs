@@ -21,10 +21,19 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             });
         }
 
-        [HttpPost("{id:guid}/itens")]
-        public async Task<IActionResult> IncluirItens(Guid id, OrdemServicoItensRequest request)
+        [HttpPost("{id:guid}/servicos")]
+        public async Task<IActionResult> IncluirServico(Guid id, OrdemServicoServicosRequest request)
         {
-            var ordemServico = await _ordemServicoService.IncluirItens(id, request);
+            var ordemServico = await _ordemServicoService.IncluirServico(id, request);
+
+            return Ok(ordemServico);
+        }
+
+
+        [HttpPost("{id:guid}/pecas-insumos")]
+        public async Task<IActionResult> IncluirPecaInsumo(Guid id, OrdemServicoPecaInsumoRequest request)
+        {
+            var ordemServico = await _ordemServicoService.IncluirPecaInsumo(id, request);
 
             return Ok(ordemServico);
         }
@@ -45,7 +54,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
-        [HttpDelete("{id:guid}/itens/servicos/{idServico:guid}")]
+        [HttpDelete("{id:guid}/servicos/{idServico:guid}")]
         public async Task<IActionResult> RemoverItemServico(Guid id, Guid idServico)
         {
             await _ordemServicoService.RemoverItemServico(id, idServico);
@@ -53,7 +62,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return NoContent();
         }
 
-        [HttpDelete("{id:guid}/itens/pecas-insumos/{idPecaInsumo:guid}")]
+        [HttpDelete("{id:guid}/pecas-insumos/{idPecaInsumo:guid}")]
         public async Task<IActionResult> RemoverItemPecaInsumo(Guid id, Guid idPecaInsumo)
         {
             await _ordemServicoService.RemoverItemPecaInsumo(id, idPecaInsumo);

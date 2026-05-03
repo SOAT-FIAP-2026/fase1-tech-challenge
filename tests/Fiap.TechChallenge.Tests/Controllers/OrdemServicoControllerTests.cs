@@ -42,24 +42,44 @@ namespace Fiap.TechChallenge.Tests.Controllers
         }
 
         [Fact]
-        public async Task IncluirItens_DeveRetornar200ComOrdemAtualizada()
+        public async Task IncluirItemServico_DeveRetornar200ComOrdemAtualizada()
         {
             Guid id = Guid.NewGuid();
-            var request = new OrdemServicoItensRequest
+            var request = new OrdemServicoServicosRequest
             {
                 ServicosIds = [Guid.NewGuid()],
-                PecasInsumoIds = [Guid.NewGuid()]
+                
             };
             var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(),Guid.NewGuid(),"Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 205m, [], []);
 
-            _serviceMock.Setup(s => s.IncluirItens(id, request)).ReturnsAsync(response);
+            _serviceMock.Setup(s => s.IncluirServico(id, request)).ReturnsAsync(response);
 
-            IActionResult result = await _controller.IncluirItens(id, request);
+            IActionResult result = await _controller.IncluirServico(id, request);
 
             var ok = Assert.IsType<OkObjectResult>(result);
             var retorno = Assert.IsType<OrdemServicoResponse>(ok.Value);
             Assert.Equal(205m, retorno.ValorTotal);
         }
+
+        [Fact]
+        public async Task IncluirPecaInsumo_DeveRetornar200ComOrdemAtualizada()
+        {
+            Guid id = Guid.NewGuid();
+            var request = new OrdemServicoPecaInsumoRequest
+            {
+                PecasInsumosIds = [Guid.NewGuid()]   
+            };
+            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(),Guid.NewGuid(),"Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 205m, [], []);
+
+            _serviceMock.Setup(s => s.IncluirPecaInsumo(id, request)).ReturnsAsync(response);
+
+            IActionResult result = await _controller.IncluirPecaInsumo(id, request);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var retorno = Assert.IsType<OrdemServicoResponse>(ok.Value);
+            Assert.Equal(205m, retorno.ValorTotal);
+        }
+
 
         [Fact]
         public async Task IniciarDiagnostico_DeveRetornar200ComOrdemAtualizada()

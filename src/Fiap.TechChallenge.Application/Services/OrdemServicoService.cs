@@ -90,26 +90,39 @@ namespace Fiap.TechChallenge.Application.Services
             return ToResponse(ordemServico);
         }
 
-        public async Task<OrdemServicoResponse> IncluirItens(Guid id, OrdemServicoItensRequest request)
+
+        public async Task<OrdemServicoResponse> IncluirServico(Guid id, OrdemServicoServicosRequest request)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
 
             IReadOnlyCollection<Guid> servicosIds = [.. ordemServico.ItensServico.Select(item => item.IdServico).Concat(request.ServicosIds).Distinct()];
-            IReadOnlyCollection<Guid> pecasIds = [.. ordemServico.ItensPecaInsumo.Select(item => item.IdPecaInsumo).Concat(request.PecasInsumoIds).Distinct()];
 
             IReadOnlyCollection<Servico> servicos = await _servicoRepository.ObterPorIds(servicosIds);
             ValidarEntidadesEncontradas(servicosIds, servicos.Select(s => s.Id), idServico => new ServicoNaoEncontradoException(idServico));
 
+            ordemServico.SincronizarItens(servicos, [.. ordemServico.ItensPecaInsumo.Select(item => item.PecaInsumo).Where(p => p != null).Select(p => p!)]);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+
+            return ToResponse(ordemServico);
+
+        }
+
+        public async Task<OrdemServicoResponse> IncluirPecaInsumo(Guid id, OrdemServicoPecaInsumoRequest request)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            IReadOnlyCollection<Guid> pecasIds = [.. ordemServico.ItensPecaInsumo.Select(item => item.IdPecaInsumo).Concat(request.PecasInsumosIds).Distinct()];
             IReadOnlyCollection<PecaInsumo> pecas = await _pecaInsumoRepository.ObterPorIds(pecasIds);
             ValidarEntidadesEncontradas(pecasIds, pecas.Select(p => p.Id), idPeca => new PecaInsumoNaoEncontradaException(idPeca));
 
-            ordemServico.SincronizarItens(servicos, pecas);
+            ordemServico.SincronizarItens([.. ordemServico.ItensServico.Select(item => item.Servico).Where(s => s != null).Select(s => s!)], pecas);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
 
             return ToResponse(ordemServico);
         }
-
+        
         public async Task RemoverItemServico(Guid id, Guid idServico)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);

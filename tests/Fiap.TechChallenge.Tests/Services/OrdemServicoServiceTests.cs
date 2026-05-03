@@ -149,18 +149,23 @@ namespace Fiap.TechChallenge.Domain.Tests.Services
                 .Callback<OrdemServico>(ordem => captured = ordem)
                 .Returns(Task.CompletedTask);
 
-            OrdemServicoResponse response = await _service.IncluirItens(ordemServico.Id, new OrdemServicoItensRequest
+            OrdemServicoResponse response = await _service.IncluirServico(ordemServico.Id, new OrdemServicoServicosRequest
             {
                 ServicosIds = [servicoNovo.Id],
-                PecasInsumoIds = [pecaNova.Id]
+            });
+
+            OrdemServicoResponse responsePeca = await _service.IncluirPecaInsumo(ordemServico.Id, new OrdemServicoPecaInsumoRequest
+            {
+                PecasInsumosIds = [pecaNova.Id]
             });
 
             Assert.NotNull(captured);
             Assert.Equal(2, captured!.ItensServico.Count);
             Assert.Equal(2, captured.ItensPecaInsumo.Count);
-            Assert.Equal(205m, captured.Orcamento!.ValorTotal.Valor);
-            Assert.Equal(205m, response.ValorTotal);
-            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Once);
+            Assert.Equal(55, captured.Orcamento!.ValorTotal.Valor);
+            Assert.Equal(150, response.ValorTotal);
+            
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Exactly(2));
         }
 
         [Fact]
