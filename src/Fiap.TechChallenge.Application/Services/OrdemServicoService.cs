@@ -1,9 +1,11 @@
+using System.ComponentModel;
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.DTOs.Responses;
 using Fiap.TechChallenge.Application.Interfaces;
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
+using Fiap.TechChallenge.Domain.ValueObjects;
 
 namespace Fiap.TechChallenge.Application.Services
 {
@@ -19,6 +21,7 @@ namespace Fiap.TechChallenge.Application.Services
         private readonly IServicoRepository _servicoRepository;
         private readonly IPecaInsumoRepository _pecaInsumoRepository;
         private readonly IOrdemServicoRepository _ordemServicoRepository;
+
 
         public OrdemServicoService(
             IClienteRepository clienteRepository,
@@ -54,26 +57,75 @@ namespace Fiap.TechChallenge.Application.Services
             return ordemServico.Id;
         }
 
-        public async Task<OrdemServicoResponse> IncluirItens(Guid id, OrdemServicoItensRequest request)
+        public async Task<OrdemServicoResponse> IniciarDiagnostico(Guid id)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
 
-            IReadOnlyCollection<Guid> servicosIds = [.. ordemServico.ItensServico.Select(item => item.IdServico).Concat(request.ServicosIds).Distinct()];
-            IReadOnlyCollection<Guid> pecasIds = [.. ordemServico.ItensPecaInsumo.Select(item => item.IdPecaInsumo).Concat(request.PecasInsumoIds).Distinct()];
+            StatusOrdemServico statusRecebida = await GarantirStatusInicialExiste();
 
-            IReadOnlyCollection<Servico> servicos = await _servicoRepository.ObterPorIds(servicosIds);
-            ValidarEntidadesEncontradas(servicosIds, servicos.Select(s => s.Id), idServico => new ServicoNaoEncontradoException(idServico));
+            if (ordemServico.IdStatus != statusRecebida.Id)
+                throw new InvalidOperationException("A ordem de serviço precisa estar no status Recebida para iniciar o diagnóstico.");
 
-            IReadOnlyCollection<PecaInsumo> pecas = await _pecaInsumoRepository.ObterPorIds(pecasIds);
-            ValidarEntidadesEncontradas(pecasIds, pecas.Select(p => p.Id), idPeca => new PecaInsumoNaoEncontradaException(idPeca));
+            StatusOrdemServico statusEmDiagnostico = await GarantirStatusEmDiagnosticoExiste();
 
-            ordemServico.SincronizarItens(servicos, pecas);
+            ordemServico.AlterarStatus(statusEmDiagnostico);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
 
             return ToResponse(ordemServico);
         }
 
+        public async Task<OrdemServicoResponse> FinalizarDiagnostico(Guid id)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            StatusOrdemServico statusEmDiagnostico = await GarantirStatusEmDiagnosticoExiste();
+
+            if (ordemServico.IdStatus != statusEmDiagnostico.Id)
+                throw new InvalidOperationException("A ordem de serviço precisa estar no status Em Diagnóstico para finalizar o diagnóstico.");
+
+            StatusOrdemServico statusAguardandoAprovacao = await GarantirStatusAguardandoAprovacaoExiste();
+
+            ordemServico.AlterarStatus(statusAguardandoAprovacao);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+
+            return ToResponse(ordemServico);
+        }
+
+
+        public async Task<OrdemServicoResponse> IncluirServico(Guid id, OrdemServicoServicosRequest request)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            IReadOnlyCollection<Guid> servicosIds = [.. ordemServico.ItensServico.Select(item => item.IdServico).Concat(request.ServicosIds).Distinct()];
+
+            IReadOnlyCollection<Servico> servicos = await _servicoRepository.ObterPorIds(servicosIds);
+            ValidarEntidadesEncontradas(servicosIds, servicos.Select(s => s.Id), idServico => new ServicoNaoEncontradoException(idServico));
+
+            ordemServico.SincronizarItens(servicos, [.. ordemServico.ItensPecaInsumo.Select(item => item.PecaInsumo).Where(p => p != null).Select(p => p!)]);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+
+            return ToResponse(ordemServico);
+
+        }
+
+        public async Task<OrdemServicoResponse> IncluirPecaInsumo(Guid id, OrdemServicoPecaInsumoRequest request)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            IReadOnlyCollection<Guid> pecasIds = [.. ordemServico.ItensPecaInsumo.Select(item => item.IdPecaInsumo).Concat(request.PecasInsumosIds).Distinct()];
+            IReadOnlyCollection<PecaInsumo> pecas = await _pecaInsumoRepository.ObterPorIds(pecasIds);
+            ValidarEntidadesEncontradas(pecasIds, pecas.Select(p => p.Id), idPeca => new PecaInsumoNaoEncontradaException(idPeca));
+
+            ordemServico.SincronizarItens([.. ordemServico.ItensServico.Select(item => item.Servico).Where(s => s != null).Select(s => s!)], pecas);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+
+            return ToResponse(ordemServico);
+        }
+        
         public async Task RemoverItemServico(Guid id, Guid idServico)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
@@ -157,16 +209,23 @@ namespace Fiap.TechChallenge.Application.Services
 
         private async Task<StatusOrdemServico> GarantirStatusInicialExiste()
         {
-            return await GarantirStatusExiste(StatusInicialDescricao);
-        }
-
-        private async Task<StatusOrdemServico> GarantirStatusExiste(string descricao)
-        {
-            StatusOrdemServico? status = await _statusRepository.ObterPorDescricao(descricao);
+            StatusOrdemServico? status = await _statusRepository.ObterPorCodigo(new CodigoVO(StatusOS.Recebida.Codigo));
 
             if (status == null)
-                throw new StatusOrdemServicoNaoEncontradoException(descricao);
+                throw new StatusOrdemServicoNaoEncontradoException(StatusOS.Recebida.Codigo);
 
+            return status;
+        }
+
+        private async Task<StatusOrdemServico> GarantirStatusEmDiagnosticoExiste()
+        {
+            StatusOrdemServico? status = await _statusRepository.ObterPorCodigo(new CodigoVO(StatusOS.EmDiagnostico.Codigo)) ?? throw new StatusOrdemServicoNaoEncontradoException(StatusOS.EmDiagnostico.Codigo);
+            return status;
+        }
+
+        private async Task<StatusOrdemServico> GarantirStatusAguardandoAprovacaoExiste()
+        {
+            StatusOrdemServico? status = await _statusRepository.ObterPorCodigo(new CodigoVO(StatusOS.AguardandoAprovacao.Codigo)) ?? throw new StatusOrdemServicoNaoEncontradoException(StatusOS.AguardandoAprovacao.Codigo);
             return status;
         }
 
@@ -186,11 +245,7 @@ namespace Fiap.TechChallenge.Application.Services
 
         private async Task<OrdemServico> ObterEntidadePorId(Guid id)
         {
-            OrdemServico? ordemServico = await _ordemServicoRepository.ObterPorId(id);
-
-            if (ordemServico == null)
-                throw new OrdemServicoNaoEncontradaException(id);
-
+            OrdemServico? ordemServico = await _ordemServicoRepository.ObterPorId(id) ?? throw new OrdemServicoNaoEncontradaException(id);
             return ordemServico;
         }
 

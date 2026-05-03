@@ -68,25 +68,25 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
         {
             if (context.StatusOrdensServico.Any()) return;
 
-            var recebida = new StatusOrdemServico("Recebida");
+            var recebida = new StatusOrdemServico("Recebida","RECEBIDA");
             context.Entry(recebida).Property(s => s.Id).CurrentValue = StatusRecebidaId;
 
-            var emDiagnostico = new StatusOrdemServico("Em Diagnóstico");
+            var emDiagnostico = new StatusOrdemServico("Em Diagnóstico","EM_DIAGNOSTICO");
             context.Entry(emDiagnostico).Property(s => s.Id).CurrentValue = StatusEmDiagnosticoId;
 
-            var aguardandoAprovacao = new StatusOrdemServico("Aguardando aprovação");
+            var aguardandoAprovacao = new StatusOrdemServico("Aguardando aprovação","AGUARDANDO_APROVACAO");
             context.Entry(aguardandoAprovacao).Property(s => s.Id).CurrentValue = StatusEmAguardandoAprovacaoId;
 
-            var emExecucao = new StatusOrdemServico("Em Execução");
+            var emExecucao = new StatusOrdemServico("Em Execução","EM_EXECUCAO");
             context.Entry(emExecucao).Property(s => s.Id).CurrentValue = StatusEmExecucaoId;
 
-            var finalizada = new StatusOrdemServico("Finalizada");
+            var finalizada = new StatusOrdemServico("Finalizada","FINALIZADA");
             context.Entry(finalizada).Property(s => s.Id).CurrentValue = StatusFinalizadaId;
 
-            var entregue = new StatusOrdemServico("Entregue");
+            var entregue = new StatusOrdemServico("Entregue","ENTREGUE");
             context.Entry(entregue).Property(s => s.Id).CurrentValue = StatusEntregueId;
 
-            var cancelada = new StatusOrdemServico("Cancelada");
+            var cancelada = new StatusOrdemServico("Cancelada","CANCELADA");
             context.Entry(cancelada).Property(s => s.Id).CurrentValue = StatusCanceladaId;
             
 

@@ -37,6 +37,13 @@ namespace Fiap.TechChallenge.Domain.Entities
             AtualizarTimestamp();
         }
 
+        public void AlterarStatus(StatusOrdemServico status)
+        {
+            IdStatus = status.Id;
+            Status = status;
+            AtualizarTimestamp();
+        }
+
         public void Concluir()
         {
             DataConclusao = DateTime.UtcNow;
