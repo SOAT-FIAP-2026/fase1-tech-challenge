@@ -23,15 +23,10 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             });
         }
 
-<<<<<<< HEAD
-        [HttpPost("{id:guid}/servicos")]
-        public async Task<IActionResult> IncluirServico(Guid id, OrdemServicoServicosRequest request)
-=======
         [HttpPost("{id:guid}/itens")]
         [Authorize(Roles = "Administrador")]
 
         public async Task<IActionResult> IncluirItens(Guid id, OrdemServicoItensRequest request)
->>>>>>> feat/validacao_token
         {
             var ordemServico = await _ordemServicoService.IncluirServico(id, request);
 
