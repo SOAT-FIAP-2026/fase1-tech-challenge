@@ -170,6 +170,27 @@ Abra `TestResults/CoverageReport/index.html` no navegador para visualizar o rela
 
 > 💡 Este mesmo fluxo é executado automaticamente pelo pipeline de CI a cada push na branch `main`.
 
+### Como medir a qualidade dos testes
+
+Use tres sinais em conjunto:
+
+- **Resultado da suite**: `dotnet test fase1-tech-challenge.sln`
+- **Cobertura de linhas/branches**: relatorio Cobertura + ReportGenerator
+- **Cobertura E2E**: testes no namespace `Fiap.TechChallenge.Tests.Api.EndToEnd`, que sobem a API com `WebApplicationFactory`, passam por HTTP real, middleware, JWT, DI, EF Core e seed de dados
+
+Para gerar um resumo rapido em terminal, execute:
+
+```bash
+dotnet test fase1-tech-challenge.sln --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+dotnet reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html;TextSummary"
+```
+
+Os numeros principais ficam no final da saida do ReportGenerator e no arquivo `TestResults/CoverageReport/Summary.txt`. Para evoluir a base, acompanhe principalmente:
+
+- **Line coverage**: percentual de linhas exercitadas
+- **Branch coverage**: percentual de decisoes exercitadas
+- **Cenarios E2E criticos**: autenticar, autorizar, criar/consultar dados, fluxo de ordem de servico e erros esperados
+
 ## 📁 Estrutura do Projeto
 
 ```

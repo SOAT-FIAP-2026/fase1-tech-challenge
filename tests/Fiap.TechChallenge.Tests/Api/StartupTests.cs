@@ -1,18 +1,17 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Hosting;
 using Xunit;
 using Fiap.TechChallenge.Application.Interfaces;
-using Microsoft.AspNetCore.Mvc.Testing;
+using Fiap.TechChallenge.Tests.Api.Support;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Fiap.TechChallenge.Tests.Api
 {
-    public class StartupTests : IClassFixture<WebApplicationFactory<Program>>
+    public class StartupTests : IClassFixture<ApiWebApplicationFactory>
     {
-        private readonly WebApplicationFactory<Program> _factory;
+        private readonly ApiWebApplicationFactory _factory;
 
-        public StartupTests(WebApplicationFactory<Program> factory)
+        public StartupTests(ApiWebApplicationFactory factory)
         {
             _factory = factory;
         }
