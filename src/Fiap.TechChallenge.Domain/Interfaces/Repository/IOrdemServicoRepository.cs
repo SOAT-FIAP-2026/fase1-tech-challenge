@@ -8,5 +8,6 @@ namespace Fiap.TechChallenge.Domain.Interfaces.Repository
         Task Atualizar(OrdemServico ordemServico);
         Task<OrdemServico?> ObterPorId(Guid id);
         Task<IReadOnlyCollection<OrdemServico>> ObterTodos();
+        Task<IReadOnlyCollection<ItemServico>> ObterItensServicoFinalizados();
     }
 }

@@ -23,6 +23,7 @@ bld/
 *.user
 *.userosscache
 *.sln.docstates
+docs/*
 
 # Visual Studio Code
 .vscode/

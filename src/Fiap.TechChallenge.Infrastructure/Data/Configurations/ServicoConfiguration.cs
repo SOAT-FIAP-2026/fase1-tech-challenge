@@ -33,6 +33,11 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Configurations
                 .HasColumnType("decimal(10,2)")
                 .IsRequired();
 
+            builder.Property(s => s.TempoEstimadoMinutos)
+                .HasColumnName("tempo_estimado_minutos")
+                .HasDefaultValue(60)
+                .IsRequired();
+
             builder.Property(s => s.CriadoEm).HasColumnName("criado_em").IsRequired();
             builder.Property(s => s.AtualizadoEm).HasColumnName("atualizado_em").IsRequired();
             builder.Property(s => s.ApagadoEm).HasColumnName("apagado_em");

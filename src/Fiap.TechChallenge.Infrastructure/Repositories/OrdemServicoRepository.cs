@@ -65,7 +65,7 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
                 }
                 else
                 {
-                    _context.Entry(item).State = EntityState.Unchanged;
+                    _context.Entry(item).State = EntityState.Modified;
                 }
             }
 
@@ -121,6 +121,15 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
                 .Include(o => o.ItensPecaInsumo)
                     .ThenInclude(item => item.PecaInsumo)
                 .OrderByDescending(o => o.DataAbertura)
+                .ToListAsync();
+        }
+
+        public async Task<IReadOnlyCollection<ItemServico>> ObterItensServicoFinalizados()
+        {
+            return await _context.ItensServico
+                .AsNoTracking()
+                .Include(item => item.Servico)
+                .Where(item => item.DataHoraInicio != null && item.DataHoraFim != null)
                 .ToListAsync();
         }
     }
