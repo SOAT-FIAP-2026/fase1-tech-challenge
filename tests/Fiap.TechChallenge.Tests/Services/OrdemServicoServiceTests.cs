@@ -4,6 +4,7 @@ using Fiap.TechChallenge.Application.Services;
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
+using Fiap.TechChallenge.Domain.ValueObjects;
 using Moq;
 
 namespace Fiap.TechChallenge.Domain.Tests.Services
@@ -35,7 +36,7 @@ namespace Fiap.TechChallenge.Domain.Tests.Services
             Guid clienteId = Guid.NewGuid();
             Guid veiculoId = Guid.NewGuid();
 
-            var status = new StatusOrdemServico("Recebida");
+            var status = new StatusOrdemServico("Recebida","RECEBIDA");
             var servico1 = new Servico("Troca de Oleo", "Troca completa", 100m);
             var servico2 = new Servico("Alinhamento", "Alinhamento dianteiro", 50m);
             var peca1 = new PecaInsumo("Filtro de Ar", 25m);
@@ -51,7 +52,7 @@ namespace Fiap.TechChallenge.Domain.Tests.Services
 
             _clienteRepositoryMock.Setup(r => r.ObterPorId(clienteId)).ReturnsAsync(new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999"));
             _veiculoRepositoryMock.Setup(r => r.ObterPorId(veiculoId)).ReturnsAsync(new Veiculo("ABC1D23", "Fiat", "Argo", 2024));
-            _statusRepositoryMock.Setup(r => r.ObterPorDescricao("Recebida")).ReturnsAsync(status);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("RECEBIDA"))).ReturnsAsync(status);
             _servicoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([servico1, servico2]);
             _pecaInsumoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([peca1]);
 
@@ -73,6 +74,42 @@ namespace Fiap.TechChallenge.Domain.Tests.Services
             Assert.NotNull(captured.Orcamento);
             Assert.Equal(175m, captured.Orcamento!.ValorTotal.Valor);
             _ordemServicoRepositoryMock.Verify(r => r.Adicionar(It.IsAny<OrdemServico>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task IniciarDiagnostico_QuandoOrdemEstaRecebida_DeveAlterarStatusParaEmDiagnostico()
+        {
+            var statusRecebida = new StatusOrdemServico("Recebida","RECEBIDA");
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), statusRecebida.Id, "Teste");
+            var statusEmDiagnostico = new StatusOrdemServico("Em Diagnóstico","EM_DIAGNOSTICO");
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("RECEBIDA"))).ReturnsAsync(statusRecebida);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("EM_DIAGNOSTICO"))).ReturnsAsync(statusEmDiagnostico);
+
+            OrdemServico? captured = null;
+            _ordemServicoRepositoryMock
+                .Setup(r => r.Atualizar(It.IsAny<OrdemServico>()))
+                .Callback<OrdemServico>(ordem => captured = ordem)
+                .Returns(Task.CompletedTask);
+
+            OrdemServicoResponse response = await _service.IniciarDiagnostico(ordemServico.Id);
+
+            Assert.NotNull(captured);
+            Assert.Equal(statusEmDiagnostico.Id, captured!.IdStatus);
+            Assert.Equal("Em Diagnóstico", response.StatusDescricao);
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task IniciarDiagnostico_QuandoOrdemNaoEstaRecebida_DeveLancarExcecao()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("RECEBIDA"))).ReturnsAsync(new StatusOrdemServico("Recebida", "RECEBIDA"));
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.IniciarDiagnostico(ordemServico.Id));
         }
 
         [Fact]

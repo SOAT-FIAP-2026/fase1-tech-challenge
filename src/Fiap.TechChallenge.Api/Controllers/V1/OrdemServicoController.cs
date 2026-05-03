@@ -29,6 +29,14 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
+        [HttpPost("{id:guid}/iniciar-diagnostico")]
+        public async Task<IActionResult> IniciarDiagnostico(Guid id)
+        {
+            var ordemServico = await _ordemServicoService.IniciarDiagnostico(id);
+
+            return Ok(ordemServico);
+        }
+
         [HttpDelete("{id:guid}/itens/servicos/{idServico:guid}")]
         public async Task<IActionResult> RemoverItemServico(Guid id, Guid idServico)
         {

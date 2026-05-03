@@ -81,6 +81,36 @@ namespace Fiap.TechChallenge.Tests.Controllers
         }
 
         [Fact]
+        public async Task ObterPorCpfCnpj_DeveRetornarOk()
+        {
+            string cpfCnpj = "529.982.247-25";
+            var response = new ClienteResponse(Guid.NewGuid(), "Joao Silva", "52998224725", "joao@email.com", "11999999999");
+
+            _clienteServiceMock
+                .Setup(s => s.ObterPorCpfCnpj(cpfCnpj))
+                .ReturnsAsync(response);
+
+            IActionResult result = await _controller.ObterPorCpfCnpj(cpfCnpj);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(response, ok.Value);
+        }
+
+        [Fact]
+        public async Task ObterPorCpfCnpj_QuandoNaoEncontrado_DeveRetornarNotFound()
+        {
+            string cpfCnpj = "52998224725";
+
+            _clienteServiceMock
+                .Setup(s => s.ObterPorCpfCnpj(cpfCnpj))
+                .ReturnsAsync((ClienteResponse?)null);
+
+            IActionResult result = await _controller.ObterPorCpfCnpj(cpfCnpj);
+
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
         public async Task Atualizar_DeveRetornarOk()
         {
             Guid id = Guid.NewGuid();

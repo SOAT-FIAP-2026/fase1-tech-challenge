@@ -1,15 +1,16 @@
+using System.ComponentModel;
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.DTOs.Responses;
 using Fiap.TechChallenge.Application.Interfaces;
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
+using Fiap.TechChallenge.Domain.ValueObjects;
 
 namespace Fiap.TechChallenge.Application.Services
 {
     public class OrdemServicoService : IOrdemServicoService
     {
-        private const string StatusInicialDescricao = "Recebida";
 
         private readonly IClienteRepository _clienteRepository;
         private readonly IVeiculoRepository _veiculoRepository;
@@ -17,6 +18,7 @@ namespace Fiap.TechChallenge.Application.Services
         private readonly IServicoRepository _servicoRepository;
         private readonly IPecaInsumoRepository _pecaInsumoRepository;
         private readonly IOrdemServicoRepository _ordemServicoRepository;
+
 
         public OrdemServicoService(
             IClienteRepository clienteRepository,
@@ -50,6 +52,24 @@ namespace Fiap.TechChallenge.Application.Services
             await _ordemServicoRepository.Adicionar(ordemServico);
 
             return ordemServico.Id;
+        }
+
+        public async Task<OrdemServicoResponse> IniciarDiagnostico(Guid id)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            StatusOrdemServico statusRecebida = await GarantirStatusInicialExiste();
+
+            if (ordemServico.IdStatus != statusRecebida.Id)
+                throw new InvalidOperationException("A ordem de serviço precisa estar no status Recebida para iniciar o diagnóstico.");
+
+            StatusOrdemServico statusEmDiagnostico = await GarantirStatusEmDiagnosticoExiste();
+
+            ordemServico.AlterarStatus(statusEmDiagnostico);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+
+            return ToResponse(ordemServico);
         }
 
         public async Task<OrdemServicoResponse> IncluirItens(Guid id, OrdemServicoItensRequest request)
@@ -120,11 +140,17 @@ namespace Fiap.TechChallenge.Application.Services
 
         private async Task<StatusOrdemServico> GarantirStatusInicialExiste()
         {
-            StatusOrdemServico? status = await _statusRepository.ObterPorDescricao(StatusInicialDescricao);
+            StatusOrdemServico? status = await _statusRepository.ObterPorCodigo(new CodigoVO(StatusOS.Recebida.Codigo));
 
             if (status == null)
-                throw new StatusOrdemServicoNaoEncontradoException(StatusInicialDescricao);
+                throw new StatusOrdemServicoNaoEncontradoException(StatusOS.Recebida.Codigo);
 
+            return status;
+        }
+
+        private async Task<StatusOrdemServico> GarantirStatusEmDiagnosticoExiste()
+        {
+            StatusOrdemServico? status = await _statusRepository.ObterPorCodigo(new CodigoVO(StatusOS.EmDiagnostico.Codigo)) ?? throw new StatusOrdemServicoNaoEncontradoException(StatusOS.EmDiagnostico.Codigo);
             return status;
         }
 
@@ -144,11 +170,7 @@ namespace Fiap.TechChallenge.Application.Services
 
         private async Task<OrdemServico> ObterEntidadePorId(Guid id)
         {
-            OrdemServico? ordemServico = await _ordemServicoRepository.ObterPorId(id);
-
-            if (ordemServico == null)
-                throw new OrdemServicoNaoEncontradaException(id);
-
+            OrdemServico? ordemServico = await _ordemServicoRepository.ObterPorId(id) ?? throw new OrdemServicoNaoEncontradaException(id);
             return ordemServico;
         }
 

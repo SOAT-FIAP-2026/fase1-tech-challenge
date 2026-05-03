@@ -5,6 +5,7 @@ namespace Fiap.TechChallenge.Domain.Interfaces.Repository
     public interface IClienteRepository
     {
         Task<Cliente?> ObterPorId(Guid id);
+        Task<Cliente?> ObterPorCpfCnpj(string cpfCnpj);
         Task<IReadOnlyCollection<Cliente>> ObterTodos();
         Task<bool> ExisteCpfCnpj(string cpfCnpj, Guid? ignorarId = null);
         Task Adicionar(Cliente cliente);

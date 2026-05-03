@@ -37,6 +37,14 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(clientes);
         }
 
+        [HttpGet("buscar-por-cpf-cnpj")]
+        public async Task<IActionResult> ObterPorCpfCnpj([FromQuery] string cpfCnpj)
+        {
+            var cliente = await _clienteService.ObterPorCpfCnpj(cpfCnpj);
+
+            return cliente is null ? NotFound() : Ok(cliente);
+        }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Atualizar(Guid id, ClienteRequest request)
         {

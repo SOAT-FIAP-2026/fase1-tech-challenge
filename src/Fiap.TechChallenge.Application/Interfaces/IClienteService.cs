@@ -7,6 +7,7 @@ namespace Fiap.TechChallenge.Application.Interfaces
     {
         Task<Guid> Criar(ClienteRequest request);
         Task<ClienteResponse> ObterPorId(Guid id);
+        Task<ClienteResponse?> ObterPorCpfCnpj(string cpfCnpj);
         Task<IReadOnlyCollection<ClienteResponse>> ObterTodos();
         Task<ClienteResponse> Atualizar(Guid id, ClienteRequest request);
         Task Deletar(Guid id);

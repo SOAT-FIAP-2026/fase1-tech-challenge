@@ -15,6 +15,13 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
             return await _context.Clientes.FirstOrDefaultAsync(c => c.Id == id);
         }
 
+        public async Task<Cliente?> ObterPorCpfCnpj(string cpfCnpj)
+        {
+            CpfCnpjVO cpfCnpjVO = new(cpfCnpj);
+
+            return await _context.Clientes.FirstOrDefaultAsync(c => c.CpfCnpj == cpfCnpjVO);
+        }
+
         public async Task<IReadOnlyCollection<Cliente>> ObterTodos()
         {
             return await _context.Clientes

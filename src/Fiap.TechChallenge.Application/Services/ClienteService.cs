@@ -35,6 +35,13 @@ namespace Fiap.TechChallenge.Application.Services
             return ToResponse(cliente);
         }
 
+        public async Task<ClienteResponse?> ObterPorCpfCnpj(string cpfCnpj)
+        {
+            Cliente? cliente = await _clienteRepository.ObterPorCpfCnpj(cpfCnpj);
+
+            return cliente is null ? null : ToResponse(cliente);
+        }
+
         public async Task<IReadOnlyCollection<ClienteResponse>> ObterTodos()
         {
             IReadOnlyCollection<Cliente> clientes = await _clienteRepository.ObterTodos();
