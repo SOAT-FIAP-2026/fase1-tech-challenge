@@ -11,6 +11,9 @@ namespace Fiap.TechChallenge.Application.Services
 {
     public class OrdemServicoService : IOrdemServicoService
     {
+        private const string StatusInicialDescricao = "Recebida";
+        private const string StatusEmExecucaoDescricao = "Em Execução";
+        private const string StatusFinalizadaDescricao = "Finalizada";
 
         private readonly IClienteRepository _clienteRepository;
         private readonly IVeiculoRepository _veiculoRepository;
@@ -145,10 +148,45 @@ namespace Fiap.TechChallenge.Application.Services
             await _ordemServicoRepository.Atualizar(ordemServico);
         }
 
+        public async Task IniciarServico(Guid id, Guid idServico)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+            ItemServico item = ObterItemServico(ordemServico, idServico);
+            StatusOrdemServico statusEmExecucao = await GarantirStatusExiste(StatusEmExecucaoDescricao);
+
+            item.IniciarServico();
+            ordemServico.AlterarStatus(statusEmExecucao.Id);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+        }
+
+        public async Task FinalizarServico(Guid id, Guid idServico)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+            ItemServico item = ObterItemServico(ordemServico, idServico);
+
+            item.FinalizarServico();
+
+            if (ordemServico.ItensServico.All(servico => servico.DataHoraFim != null))
+            {
+                StatusOrdemServico statusFinalizada = await GarantirStatusExiste(StatusFinalizadaDescricao);
+                ordemServico.AlterarStatus(statusFinalizada.Id);
+                ordemServico.Concluir();
+            }
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+        }
+
         public async Task<OrdemServicoResponse> ObterPorId(Guid id)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
             return ToResponse(ordemServico);
+        }
+
+        public async Task<OrdemServicoProgressoResponse> ObterProgresso(Guid id)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+            return ToProgressoResponse(ordemServico);
         }
 
         public async Task<IReadOnlyCollection<OrdemServicoResponse>> ObterTodos()
@@ -211,6 +249,16 @@ namespace Fiap.TechChallenge.Application.Services
             return ordemServico;
         }
 
+        private static ItemServico ObterItemServico(OrdemServico ordemServico, Guid idServico)
+        {
+            ItemServico? item = ordemServico.ItensServico.FirstOrDefault(item => item.IdServico == idServico);
+
+            if (item == null)
+                throw new ItemServicoNaoEncontradoException(idServico);
+
+            return item;
+        }
+
         private async Task RecalcularOrcamentoDaOrdem(OrdemServico ordemServico)
         {
             IReadOnlyCollection<Guid> servicosIds = [.. ordemServico.ItensServico.Select(item => item.IdServico)];
@@ -255,6 +303,60 @@ namespace Fiap.TechChallenge.Application.Services
                     item.PecaInsumo?.Descricao?.Valor ?? string.Empty,
                     item.PecaInsumo?.ValorUnitario.Valor ?? 0m))]
             );
+        }
+
+        private static OrdemServicoProgressoResponse ToProgressoResponse(OrdemServico ordemServico)
+        {
+            int tempoTotalEstimado = ordemServico.ItensServico.Sum(item => item.Servico?.TempoEstimadoMinutos ?? 0);
+            int progressoEmMinutos = ordemServico.ItensServico.Sum(CalcularProgressoItemEmMinutos);
+            int percentualConcluido = tempoTotalEstimado == 0
+                ? 100
+                : Math.Clamp((int)Math.Round(progressoEmMinutos * 100m / tempoTotalEstimado), 0, 100);
+
+            DateTime? previsaoConclusao = tempoTotalEstimado == 0
+                ? null
+                : ordemServico.DataAbertura.AddMinutes(tempoTotalEstimado);
+
+            return new OrdemServicoProgressoResponse(
+                ordemServico.Id,
+                ordemServico.Status?.Descricao.Valor ?? string.Empty,
+                percentualConcluido,
+                ordemServico.DataAbertura,
+                previsaoConclusao,
+                [.. ordemServico.ItensServico.Select(item => new OrdemServicoProgressoServicoResponse(
+                    item.IdServico,
+                    item.Servico?.Nome?.Valor ?? string.Empty,
+                    ObterStatusItemServico(item),
+                    item.Servico?.TempoEstimadoMinutos ?? 0,
+                    item.ObterTempoExecutadoMinutos(),
+                    item.DataHoraInicio,
+                    item.DataHoraFim))]
+            );
+        }
+
+        private static int CalcularProgressoItemEmMinutos(ItemServico item)
+        {
+            int tempoEstimado = item.Servico?.TempoEstimadoMinutos ?? 0;
+
+            if (item.DataHoraFim != null)
+                return tempoEstimado;
+
+            if (item.DataHoraInicio == null)
+                return 0;
+
+            int tempoExecutado = item.ObterTempoExecutadoMinutos() ?? 0;
+            return Math.Min(tempoExecutado, tempoEstimado);
+        }
+
+        private static string ObterStatusItemServico(ItemServico item)
+        {
+            if (item.DataHoraFim != null)
+                return "Finalizado";
+
+            if (item.DataHoraInicio != null)
+                return "Em execução";
+
+            return "Pendente";
         }
 
         private static void ValidarEntidadesEncontradas(

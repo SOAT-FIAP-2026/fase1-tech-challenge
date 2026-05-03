@@ -22,11 +22,12 @@ namespace Fiap.TechChallenge.Domain.Tests.Entities
             DateTime atualizadoEmOriginal = servico.AtualizadoEm;
 
             Thread.Sleep(5);
-            servico.Atualizar("Alinhamento e Balanceamento", "Alinhamento e Balanceamento", 90m);
+            servico.Atualizar("Alinhamento e Balanceamento", "Alinhamento e Balanceamento", 90m, 70);
 
             Assert.Equal("Alinhamento e Balanceamento", servico.Nome.Valor);
             Assert.Equal("Alinhamento e Balanceamento", servico.Descricao.Valor);
             Assert.Equal(90m, servico.ValorUnitario.Valor);
+            Assert.Equal(70, servico.TempoEstimadoMinutos);
             Assert.True(servico.AtualizadoEm > atualizadoEmOriginal);
         }
 

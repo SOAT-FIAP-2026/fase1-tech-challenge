@@ -8,6 +8,7 @@ namespace Fiap.TechChallenge.Application.Interfaces
         Task<Guid> Criar(ServicoRequest request);
         Task<ServicoResponse> ObterPorId(Guid id);
         Task<IReadOnlyCollection<ServicoResponse>> ObterTodos();
+        Task<IReadOnlyCollection<ServicoMetricaTempoResponse>> ObterMetricasTempo();
         Task<ServicoResponse> Atualizar(Guid id, ServicoRequest request);
         Task Deletar(Guid id);
     }

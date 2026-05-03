@@ -123,10 +123,10 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
         {
             if (context.Servicos.Any()) return;
 
-            var servico1 = new Servico("Troca de Pneus", "Descrição do serviço 1",100);
-            var servico2 = new Servico("Troca de Óleo", "Descrição do serviço 2",200);
-            var servico3 = new Servico("Alinhamento", "Descrição do serviço 3",150);
-            var servico4 = new Servico("Balanceamento", "Descrição do serviço 4",120);
+            var servico1 = new Servico("Troca de Pneus", "Descrição do serviço 1", 100, 60);
+            var servico2 = new Servico("Troca de Óleo", "Descrição do serviço 2", 200, 40);
+            var servico3 = new Servico("Alinhamento", "Descrição do serviço 3", 150, 50);
+            var servico4 = new Servico("Balanceamento", "Descrição do serviço 4", 120, 45);
             
             context.Servicos.Add(servico1);
             context.Servicos.Add(servico2);

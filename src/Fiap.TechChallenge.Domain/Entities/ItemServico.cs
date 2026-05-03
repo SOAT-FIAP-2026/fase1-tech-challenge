@@ -20,6 +20,9 @@ namespace Fiap.TechChallenge.Domain.Entities
 
         public void IniciarServico()
         {
+            if (DataHoraInicio != null)
+                return;
+
             DataHoraInicio = DateTime.UtcNow;
         }
 
@@ -29,6 +32,15 @@ namespace Fiap.TechChallenge.Domain.Entities
                 throw new InvalidOperationException("O serviço precisa ser iniciado antes de ser finalizado.");
 
             DataHoraFim = DateTime.UtcNow;
+        }
+
+        public int? ObterTempoExecutadoMinutos()
+        {
+            if (DataHoraInicio == null)
+                return null;
+
+            DateTime dataFim = DataHoraFim ?? DateTime.UtcNow;
+            return Math.Max(0, (int)Math.Round((dataFim - DataHoraInicio.Value).TotalMinutes));
         }
     }
 }

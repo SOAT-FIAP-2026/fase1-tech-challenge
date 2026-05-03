@@ -10,12 +10,14 @@ namespace Fiap.TechChallenge.Domain.Tests.Services
     public class ServicoServiceTests
     {
         private readonly Mock<IServicoRepository> _servicoRepositoryMock;
+        private readonly Mock<IOrdemServicoRepository> _ordemServicoRepositoryMock;
         private readonly ServicoService _servicoService;
 
         public ServicoServiceTests()
         {
             _servicoRepositoryMock = new Mock<IServicoRepository>();
-            _servicoService = new ServicoService(_servicoRepositoryMock.Object);
+            _ordemServicoRepositoryMock = new Mock<IOrdemServicoRepository>();
+            _servicoService = new ServicoService(_servicoRepositoryMock.Object, _ordemServicoRepositoryMock.Object);
         }
 
         [Fact]

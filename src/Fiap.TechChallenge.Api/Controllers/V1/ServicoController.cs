@@ -38,6 +38,14 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(servicos);
         }
 
+        [HttpGet("metricas-tempo")]
+        public async Task<IActionResult> ObterMetricasTempo()
+        {
+            var metricas = await _servicoService.ObterMetricasTempo();
+
+            return Ok(metricas);
+        }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Atualizar(Guid id, ServicoRequest request)
         {

@@ -70,12 +70,36 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return NoContent();
         }
 
+        [HttpPatch("{id:guid}/servicos/{idServico:guid}/iniciar")]
+        public async Task<IActionResult> IniciarServico(Guid id, Guid idServico)
+        {
+            await _ordemServicoService.IniciarServico(id, idServico);
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id:guid}/servicos/{idServico:guid}/finalizar")]
+        public async Task<IActionResult> FinalizarServico(Guid id, Guid idServico)
+        {
+            await _ordemServicoService.FinalizarServico(id, idServico);
+
+            return NoContent();
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {
             var ordemServico = await _ordemServicoService.ObterPorId(id);
 
             return Ok(ordemServico);
+        }
+
+        [HttpGet("{id:guid}/progresso")]
+        public async Task<IActionResult> ObterProgresso(Guid id)
+        {
+            var progresso = await _ordemServicoService.ObterProgresso(id);
+
+            return Ok(progresso);
         }
 
         [HttpGet]

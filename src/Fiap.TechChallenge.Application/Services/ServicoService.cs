@@ -7,16 +7,17 @@ using Fiap.TechChallenge.Domain.Interfaces.Repository;
 
 namespace Fiap.TechChallenge.Application.Services
 {
-    public class ServicoService( IServicoRepository servicoRepository) : IServicoService
+    public class ServicoService(IServicoRepository servicoRepository, IOrdemServicoRepository ordemServicoRepository) : IServicoService
     {
         private readonly IServicoRepository _servicoRepository = servicoRepository;
+        private readonly IOrdemServicoRepository _ordemServicoRepository = ordemServicoRepository;
 
         public async Task<Guid> Criar(ServicoRequest request)
         {
             if (await _servicoRepository.ExisteNome(request.Nome))
                 throw new ServicoNomeJaExisteException(request.Nome);
 
-            Servico servico = new(request.Nome, request.Descricao, request.ValorUnitario);
+            Servico servico = new(request.Nome, request.Descricao, request.ValorUnitario, request.TempoEstimadoMinutos);
 
             await _servicoRepository.Adicionar(servico);
 
@@ -37,6 +38,33 @@ namespace Fiap.TechChallenge.Application.Services
             return [.. servicos.Select(ToResponse)];
         }
 
+        public async Task<IReadOnlyCollection<ServicoMetricaTempoResponse>> ObterMetricasTempo()
+        {
+            IReadOnlyCollection<Servico> servicos = await _servicoRepository.ObterTodos();
+            IReadOnlyCollection<ItemServico> itensFinalizados = await _ordemServicoRepository.ObterItensServicoFinalizados();
+
+            return [.. servicos.Select(servico =>
+            {
+                var execucoes = itensFinalizados
+                    .Where(item => item.IdServico == servico.Id)
+                    .Select(item => item.ObterTempoExecutadoMinutos())
+                    .Where(tempo => tempo.HasValue)
+                    .Select(tempo => tempo!.Value)
+                    .ToList();
+
+                int? tempoMedio = execucoes.Count == 0
+                    ? null
+                    : (int)Math.Round(execucoes.Average());
+
+                return new ServicoMetricaTempoResponse(
+                    servico.Id,
+                    servico.Nome.Valor,
+                    servico.TempoEstimadoMinutos,
+                    tempoMedio,
+                    execucoes.Count);
+            })];
+        }
+
         public async Task<ServicoResponse> Atualizar(Guid id, ServicoRequest request)
         {
             Servico servico = await ObterEntidadePorId(id);
@@ -45,7 +73,7 @@ namespace Fiap.TechChallenge.Application.Services
                 throw new ServicoNomeJaExisteException(request.Nome);
 
 
-            servico.Atualizar(request.Nome, request.Descricao, request.ValorUnitario);
+            servico.Atualizar(request.Nome, request.Descricao, request.ValorUnitario, request.TempoEstimadoMinutos);
 
             await _servicoRepository.Atualizar(servico);
 
@@ -75,7 +103,8 @@ namespace Fiap.TechChallenge.Application.Services
                 servico.Id,
                 servico.Nome.Valor,
                 servico.Descricao.Valor,
-                servico.ValorUnitario.Valor
+                servico.ValorUnitario.Valor,
+                servico.TempoEstimadoMinutos
             );
         }
     }
