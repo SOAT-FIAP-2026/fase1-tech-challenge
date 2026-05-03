@@ -23,21 +23,20 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             });
         }
 
-        [HttpPost("{id:guid}/itens")]
-        [Authorize(Roles = "Administrador")]
-
-        public async Task<IActionResult> IncluirItens(Guid id, OrdemServicoItensRequest request)
+        [HttpPost("{id:guid}/pecas-insumos")]
+        public async Task<IActionResult> IncluirPecaInsumo(Guid id, OrdemServicoPecaInsumoRequest request)
         {
-            var ordemServico = await _ordemServicoService.IncluirServico(id, request);
+            var ordemServico = await _ordemServicoService.IncluirPecaInsumo(id, request);
 
             return Ok(ordemServico);
         }
 
 
-        [HttpPost("{id:guid}/pecas-insumos")]
-        public async Task<IActionResult> IncluirPecaInsumo(Guid id, OrdemServicoPecaInsumoRequest request)
+
+        [HttpPost("{id:guid}/servicos")]
+        public async Task<IActionResult> IncluirServico(Guid id, OrdemServicoServicosRequest request)
         {
-            var ordemServico = await _ordemServicoService.IncluirPecaInsumo(id, request);
+            var ordemServico = await _ordemServicoService.IncluirServico(id, request);
 
             return Ok(ordemServico);
         }
