@@ -12,23 +12,26 @@ namespace Fiap.TechChallenge.Api
             services.AddControllers();
 
             services.AddDependencyInjection(Configuration);
+            services.AddJWTConfig(Configuration);
+            services.AddSwaggerConfig();
         }
 
         public void Configure(WebApplication app, IWebHostEnvironment env)
         {
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-            if (env.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
             app.UseHttpsRedirection();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TechChallenge API v1");
+            });
+
+            app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.MapControllers();
         }
     }

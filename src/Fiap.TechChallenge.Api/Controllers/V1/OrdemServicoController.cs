@@ -1,5 +1,6 @@
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fiap.TechChallenge.Api.Controllers.V1
@@ -11,6 +12,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         private readonly IOrdemServicoService _ordemServicoService = ordemServicoService;
 
         [HttpPost]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Criar(OrdemServicoRequest request)
         {
             Guid id = await _ordemServicoService.Criar(request);
@@ -21,8 +23,15 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             });
         }
 
+<<<<<<< HEAD
         [HttpPost("{id:guid}/servicos")]
         public async Task<IActionResult> IncluirServico(Guid id, OrdemServicoServicosRequest request)
+=======
+        [HttpPost("{id:guid}/itens")]
+        [Authorize(Roles = "Administrador")]
+
+        public async Task<IActionResult> IncluirItens(Guid id, OrdemServicoItensRequest request)
+>>>>>>> feat/validacao_token
         {
             var ordemServico = await _ordemServicoService.IncluirServico(id, request);
 
@@ -87,6 +96,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("{id:guid}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {
             var ordemServico = await _ordemServicoService.ObterPorId(id);
@@ -103,6 +113,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> ObterTodos()
         {
             var ordensServico = await _ordemServicoService.ObterTodos();

@@ -8,15 +8,12 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
     [Route("api/v1/[controller]")]
     public class AutenticacaoController : ControllerBase
     {
-        private readonly ILogger<AutenticacaoController> _logger;
         private readonly IAutenticacaoService _autenticacaoService;
 
         public AutenticacaoController(
-            ILogger<AutenticacaoController> logger,
             IAutenticacaoService autenticacaoService
         )
         {
-            _logger = logger;
             _autenticacaoService = autenticacaoService;
         }
 

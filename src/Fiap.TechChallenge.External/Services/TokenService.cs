@@ -23,14 +23,18 @@ namespace Fiap.TechChallenge.External.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, usuario.Nome.ToString()),
+                    new Claim(ClaimTypes.Name, usuario.Nome.Valor),
                     new Claim(ClaimTypes.Email, usuario.Email.Endereco),
-                    new Claim("UsuarioId", usuario.Id.ToString())
+                    new Claim("UsuarioId", usuario.Id.ToString()),
+                    new Claim(ClaimTypes.Role, usuario.Permissao.Descricao.Valor)
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
+                Issuer = _config["Jwt:Issuer"],
+                Audience = _config["Jwt:Audience"],
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature)
+                    SecurityAlgorithms.HmacSha256Signature
+                )
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
