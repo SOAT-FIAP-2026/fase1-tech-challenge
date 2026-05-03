@@ -62,6 +62,21 @@ namespace Fiap.TechChallenge.Tests.Controllers
         }
 
         [Fact]
+        public async Task IniciarDiagnostico_DeveRetornar200ComOrdemAtualizada()
+        {
+            Guid id = Guid.NewGuid();
+            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Nome do Cliente", "Em Diagnóstico", "Teste", DateTime.UtcNow, null, null, [], []);
+
+            _serviceMock.Setup(s => s.IniciarDiagnostico(id)).ReturnsAsync(response);
+
+            IActionResult result = await _controller.IniciarDiagnostico(id);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var retorno = Assert.IsType<OrdemServicoResponse>(ok.Value);
+            Assert.Equal("Em Diagnóstico", retorno.StatusDescricao);
+        }
+
+        [Fact]
         public async Task RemoverItemServico_DeveRetornar204()
         {
             Guid id = Guid.NewGuid();

@@ -12,7 +12,11 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Configurations
             builder.ToTable("status_ordem_servico");
             builder.HasKey(s => s.Id);
             builder.Property(s => s.Id).HasColumnName("id");
-
+            builder.Property(s => s.Codigo)
+                .HasConversion(v => v.Valor, v => new CodigoVO(v))
+                .HasColumnName("codigo")
+                .HasMaxLength(50)
+                .IsRequired();
             builder.Property(s => s.Descricao)
                 .HasConversion(v => v.Valor, v => new DescricaoVO(v, 100))
                 .HasColumnName("descricao")

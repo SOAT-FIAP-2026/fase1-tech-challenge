@@ -10,11 +10,9 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
     {
         private readonly ApplicationDbContext _context = context;
 
-        public async Task<StatusOrdemServico?> ObterPorDescricao(string descricao)
+        public async Task<StatusOrdemServico?> ObterPorCodigo(CodigoVO codigo)
         {
-            DescricaoVO descricaoVO = new(descricao, 100);
-
-            return await _context.StatusOrdensServico.FirstOrDefaultAsync(s => s.Descricao == descricaoVO);
+            return await _context.StatusOrdensServico.FirstOrDefaultAsync(s => s.Codigo == codigo);
         }
     }
 }
