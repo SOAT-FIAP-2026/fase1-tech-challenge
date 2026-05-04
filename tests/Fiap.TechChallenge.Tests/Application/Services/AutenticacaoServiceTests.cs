@@ -27,7 +27,6 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 _cryptoServiceMock.Object);
         }
 
-        // ─── Cadastrar ───────────────────────────────────────────────────────────
 
         [Fact]
         public async Task Cadastrar_ComEmailDisponivel_DeveAdicionarUsuarioERetornarGuid()

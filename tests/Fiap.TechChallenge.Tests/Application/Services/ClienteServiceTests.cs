@@ -42,7 +42,6 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         [Fact]
         public async Task Criar_QuandoCpfCnpjNaoExiste_DeveRetornarId_V2()
         {
-            // Arrange — usando It.IsAny para cobrir a assinatura sem o segundo argumento
             var request = new ClienteRequest
             {
                 Nome = "Joao Silva",
@@ -174,7 +173,6 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             _clienteRepositoryMock.Verify(r => r.Deletar(cliente), Times.Once);
         }
 
-        // ─── ObterPorId ───────────────────────────────────────────────────────────
 
         [Fact]
         public async Task ObterPorId_QuandoEncontrado_DeveRetornarClienteResponse()
@@ -198,7 +196,6 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             Assert.Equal("11999999999", response.Celular);
         }
 
-        // ─── ObterTodos ───────────────────────────────────────────────────────────
 
         [Fact]
         public async Task ObterTodos_QuandoExistemClientes_DeveRetornarLista()
@@ -238,7 +235,6 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             Assert.Empty(response);
         }
 
-        // ─── Atualizar (cenários negativos) ──────────────────────────────────────
 
         [Fact]
         public async Task Atualizar_QuandoClienteNaoEncontrado_DeveLancarClienteNaoEncontradoException()
@@ -292,7 +288,6 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             _clienteRepositoryMock.Verify(r => r.Atualizar(It.IsAny<Cliente>()), Times.Never);
         }
 
-        // ─── Deletar (cenário negativo) ───────────────────────────────────────────
 
         [Fact]
         public async Task Deletar_QuandoClienteNaoEncontrado_DeveLancarClienteNaoEncontradoException()

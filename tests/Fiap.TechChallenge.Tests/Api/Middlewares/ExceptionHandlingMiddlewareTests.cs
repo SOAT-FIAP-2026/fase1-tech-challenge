@@ -18,7 +18,6 @@ namespace Fiap.TechChallenge.Tests.Api.Middlewares
         {
             _loggerMock = new Mock<ILogger<ExceptionHandlingMiddleware>>();
             _context = new DefaultHttpContext();
-            // Precisamos de um MemoryStream para ler o que o middleware escreve na resposta
             _context.Response.Body = new MemoryStream();
         }
 
