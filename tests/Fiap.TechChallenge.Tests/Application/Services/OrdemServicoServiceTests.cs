@@ -293,5 +293,41 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => _service.FinalizarDiagnostico(ordemServico.Id));
         }
+
+        [Fact]
+        public async Task AprovarOrdemServico_QuandoOrdemEstaAguardandoAprovacao_DeveAlterarStatusParaEmExecucao()
+        {
+            var statusAguardandoAprovacao = new StatusOrdemServico("Aguardando aprovação", "AGUARDANDO_APROVACAO");
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), statusAguardandoAprovacao.Id, "Teste");
+            var statusEmExecucao = new StatusOrdemServico("Em Execução", "EM_EXECUCAO");
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("AGUARDANDO_APROVACAO"))).ReturnsAsync(statusAguardandoAprovacao);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("EM_EXECUCAO"))).ReturnsAsync(statusEmExecucao);
+
+            OrdemServico? captured = null;
+            _ordemServicoRepositoryMock
+                .Setup(r => r.Atualizar(It.IsAny<OrdemServico>()))
+                .Callback<OrdemServico>(ordem => captured = ordem)
+                .Returns(Task.CompletedTask);
+
+            OrdemServicoResponse response = await _service.AprovarOrdemServico(ordemServico.Id);
+
+            Assert.NotNull(captured);
+            Assert.Equal(statusEmExecucao.Id, captured!.IdStatus);
+            Assert.Equal("Em Execução", response.StatusDescricao);
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AprovarOrdemServico_QuandoOrdemNaoEstaAguardandoAprovacao_DeveLancarExcecao()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("AGUARDANDO_APROVACAO"))).ReturnsAsync(new StatusOrdemServico("Aguardando aprovação", "AGUARDANDO_APROVACAO"));
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AprovarOrdemServico(ordemServico.Id));
+        }
     }
 }

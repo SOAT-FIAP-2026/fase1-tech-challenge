@@ -1,61 +1,6 @@
 # Sistema Integrado de Atendimento e Execução de Serviços - Oficina Mecânica
 
-> **Tech Challenge - FIAP SOAT** | MVP (Fase 1)
-
 Esta é uma API desenvolvida em **.NET 8**, seguindo os princípios da **Clean Architecture** e **Domain-Driven Design (DDD)**, com foco em gestão de ordens de serviço, clientes e peças para uma oficina mecânica de médio porte.
-
-## 🎯 Desafio
-
-A oficina mecânica enfrenta desafios operacionais significativos:
-
-- ❌ Erros na priorização dos atendimentos
-- ❌ Falhas no controle de peças e insumos
-- ❌ Dificuldade em acompanhar o status dos serviços
-- ❌ Perda de histórico de clientes e veículos
-- ❌ Ineficiência no fluxo de orçamentos e autorizações
-
-**Solução:** Um sistema integrado que permite aos clientes acompanhar em tempo real o andamento do serviço, autorizar reparos adicionais via API e garantir uma gestão interna eficiente e segura.
-
-## ✅ Funcionalidades
-
-### 1️⃣ Criação da Ordem de Serviço (OS)
-
-- ✅ Identificação do cliente por CPF/CNPJ
-- ✅ Cadastro de veículo (placa, marca, modelo, ano)
-- ✅ Inclusão dos serviços solicitados
-- ✅ Inclusão de peças e insumos necessários
-- ✅ Geração automática de orçamento
-- ✅ Envio do orçamento ao cliente para aprovação
-
-### 2️⃣ Acompanhamento da OS
-
-**Status da Ordem de Serviço:**
-- 📍 Recebida
-- 🔍 Em diagnóstico
-- ⏳ Aguardando aprovação
-- 🔧 Em execução
-- ✔️ Finalizada
-- 🚗 Entregue
-
-**Recursos:**
-- ✅ Alteração automática de status conforme ações
-- ✅ Consulta por parte do cliente via API
-- ✅ Acompanhamento em tempo real
-
-### 3️⃣ Gestão Administrativa
-
-- ✅ CRUD de clientes
-- ✅ CRUD de veículos
-- ✅ CRUD de serviços
-- ✅ CRUD de peças e insumos (com controle de estoque)
-- ✅ Listagem e detalhamento de ordens de serviço
-- ✅ Monitoramento do tempo médio de execução
-
-### 🔐 Segurança e Qualidade
-
-- ✅ Autenticação JWT para APIs administrativas
-- ✅ Validação de dados sensíveis (CPF/CNPJ, placa)
-- ✅ Testes unitários e de integração (cobertura mínima 80%)
 
 ## 🏗️ Arquitetura
 
@@ -83,7 +28,7 @@ O projeto está estruturado nas seguintes camadas, garantindo baixo acoplamento 
 ### Pré-requisitos
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [Docker](https://www.docker.com/products/docker-desktop) e [Docker Compose](https://docs.docker.com/compose/install/) (opcional)
+- [Docker](https://www.docker.com/products/docker-desktop) e [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Setup inicial (na raiz do repositório)
 
@@ -108,20 +53,26 @@ dotnet watch --project src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj 
 dotnet watch run
 ```
 
+### Execução com Docker Compose
+
+```bash
+docker compose up -d 
+```
+
 ### Endpoints locais
 
 | Serviço | URL |
 |---|---|
-| Swagger UI | https://localhost:5001/swagger |
-| HTTP | http://localhost:5000 |
+| Swagger UI | http://localhost:8080/swagger |
+| HTTP | http://localhost:8080/api/ping |
 
-### Execução com Docker Compose
+## Usuário para testes de rotas autenticadas
 
 ```bash
-docker compose up -d --build
+Login: admin@techchallenge.com
+Senha: Admin@123
 ```
 
-> Se seu ambiente ainda usar o comando legado: `docker-compose up -d --build`
 
 ## 🧪 Testes e Cobertura
 
@@ -187,62 +138,4 @@ fase1-tech-challenge/
 ├── docker-compose.yml                      # Orquestração de containers
 ├── dotnet-tools.json                       # Ferramentas locais do projeto
 └── README.md                               # Este arquivo
-```
 
-## 🚀 Entregáveis da Fase 1
-
-- ✅ Código-fonte no repositório
-- ✅ APIs conforme requisitos
-- ✅ Dockerfile e docker-compose configurados
-- ✅ README.md completo com instruções
-- ✅ Testes automatizados com cobertura mínima 80%
-- ✅ Análise de vulnerabilidades
-- ⏳ Vídeo de demonstração (até 15 minutos)
-- ⏳ Documentação DDD (Miro)
-
-## 📖 Exemplos de Uso da API
-
-### Cadastro e Login
-
-```bash
-# Cadastrar novo usuário
-curl -X POST http://localhost:5000/api/v1/autenticacao/cadastrar \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nome": "João Silva",
-    "email": "joao@email.com",
-    "senha": "SenhaSegura123!"
-  }'
-
-# Fazer login e obter o JWT
-curl -X POST http://localhost:5000/api/v1/autenticacao/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "login": "joao@email.com",
-    "senha": "SenhaSegura123!"
-  }'
-```
-
-### Criar Ordem de Serviço
-
-```bash
-curl -X POST http://localhost:5000/api/v1/ordens-servico \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer {JWT_TOKEN}" \
-  -d '{
-    "clienteCpfCnpj": "12345678901234",
-    "veiculoPlaca": "ABC1234",
-    "servicos": [
-      {
-        "servicoId": "uuid-do-servico",
-        "quantidade": 1
-      }
-    ],
-    "pecas": [
-      {
-        "pecaId": "uuid-da-peca",
-        "quantidade": 2
-      }
-    ]
-  }'
-```
