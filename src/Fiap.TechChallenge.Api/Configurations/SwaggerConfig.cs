@@ -1,6 +1,7 @@
 using Fiap.TechChallenge.Application.Configurations;
 using Fiap.TechChallenge.External.Configurations;
 using Fiap.TechChallenge.Infrastructure.Configurations;
+using Fiap.TechChallenge.Application.DTOs.Requests;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -16,6 +17,7 @@ namespace Fiap.TechChallenge.Api.Configurations
             {
                 // Configuração básica do documento
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechChallenge API", Version = "v1" });
+                c.SchemaFilter<LoginRequestExampleSchemaFilter>();
 
                 // 1. Adiciona o botão "Authorize" e define o formato esperado
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

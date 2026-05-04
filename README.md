@@ -28,7 +28,7 @@ O projeto está estruturado nas seguintes camadas, garantindo baixo acoplamento 
 ### Pré-requisitos
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [Docker](https://www.docker.com/products/docker-desktop) e [Docker Compose](https://docs.docker.com/compose/install/) (opcional)
+- [Docker](https://www.docker.com/products/docker-desktop) e [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Setup inicial (na raiz do repositório)
 
@@ -53,6 +53,12 @@ dotnet watch --project src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj 
 dotnet watch run
 ```
 
+### Execução com Docker Compose
+
+```bash
+docker compose up -d 
+```
+
 ### Endpoints locais
 
 | Serviço | URL |
@@ -60,11 +66,13 @@ dotnet watch run
 | Swagger UI | http://localhost:8080/swagger |
 | HTTP | http://localhost:8080/api/ping |
 
-### Execução com Docker Compose
+## Usuário para testes de rotas autenticadas
 
 ```bash
-docker compose up -d 
+Login: admin@techchallenge.com
+Senha: Admin@123
 ```
+
 
 ## 🧪 Testes e Cobertura
 
