@@ -68,10 +68,15 @@ docker compose up -d
 
 ## Usuário para testes de rotas autenticadas
 
+### Login:
 ```bash
-Login: admin@techchallenge.com
-Senha: Admin@123
+ admin@techchallenge.com
 ```
+### Senha:
+```bash
+ Admin@123
+```
+ 
 
 
 ## 🧪 Testes e Cobertura
