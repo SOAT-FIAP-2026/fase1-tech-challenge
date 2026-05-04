@@ -33,6 +33,45 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Domain.Entities
         }
 
         [Fact]
+        public void AlterarNome_DeveAtualizarNomeETimestamp()
+        {
+            var cliente = new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999");
+            DateTime atualizadoEmOriginal = cliente.AtualizadoEm;
+
+            Thread.Sleep(5);
+            cliente.AlterarNome("Maria Silva");
+
+            Assert.Equal("Maria Silva", cliente.Nome.Valor);
+            Assert.True(cliente.AtualizadoEm > atualizadoEmOriginal);
+        }
+
+        [Fact]
+        public void AlterarEmail_DeveAtualizarEmailETimestamp()
+        {
+            var cliente = new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999");
+            DateTime atualizadoEmOriginal = cliente.AtualizadoEm;
+
+            Thread.Sleep(5);
+            cliente.AlterarEmail("maria@email.com");
+
+            Assert.Equal("maria@email.com", cliente.Email.Endereco);
+            Assert.True(cliente.AtualizadoEm > atualizadoEmOriginal);
+        }
+
+        [Fact]
+        public void AlterarCelular_DeveAtualizarCelularETimestamp()
+        {
+            var cliente = new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999");
+            DateTime atualizadoEmOriginal = cliente.AtualizadoEm;
+
+            Thread.Sleep(5);
+            cliente.AlterarCelular("11888888888");
+
+            Assert.Equal("11888888888", cliente.Celular.Numero);
+            Assert.True(cliente.AtualizadoEm > atualizadoEmOriginal);
+        }
+
+        [Fact]
         public void MarcarComoApagado_DevePreencherApagadoEm()
         {
             var cliente = new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999");
