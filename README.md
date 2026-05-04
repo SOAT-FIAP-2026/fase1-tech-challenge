@@ -160,7 +160,7 @@ Execute os comandos abaixo na raiz do repositório:
 dotnet tool restore
 
 # 2. Rodar os testes coletando a cobertura
-dotnet test fase1-tech-challenge.sln --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+dotnet test fase1-tech-challenge.sln --configuration Release --settings coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
 # 3. Gerar o relatório HTML
 dotnet reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html;HtmlSummary"
@@ -181,7 +181,7 @@ Use tres sinais em conjunto:
 Para gerar um resumo rapido em terminal, execute:
 
 ```bash
-dotnet test fase1-tech-challenge.sln --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+dotnet test fase1-tech-challenge.sln --configuration Release --settings coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory ./TestResults
 dotnet reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html;TextSummary"
 ```
 

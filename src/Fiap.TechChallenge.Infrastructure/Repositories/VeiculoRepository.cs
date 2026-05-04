@@ -23,7 +23,7 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
 
         public async Task<(IReadOnlyCollection<Veiculo> Items, int TotalCount)> ListarPaginado(int skip, int take)
         {
-            var query = _context.Veiculos.OrderBy(v => v.Marca.Valor).ThenBy(v => v.Modelo.Valor);
+            var query = _context.Veiculos.OrderBy(v => v.Marca).ThenBy(v => v.Modelo);
 
             int totalCount = await query.CountAsync();
 
