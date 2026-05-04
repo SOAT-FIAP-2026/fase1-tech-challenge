@@ -168,6 +168,90 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
+            _pecaInsumoServiceMock.Verify(s => s.Deletar(idPecaInsumo), Times.Once);
+        }
+
+        [Fact]
+        public async Task ObterPorId_DeveRetornarOkComNull_QuandoPecaInsumoNaoEncontrada()
+        {
+            // Arrange
+            Guid idPecaInsumo = Guid.NewGuid();
+
+            _pecaInsumoServiceMock
+                .Setup(s => s.ObterPorId(It.IsAny<Guid>()))
+                .ReturnsAsync((PecaInsumoResponse?)null);
+
+            // Act
+            var result = await _controller.ObterPorId(idPecaInsumo);
+
+            // Assert
+            result.Should().BeOfType<OkObjectResult>();
+
+            var okResult = result.As<OkObjectResult>();
+            okResult.Value.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task ObterPorDescricao_DeveRetornarOkComNull_QuandoPecaInsumoNaoEncontrada()
+        {
+            // Arrange
+            string descricao = "Peça Inexistente";
+
+            _pecaInsumoServiceMock
+                .Setup(s => s.ObterPorDescricao(It.IsAny<string>()))
+                .ReturnsAsync((PecaInsumoResponse?)null);
+
+            // Act
+            var result = await _controller.ObterPorDescricao(descricao);
+
+            // Assert
+            result.Should().BeOfType<OkObjectResult>();
+
+            var okResult = result.As<OkObjectResult>();
+            okResult.Value.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task ObterTodos_DeveRetornarOkComListaVazia_QuandoNaoHaPecasInsumo()
+        {
+            // Arrange
+            _pecaInsumoServiceMock
+                .Setup(s => s.ObterTodos())
+                .ReturnsAsync(Array.Empty<PecaInsumoResponse>());
+
+            // Act
+            var result = await _controller.ObterTodos();
+
+            // Assert
+            result.Should().BeOfType<OkObjectResult>();
+
+            var okResult = result.As<OkObjectResult>();
+            okResult.Value.As<PecaInsumoResponse[]>().Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task Atualizar_DeveRetornarOkComNull_QuandoPecaInsumoNaoEncontrada()
+        {
+            // Arrange
+            Guid idPecaInsumo = Guid.NewGuid();
+            PecaInsumoRequest request = new PecaInsumoRequest
+            {
+                Descricao = "Peça Inexistente",
+                ValorUnitario = 0
+            };
+
+            _pecaInsumoServiceMock
+                .Setup(s => s.Atualizar(It.IsAny<Guid>(), It.IsAny<PecaInsumoRequest>()))
+                .ReturnsAsync((PecaInsumoResponse?)null);
+
+            // Act
+            var result = await _controller.Atualizar(idPecaInsumo, request);
+
+            // Assert
+            result.Should().BeOfType<OkObjectResult>();
+
+            var okResult = result.As<OkObjectResult>();
+            okResult.Value.Should().BeNull();
         }
     }
 }

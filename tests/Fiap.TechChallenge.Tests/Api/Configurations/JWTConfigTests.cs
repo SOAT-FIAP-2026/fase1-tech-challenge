@@ -1,3 +1,4 @@
+using Fiap.TechChallenge.Api.Configurations;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -27,42 +28,27 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Configurations
                 })
                 .Build();
 
-            // Act
-            var key = Encoding.ASCII.GetBytes(configuration["Jwt:Secret"]);
-
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidIssuer = configuration["Jwt:Issuer"],
-                    ValidateAudience = true,
-                    ValidAudience = configuration["Jwt:Audience"],
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
+            // Act 
+            services.AddJWTConfig(configuration);
 
             var serviceProvider = services.BuildServiceProvider();
 
             // Assert
             var authOptions = serviceProvider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
             authOptions.DefaultAuthenticateScheme.Should().Be(JwtBearerDefaults.AuthenticationScheme);
+            authOptions.DefaultChallengeScheme.Should().Be(JwtBearerDefaults.AuthenticationScheme);
 
-            var jwtOptions = serviceProvider.GetRequiredService<IOptionsSnapshot<JwtBearerOptions>>()
+            var jwtOptions = serviceProvider.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
                                            .Get(JwtBearerDefaults.AuthenticationScheme);
 
             jwtOptions.TokenValidationParameters.Should().NotBeNull();
             jwtOptions.TokenValidationParameters.ValidIssuer.Should().Be("test_issuer");
             jwtOptions.TokenValidationParameters.ValidAudience.Should().Be("test_audience");
-            jwtOptions.TokenValidationParameters.ValidateIssuerSigningKey.Should().BeTrue();
+            jwtOptions.RequireHttpsMetadata.Should().BeTrue();
+            jwtOptions.SaveToken.Should().BeTrue();
+
+            services.Any(x => x.ServiceType == typeof(Microsoft.AspNetCore.Authorization.IAuthorizationService))
+                    .Should().BeTrue();
         }
     }
 }

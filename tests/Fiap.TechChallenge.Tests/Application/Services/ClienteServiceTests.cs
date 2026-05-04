@@ -40,6 +40,27 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         }
 
         [Fact]
+        public async Task Criar_QuandoCpfCnpjNaoExiste_DeveRetornarId_V2()
+        {
+            var request = new ClienteRequest
+            {
+                Nome = "Joao Silva",
+                CpfCnpj = "52998224725",
+                Email = "joao@email.com",
+                Celular = "11999999999"
+            };
+
+            _clienteRepositoryMock
+                .Setup(r => r.ExisteCpfCnpj(It.IsAny<string>(), It.IsAny<Guid?>()))
+                .ReturnsAsync(false);
+
+            Guid id = await _clienteService.Criar(request);
+
+            Assert.NotEqual(Guid.Empty, id);
+            _clienteRepositoryMock.Verify(r => r.Adicionar(It.IsAny<Cliente>()), Times.Once);
+        }
+
+        [Fact]
         public async Task Criar_QuandoCpfCnpjJaExiste_DeveLancarExcecao()
         {
             var request = new ClienteRequest
@@ -51,10 +72,12 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             };
 
             _clienteRepositoryMock
-                .Setup(r => r.ExisteCpfCnpj(request.CpfCnpj, null))
+                .Setup(r => r.ExisteCpfCnpj(It.IsAny<string>(), It.IsAny<Guid?>()))
                 .ReturnsAsync(true);
 
             await Assert.ThrowsAsync<ClienteCpfCnpjJaExisteException>(() => _clienteService.Criar(request));
+
+            _clienteRepositoryMock.Verify(r => r.Adicionar(It.IsAny<Cliente>()), Times.Never);
         }
 
         [Fact]
@@ -148,6 +171,138 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             await _clienteService.Deletar(id);
 
             _clienteRepositoryMock.Verify(r => r.Deletar(cliente), Times.Once);
+        }
+
+
+        [Fact]
+        public async Task ObterPorId_QuandoEncontrado_DeveRetornarClienteResponse()
+        {
+            // Arrange
+            var cliente = new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999");
+
+            _clienteRepositoryMock
+                .Setup(r => r.ObterPorId(cliente.Id))
+                .ReturnsAsync(cliente);
+
+            // Act
+            var response = await _clienteService.ObterPorId(cliente.Id);
+
+            // Assert
+            Assert.NotNull(response);
+            Assert.Equal(cliente.Id, response.Id);
+            Assert.Equal("Joao Silva", response.Nome);
+            Assert.Equal("52998224725", response.CpfCnpj);
+            Assert.Equal("joao@email.com", response.Email);
+            Assert.Equal("11999999999", response.Celular);
+        }
+
+
+        [Fact]
+        public async Task ObterTodos_QuandoExistemClientes_DeveRetornarLista()
+        {
+            // Arrange
+            var clientes = new List<Cliente>
+            {
+                new("Joao Silva",  "52998224725", "joao@email.com",  "11999999999"),
+                new("Maria Lima", "11144477735", "maria@email.com", "11888888888")
+            };
+
+            _clienteRepositoryMock
+                .Setup(r => r.ObterTodos())
+                .ReturnsAsync(clientes.AsReadOnly());
+
+            // Act
+            var response = await _clienteService.ObterTodos();
+
+            // Assert
+            Assert.NotNull(response);
+            Assert.Equal(2, response.Count);
+        }
+
+        [Fact]
+        public async Task ObterTodos_QuandoNaoExistemClientes_DeveRetornarListaVazia()
+        {
+            // Arrange
+            _clienteRepositoryMock
+                .Setup(r => r.ObterTodos())
+                .ReturnsAsync(new List<Cliente>().AsReadOnly());
+
+            // Act
+            var response = await _clienteService.ObterTodos();
+
+            // Assert
+            Assert.NotNull(response);
+            Assert.Empty(response);
+        }
+
+
+        [Fact]
+        public async Task Atualizar_QuandoClienteNaoEncontrado_DeveLancarClienteNaoEncontradoException()
+        {
+            // Arrange
+            Guid id = Guid.NewGuid();
+            var request = new ClienteRequest
+            {
+                Nome = "Maria Silva",
+                CpfCnpj = "11144477735",
+                Email = "maria@email.com",
+                Celular = "11888888888"
+            };
+
+            _clienteRepositoryMock
+                .Setup(r => r.ObterPorId(id))
+                .ReturnsAsync((Cliente?)null);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ClienteNaoEncontradoException>(() => _clienteService.Atualizar(id, request));
+
+            _clienteRepositoryMock.Verify(r => r.Atualizar(It.IsAny<Cliente>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Atualizar_QuandoCpfCnpjJaExisteParaOutroCliente_DeveLancarClienteCpfCnpjJaExisteException()
+        {
+            // Arrange
+            var cliente = new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999");
+            Guid id = cliente.Id;
+
+            var request = new ClienteRequest
+            {
+                Nome = "Joao Silva",
+                CpfCnpj = "11144477735",
+                Email = "joao@email.com",
+                Celular = "11999999999"
+            };
+
+            _clienteRepositoryMock
+                .Setup(r => r.ObterPorId(id))
+                .ReturnsAsync(cliente);
+
+            _clienteRepositoryMock
+                .Setup(r => r.ExisteCpfCnpj(request.CpfCnpj, id))
+                .ReturnsAsync(true);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ClienteCpfCnpjJaExisteException>(() => _clienteService.Atualizar(id, request));
+
+            _clienteRepositoryMock.Verify(r => r.Atualizar(It.IsAny<Cliente>()), Times.Never);
+        }
+
+
+        [Fact]
+        public async Task Deletar_QuandoClienteNaoEncontrado_DeveLancarClienteNaoEncontradoException()
+        {
+            // Arrange
+            Guid id = Guid.NewGuid();
+
+            _clienteRepositoryMock
+                .Setup(r => r.ObterPorId(id))
+                .ReturnsAsync((Cliente?)null);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ClienteNaoEncontradoException>(() => _clienteService.Deletar(id));
+
+            _clienteRepositoryMock.Verify(r => r.Deletar(It.IsAny<Cliente>()), Times.Never);
         }
     }
 }

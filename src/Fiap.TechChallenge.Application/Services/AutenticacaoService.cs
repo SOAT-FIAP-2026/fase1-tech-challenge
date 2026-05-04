@@ -35,7 +35,7 @@ namespace Fiap.TechChallenge.Application.Services
 
             SenhaUsuarioVO hashSenha = SenhaUsuarioVO.CriarNova(request.Senha, _cryptoService);
 
-            var usuario = new Usuario(request.Nome, email.ToString(), hashSenha, request.IdPermissao);
+            var usuario = new Usuario(request.Nome, email.Endereco, hashSenha, request.IdPermissao);
 
             await _usuarioRepository.Adicionar(usuario);
 
