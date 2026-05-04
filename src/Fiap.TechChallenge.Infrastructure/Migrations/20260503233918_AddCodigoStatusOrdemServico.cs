@@ -10,13 +10,20 @@ namespace Fiap.TechChallenge.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "codigo",
-                table: "status_ordem_servico",
-                type: "character varying(50)",
-                maxLength: 50,
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.Sql(@"
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1
+                        FROM information_schema.columns
+                        WHERE table_name = 'status_ordem_servico'
+                          AND column_name = 'codigo'
+                    ) THEN
+                        ALTER TABLE status_ordem_servico
+                        ADD COLUMN codigo character varying(50) NOT NULL DEFAULT '';
+                    END IF;
+                END $$;
+            ");
 
             migrationBuilder.Sql(@"
                 UPDATE status_ordem_servico SET codigo = 'RECEBIDA' WHERE id = 'c3d4e5f6-a7b8-9012-cdef-123456789012';
@@ -32,9 +39,19 @@ namespace Fiap.TechChallenge.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "codigo",
-                table: "status_ordem_servico");
+            migrationBuilder.Sql(@"
+                DO $$
+                BEGIN
+                    IF EXISTS (
+                        SELECT 1
+                        FROM information_schema.columns
+                        WHERE table_name = 'status_ordem_servico'
+                          AND column_name = 'codigo'
+                    ) THEN
+                        ALTER TABLE status_ordem_servico DROP COLUMN codigo;
+                    END IF;
+                END $$;
+            ");
         }
     }
 }

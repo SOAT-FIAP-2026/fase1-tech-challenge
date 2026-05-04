@@ -1,7 +1,7 @@
 using Fiap.TechChallenge.Application.DTOs.Responses;
 using FluentAssertions;
 
-namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.DTOs.Responses
+namespace Fiap.TechChallenge.Tests.Application.DTOs.Responses
 {
     public class EstoqueResponseTests
     {
