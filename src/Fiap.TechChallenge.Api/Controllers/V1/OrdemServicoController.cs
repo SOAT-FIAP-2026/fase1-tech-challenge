@@ -41,7 +41,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
-        [HttpPost("{id:guid}/iniciar-diagnostico")]
+        [HttpPatch("{id:guid}/iniciar-diagnostico")]
         public async Task<IActionResult> IniciarDiagnostico(Guid id)
         {
             var ordemServico = await _ordemServicoService.IniciarDiagnostico(id);
@@ -49,10 +49,18 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
-        [HttpPost("{id:guid}/finalizar-diagnostico")]
+        [HttpPatch("{id:guid}/finalizar-diagnostico")]
         public async Task<IActionResult> FinalizarDiagnostico(Guid id)
         {
             var ordemServico = await _ordemServicoService.FinalizarDiagnostico(id);
+
+            return Ok(ordemServico);
+        }
+
+        [HttpPatch("{id:guid}/aprovar")]
+        public async Task<IActionResult> Aprovar(Guid id)
+        {
+            var ordemServico = await _ordemServicoService.AprovarOrdemServico(id);
 
             return Ok(ordemServico);
         }

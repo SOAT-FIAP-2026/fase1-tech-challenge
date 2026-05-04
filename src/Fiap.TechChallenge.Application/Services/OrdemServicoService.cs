@@ -173,6 +173,24 @@ namespace Fiap.TechChallenge.Application.Services
             await _ordemServicoRepository.Atualizar(ordemServico);
         }
 
+        public async Task<OrdemServicoResponse> AprovarOrdemServico(Guid id)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            StatusOrdemServico statusAguardandoAprovacao = await GarantirStatusExiste(StatusOS.AguardandoAprovacao);
+
+            if (ordemServico.IdStatus != statusAguardandoAprovacao.Id)
+                throw new InvalidOperationException("A ordem de serviço precisa estar no status Aguardando aprovação para ser aprovada.");
+
+            StatusOrdemServico statusEmExecucao = await GarantirStatusExiste(StatusOS.EmExecucao);
+
+            ordemServico.AlterarStatus(statusEmExecucao);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+
+            return ToResponse(ordemServico);
+        }
+
         public async Task<OrdemServicoResponse> ObterPorId(Guid id)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
