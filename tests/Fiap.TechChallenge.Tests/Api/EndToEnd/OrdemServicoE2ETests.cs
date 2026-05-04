@@ -39,13 +39,13 @@ namespace Fiap.TechChallenge.Tests.Api.EndToEnd
             ordemCriada.ItensPecaInsumo.Should().ContainSingle(item => item.IdPecaInsumo == peca.Id);
             ordemCriada.ValorTotal.Should().Be(servico.ValorUnitario + peca.ValorUnitario);
 
-            var iniciarDiagnosticoResponse = await client.PostAsync($"/api/v1/ordens-servico/{ordemId}/iniciar-diagnostico", null);
+            var iniciarDiagnosticoResponse = await client.PatchAsync($"/api/v1/ordens-servico/{ordemId}/iniciar-diagnostico", null);
             iniciarDiagnosticoResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
             OrdemServicoResponse ordemEmDiagnostico = (await iniciarDiagnosticoResponse.Content.ReadFromJsonAsync<OrdemServicoResponse>())!;
             ordemEmDiagnostico.IdStatus.Should().Be(DatabaseSeed.StatusEmDiagnosticoId);
 
-            var finalizarDiagnosticoResponse = await client.PostAsync($"/api/v1/ordens-servico/{ordemId}/finalizar-diagnostico", null);
+            var finalizarDiagnosticoResponse = await client.PatchAsync($"/api/v1/ordens-servico/{ordemId}/finalizar-diagnostico", null);
             finalizarDiagnosticoResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
             OrdemServicoResponse ordemAguardandoAprovacao = (await finalizarDiagnosticoResponse.Content.ReadFromJsonAsync<OrdemServicoResponse>())!;

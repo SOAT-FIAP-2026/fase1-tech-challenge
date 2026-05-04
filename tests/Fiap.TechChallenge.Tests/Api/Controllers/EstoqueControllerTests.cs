@@ -67,6 +67,26 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
         }
 
         [Fact]
+        public async Task VerificarQuantidadePorIdPecaInsumo_DeveRetornarNotFound_QuandoEstoqueNaoEncontrado()
+        {
+            // Arrange
+            Guid idPecaInsumo = Guid.NewGuid();
+
+            _estoqueServiceMock
+                .Setup(s => s.VerificarQuantidadePorIdPecaInsumo(It.IsAny<Guid>()))
+                .ReturnsAsync((int?)null);
+
+            // Act
+            var result = await _controller.VerificarQuantidadePorIdPecaInsumo(idPecaInsumo);
+
+            // Assert
+            result.Should().BeOfType<NotFoundObjectResult>();
+
+            var notFoundResult = result.As<NotFoundObjectResult>();
+            notFoundResult.Value.Should().Be("Estoque não encontrado para esta peça/insumo.");
+        }
+
+        [Fact]
         public async Task VerificarQuantidadePorDescricaoPeca_DeveRetornarQuantiadeDoEstoque_QuandoRequestValido()
         {
             // Arrange
@@ -84,6 +104,26 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
 
             var okResult = result.As<OkObjectResult>();
             okResult.Value.Should().Be(quantidadeEsperada);
+        }
+
+        [Fact]
+        public async Task VerificarQuantidadePorDescricaoPeca_DeveRetornarNotFound_QuandoEstoqueNaoEncontrado()
+        {
+            // Arrange
+            string descricao = "Peça Inexistente";
+
+            _estoqueServiceMock
+                .Setup(s => s.VerificarQuantidadePorDescricaoPeca(It.IsAny<string>()))
+                .ReturnsAsync((int?)null);
+
+            // Act
+            var result = await _controller.VerificarQuantidadePorDescricaoPeca(descricao);
+
+            // Assert
+            result.Should().BeOfType<NotFoundObjectResult>();
+
+            var notFoundResult = result.As<NotFoundObjectResult>();
+            notFoundResult.Value.Should().Be($"Estoque não encontrado para peça/insumo com descrição contendo '{descricao}'.");
         }
 
         [Fact]

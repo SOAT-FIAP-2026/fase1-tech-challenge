@@ -34,15 +34,15 @@ namespace Fiap.TechChallenge.Tests.Api.Middlewares
             await middleware.InvokeAsync(_context);
 
             // Assert
-            var responseBody = await GetResponseBody(_context);
+            _context.Response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
 
-            // Desserializa para garantir que o conteúdo é logicamente igual
+            var responseBody = await GetResponseBody(_context);
             var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
 
-            data["message"].ToString().Should().Be($"O email '{email}' já está cadastrado no sistema.");
+            data!["message"].ToString().Should().Be($"O email '{email}' já está cadastrado no sistema.");
         }
 
         [Fact]
@@ -61,7 +61,6 @@ namespace Fiap.TechChallenge.Tests.Api.Middlewares
             var responseBody = await GetResponseBody(_context);
             responseBody.Should().Contain("An unexpected internal error occurred.");
 
-            // Verifica se o log de erro foi chamado
             _loggerMock.Verify(
                 x => x.Log(
                     LogLevel.Error,
@@ -70,6 +69,92 @@ namespace Fiap.TechChallenge.Tests.Api.Middlewares
                     It.IsAny<Exception>(),
                     It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)),
                 Times.Once);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_QuandoArgumentExceptionLancada_DeveRetornarBadRequest()
+        {
+            // Arrange
+            var mensagem = "Argumento invalido.";
+            RequestDelegate next = (innerContext) => throw new ArgumentException(mensagem);
+            var middleware = new ExceptionHandlingMiddleware(next, _loggerMock.Object);
+
+            // Act
+            await middleware.InvokeAsync(_context);
+
+            // Assert
+            _context.Response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+
+            var responseBody = await GetResponseBody(_context);
+            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            data!["message"].ToString().Should().Contain(mensagem);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_QuandoInvalidOperationExceptionLancada_DeveRetornarBadRequest()
+        {
+            // Arrange
+            var mensagem = "Operacao invalida.";
+            RequestDelegate next = (innerContext) => throw new InvalidOperationException(mensagem);
+            var middleware = new ExceptionHandlingMiddleware(next, _loggerMock.Object);
+
+            // Act
+            await middleware.InvokeAsync(_context);
+
+            // Assert
+            _context.Response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+
+            var responseBody = await GetResponseBody(_context);
+            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            data!["message"].ToString().Should().Be(mensagem);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_QuandoUnauthorizedAccessExceptionLancada_DeveRetornarUnauthorized()
+        {
+            // Arrange
+            var mensagem = "Acesso nao autorizado.";
+            RequestDelegate next = (innerContext) => throw new UnauthorizedAccessException(mensagem);
+            var middleware = new ExceptionHandlingMiddleware(next, _loggerMock.Object);
+
+            // Act
+            await middleware.InvokeAsync(_context);
+
+            // Assert
+            _context.Response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+
+            var responseBody = await GetResponseBody(_context);
+            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            data!["message"].ToString().Should().Be(mensagem);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_QuandoNenhumaExcecaoLancada_DeveInvocarNextEManterStatus200()
+        {
+            // Arrange
+            bool nextInvocado = false;
+            RequestDelegate next = (innerContext) =>
+            {
+                nextInvocado = true;
+                return Task.CompletedTask;
+            };
+            var middleware = new ExceptionHandlingMiddleware(next, _loggerMock.Object);
+
+            // Act
+            await middleware.InvokeAsync(_context);
+
+            // Assert
+            nextInvocado.Should().BeTrue();
+            _context.Response.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
 
         private static async Task<string> GetResponseBody(HttpContext context)
