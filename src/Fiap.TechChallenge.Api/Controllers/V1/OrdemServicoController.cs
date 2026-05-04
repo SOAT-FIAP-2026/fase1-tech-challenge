@@ -57,6 +57,14 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
+        [HttpPatch("{id:guid}/aprovar")]
+        public async Task<IActionResult> Aprovar(Guid id)
+        {
+            var ordemServico = await _ordemServicoService.AprovarOrdemServico(id);
+
+            return Ok(ordemServico);
+        }
+
         [HttpDelete("{id:guid}/servicos/{idServico:guid}")]
         public async Task<IActionResult> RemoverItemServico(Guid id, Guid idServico)
         {
