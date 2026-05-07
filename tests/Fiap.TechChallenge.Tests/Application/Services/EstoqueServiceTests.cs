@@ -1,6 +1,7 @@
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.Services;
 using Fiap.TechChallenge.Domain.Entities;
+using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
 using Moq;
 
@@ -39,6 +40,24 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
 
             Assert.NotEqual(Guid.Empty, id);
             _estoqueRepositoryMock.Verify(r => r.Adicionar(It.IsAny<Estoque>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Criar_ComPecaInexistente_DeveLancarExcecao()
+        {
+            var pecaId = Guid.NewGuid();
+            var request = new EstoqueRequest
+            {
+                IdPecaInsumo = pecaId,
+                Quantidade = 100
+            };
+
+            _pecaInsumoRepositoryMock
+                .Setup(r => r.ObterPorId(pecaId))
+                .ReturnsAsync((PecaInsumo?)null);
+
+            await Assert.ThrowsAsync<PecaInsumoNaoEncontradaException>(() => _estoqueService.Criar(request));
+            _estoqueRepositoryMock.Verify(r => r.Adicionar(It.IsAny<Estoque>()), Times.Never);
         }
 
         [Fact]
@@ -132,7 +151,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 .Setup(r => r.ObterPorId(pecaId))
                 .ReturnsAsync((PecaInsumo?)null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.AdicionarQuantidade(pecaId, 50));
+            await Assert.ThrowsAsync<PecaInsumoNaoEncontradaException>(() => _estoqueService.AdicionarQuantidade(pecaId, 50));
         }
 
         [Fact]
@@ -149,7 +168,29 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 .Setup(r => r.ObterPorIdPecaInsumo(pecaId))
                 .ReturnsAsync((Estoque?)null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.AdicionarQuantidade(pecaId, 50));
+            await Assert.ThrowsAsync<EstoqueNaoEncontradoException>(() => _estoqueService.AdicionarQuantidade(pecaId, 50));
+        }
+
+        [Fact]
+        public async Task RemoverQuantidade_ComDadosValidos_DeveAtualizarEstoque()
+        {
+            var pecaId = Guid.NewGuid();
+            var peca = new PecaInsumo("Ã“leo de Motor", 29.99m);
+            var estoque = new Estoque(pecaId, 100);
+            int quantidadeRemover = 30;
+
+            _pecaInsumoRepositoryMock
+                .Setup(r => r.ObterPorId(pecaId))
+                .ReturnsAsync(peca);
+
+            _estoqueRepositoryMock
+                .Setup(r => r.ObterPorIdPecaInsumo(pecaId))
+                .ReturnsAsync(estoque);
+
+            await _estoqueService.RemoverQuantidade(pecaId, quantidadeRemover);
+
+            Assert.Equal(70, estoque.Quantidade);
+            _estoqueRepositoryMock.Verify(r => r.Atualizar(It.IsAny<Estoque>()), Times.Once);
         }
 
         [Fact]
@@ -180,7 +221,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 .Setup(r => r.ObterPorId(pecaId))
                 .ReturnsAsync((PecaInsumo?)null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.RemoverQuantidade(pecaId, 30));
+            await Assert.ThrowsAsync<PecaInsumoNaoEncontradaException>(() => _estoqueService.RemoverQuantidade(pecaId, 30));
         }
 
         [Fact]
@@ -197,7 +238,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 .Setup(r => r.ObterPorIdPecaInsumo(pecaId))
                 .ReturnsAsync((Estoque?)null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(() => _estoqueService.RemoverQuantidade(pecaId, 30));
+            await Assert.ThrowsAsync<EstoqueNaoEncontradoException>(() => _estoqueService.RemoverQuantidade(pecaId, 30));
         }
 
         [Fact]

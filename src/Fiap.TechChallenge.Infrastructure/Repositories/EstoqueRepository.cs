@@ -19,11 +19,20 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
 
         public async Task<int?> VerificarQuantidadePorDescricaoPeca(string descricao)
         {
-            // var estoque = await _context.Estoques
-            //     .Include(e => e.PecaInsumo)
-            //     .FirstOrDefaultAsync(e => e.PecaInsumo.Descricao.Contains(descricao));
-            
-            return null;
+            if (string.IsNullOrWhiteSpace(descricao))
+                return null;
+
+            string termo = descricao.Trim();
+
+            var estoques = await _context.Estoques
+                .AsNoTracking()
+                .Include(e => e.PecaInsumo)
+                .ToListAsync();
+
+            Estoque? estoque = estoques
+                .FirstOrDefault(e => e.PecaInsumo.Descricao.Contains(termo));
+
+            return estoque?.Quantidade;
         }
 
         public async Task<Estoque?> ObterPorIdPecaInsumo(Guid idPecaInsumo)

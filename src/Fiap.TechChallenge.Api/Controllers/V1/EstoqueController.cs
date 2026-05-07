@@ -36,6 +36,18 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> VerificarQuantidadePorDescricaoPeca([FromQuery] string descricao)
         {
+            return await VerificarQuantidadePorDescricao(descricao);
+        }
+
+        [HttpGet("quantidade/descricao/{descricao}")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> VerificarQuantidadePorDescricaoPecaRota([FromRoute] string descricao)
+        {
+            return await VerificarQuantidadePorDescricao(descricao);
+        }
+
+        private async Task<IActionResult> VerificarQuantidadePorDescricao(string descricao)
+        {
             int? quantidade = await _estoqueService.VerificarQuantidadePorDescricaoPeca(descricao);
 
             if (quantidade == null)

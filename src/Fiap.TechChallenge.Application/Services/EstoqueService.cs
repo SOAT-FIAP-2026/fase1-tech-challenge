@@ -13,6 +13,8 @@ namespace Fiap.TechChallenge.Application.Services
 
         public async Task<Guid> Criar(EstoqueRequest request)
         {
+            await GarantirPecaInsumoExiste(request.IdPecaInsumo);
+
             var estoque = new Estoque(request.IdPecaInsumo, request.Quantidade);
 
             await _estoqueRepository.Adicionar(estoque);
@@ -32,7 +34,8 @@ namespace Fiap.TechChallenge.Application.Services
 
         public async Task AdicionarQuantidade(Guid idPecaInsumo, int quantidade)
         {
-            var estoque = await _estoqueRepository.ObterPorIdPecaInsumo(idPecaInsumo);
+            await GarantirPecaInsumoExiste(idPecaInsumo);
+            Estoque estoque = await ObterEstoquePorIdPecaInsumo(idPecaInsumo);
 
             estoque.AdicionarQuantidade(quantidade);
 
@@ -41,16 +44,30 @@ namespace Fiap.TechChallenge.Application.Services
 
         public async Task RemoverQuantidade(Guid idPecaInsumo, int quantidade)
         {
-            var estoque = await _estoqueRepository.ObterPorIdPecaInsumo(idPecaInsumo);
+            await GarantirPecaInsumoExiste(idPecaInsumo);
+            Estoque estoque = await ObterEstoquePorIdPecaInsumo(idPecaInsumo);
 
             estoque.RemoverQuantidade(quantidade);
 
-            // await _estoqueRepository.Atualizar(estoque);
+            await _estoqueRepository.Atualizar(estoque);
         }
 
         public async Task Deletar(Guid idEstoque)
         {
             await _estoqueRepository.Deletar(idEstoque);
+        }
+
+        private async Task GarantirPecaInsumoExiste(Guid idPecaInsumo)
+        {
+            if (await _pecaInsumoRepository.ObterPorId(idPecaInsumo) == null)
+                throw new PecaInsumoNaoEncontradaException(idPecaInsumo);
+        }
+
+        private async Task<Estoque> ObterEstoquePorIdPecaInsumo(Guid idPecaInsumo)
+        {
+            Estoque? estoque = await _estoqueRepository.ObterPorIdPecaInsumo(idPecaInsumo);
+
+            return estoque ?? throw new EstoqueNaoEncontradoException(idPecaInsumo);
         }
     }
 }
