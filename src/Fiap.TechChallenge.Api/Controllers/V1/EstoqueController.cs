@@ -36,18 +36,6 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> VerificarQuantidadePorDescricaoPeca([FromQuery] string descricao)
         {
-            return await VerificarQuantidadePorDescricao(descricao);
-        }
-
-        [HttpGet("quantidade/descricao/{descricao}")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> VerificarQuantidadePorDescricaoPecaRota([FromRoute] string descricao)
-        {
-            return await VerificarQuantidadePorDescricao(descricao);
-        }
-
-        private async Task<IActionResult> VerificarQuantidadePorDescricao(string descricao)
-        {
             int? quantidade = await _estoqueService.VerificarQuantidadePorDescricaoPeca(descricao);
 
             if (quantidade == null)
@@ -74,11 +62,11 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok("Quantidade removida com sucesso.");
         }
 
-        [HttpDelete("{idEstoque:guid}")]
+        [HttpDelete("{id:guid}")]
         [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Deletar(Guid idEstoque)
+        public async Task<IActionResult> Deletar(Guid id)
         {
-            await _estoqueService.Deletar(idEstoque);
+            await _estoqueService.Deletar(id);
 
             return NoContent();
         }

@@ -41,6 +41,12 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
                 .FirstOrDefaultAsync(e => e.IdPecaInsumo == idPecaInsumo);
         }
 
+        public async Task<Estoque?> ObterPorId(Guid idEstoque)
+        {
+            return await _context.Estoques
+                .FirstOrDefaultAsync(e => e.Id == idEstoque);
+        }
+
         public async Task Adicionar(Estoque estoque)
         {
             await _context.Estoques.AddAsync(estoque);

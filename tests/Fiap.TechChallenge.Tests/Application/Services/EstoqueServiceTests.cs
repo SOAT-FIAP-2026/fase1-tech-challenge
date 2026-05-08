@@ -245,10 +245,51 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         public async Task Deletar_DeveExecutarDeletarNoRepository()
         {
             Guid estoqueId = Guid.NewGuid();
+            var estoque = new Estoque(Guid.NewGuid(), 10);
+
+            _estoqueRepositoryMock
+                .Setup(r => r.ObterPorId(estoqueId))
+                .ReturnsAsync(estoque);
 
             await _estoqueService.Deletar(estoqueId);
 
-            _estoqueRepositoryMock.Verify(r => r.Deletar(estoqueId), Times.Once);
+            _estoqueRepositoryMock.Verify(r => r.Deletar(estoque.Id), Times.Once);
+        }
+
+        [Fact]
+        public async Task Deletar_ComIdPecaInsumo_DeveExecutarDeletarNoRepository()
+        {
+            Guid idPecaInsumo = Guid.NewGuid();
+            var estoque = new Estoque(idPecaInsumo, 10);
+
+            _estoqueRepositoryMock
+                .Setup(r => r.ObterPorId(estoque.Id))
+                .ReturnsAsync((Estoque?)null);
+
+            _estoqueRepositoryMock
+                .Setup(r => r.ObterPorIdPecaInsumo(idPecaInsumo))
+                .ReturnsAsync(estoque);
+
+            await _estoqueService.Deletar(idPecaInsumo);
+
+            _estoqueRepositoryMock.Verify(r => r.Deletar(estoque.Id), Times.Once);
+        }
+
+        [Fact]
+        public async Task Deletar_QuandoEstoqueNaoExiste_DeveLancarExcecao()
+        {
+            Guid id = Guid.NewGuid();
+
+            _estoqueRepositoryMock
+                .Setup(r => r.ObterPorId(id))
+                .ReturnsAsync((Estoque?)null);
+
+            _estoqueRepositoryMock
+                .Setup(r => r.ObterPorIdPecaInsumo(id))
+                .ReturnsAsync((Estoque?)null);
+
+            await Assert.ThrowsAsync<EstoqueNaoEncontradoException>(() => _estoqueService.Deletar(id));
+            _estoqueRepositoryMock.Verify(r => r.Deletar(It.IsAny<Guid>()), Times.Never);
         }
     }
 }

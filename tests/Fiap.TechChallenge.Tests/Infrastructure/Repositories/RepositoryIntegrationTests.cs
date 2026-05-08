@@ -23,6 +23,7 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
             await repository.Adicionar(estoque);
 
             (await repository.VerificarQuantidadePorIdPecaInsumo(peca.Id)).Should().Be(10);
+            (await repository.ObterPorId(estoque.Id)).Should().BeEquivalentTo(estoque);
             (await repository.ObterPorIdPecaInsumo(peca.Id)).Should().BeEquivalentTo(estoque);
             (await repository.VerificarQuantidadePorDescricaoPeca("Sensor")).Should().Be(10);
 

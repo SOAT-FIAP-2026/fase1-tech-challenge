@@ -52,9 +52,15 @@ namespace Fiap.TechChallenge.Application.Services
             await _estoqueRepository.Atualizar(estoque);
         }
 
-        public async Task Deletar(Guid idEstoque)
+        public async Task Deletar(Guid id)
         {
-            await _estoqueRepository.Deletar(idEstoque);
+            Estoque? estoque = await _estoqueRepository.ObterPorId(id)
+                ?? await _estoqueRepository.ObterPorIdPecaInsumo(id);
+
+            if (estoque == null)
+                throw new EstoqueNaoEncontradoException(id);
+
+            await _estoqueRepository.Deletar(estoque.Id);
         }
 
         private async Task GarantirPecaInsumoExiste(Guid idPecaInsumo)
