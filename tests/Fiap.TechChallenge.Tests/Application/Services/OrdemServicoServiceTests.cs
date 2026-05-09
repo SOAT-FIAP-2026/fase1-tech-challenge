@@ -45,16 +45,12 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             {
                 ClienteId = clienteId,
                 VeiculoId = veiculoId,
-                Observacao = "Teste de criacao",
-                ServicosIds = [servico1.Id, servico2.Id],
-                PecasInsumoIds = [peca1.Id]
+                Observacao = "Teste de criacao"
             };
 
             _clienteRepositoryMock.Setup(r => r.ObterPorId(clienteId)).ReturnsAsync(new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999"));
             _veiculoRepositoryMock.Setup(r => r.ObterPorId(veiculoId)).ReturnsAsync(new Veiculo("ABC1D23", "Fiat", "Argo", 2024));
             _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("RECEBIDA"))).ReturnsAsync(status);
-            _servicoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([servico1, servico2]);
-            _pecaInsumoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([peca1]);
 
             OrdemServico? captured = null;
             _ordemServicoRepositoryMock
@@ -69,10 +65,9 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             Assert.Equal(clienteId, captured!.IdCliente);
             Assert.Equal(veiculoId, captured.IdVeiculo);
             Assert.Equal(status.Id, captured.IdStatus);
-            Assert.Collection(captured.ItensServico, _ => { }, _ => { });
-            Assert.Single(captured.ItensPecaInsumo);
-            Assert.NotNull(captured.Orcamento);
-            Assert.Equal(175m, captured.Orcamento!.ValorTotal.Valor);
+            Assert.Empty(captured.ItensServico);
+            Assert.Empty(captured.ItensPecaInsumo);
+            Assert.Null(captured.Orcamento);
             _ordemServicoRepositoryMock.Verify(r => r.Adicionar(It.IsAny<OrdemServico>()), Times.Once);
         }
 
@@ -118,9 +113,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             var request = new OrdemServicoRequest
             {
                 ClienteId = Guid.NewGuid(),
-                VeiculoId = Guid.NewGuid(),
-                ServicosIds = [],
-                PecasInsumoIds = []
+                VeiculoId = Guid.NewGuid()
             };
 
             _clienteRepositoryMock.Setup(r => r.ObterPorId(request.ClienteId)).ReturnsAsync((Cliente?)null);

@@ -23,9 +23,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
             var request = new OrdemServicoRequest
             {
                 ClienteId = Guid.NewGuid(),
-                VeiculoId = Guid.NewGuid(),
-                ServicosIds = [],
-                PecasInsumoIds = []
+                VeiculoId = Guid.NewGuid()
             };
             Guid id = Guid.NewGuid();
 

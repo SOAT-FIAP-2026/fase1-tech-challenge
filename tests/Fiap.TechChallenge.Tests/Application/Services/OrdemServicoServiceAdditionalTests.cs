@@ -163,9 +163,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             var request = new OrdemServicoRequest
             {
                 ClienteId = Guid.NewGuid(),
-                VeiculoId = Guid.NewGuid(),
-                ServicosIds = [],
-                PecasInsumoIds = []
+                VeiculoId = Guid.NewGuid()
             };
 
             _clienteRepositoryMock.Setup(r => r.ObterPorId(request.ClienteId))
@@ -181,9 +179,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             var request = new OrdemServicoRequest
             {
                 ClienteId = Guid.NewGuid(),
-                VeiculoId = Guid.NewGuid(),
-                ServicosIds = [],
-                PecasInsumoIds = []
+                VeiculoId = Guid.NewGuid()
             };
 
             _clienteRepositoryMock.Setup(r => r.ObterPorId(request.ClienteId))
@@ -193,53 +189,6 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("RECEBIDA"))).ReturnsAsync((StatusOrdemServico?)null);
 
             await Assert.ThrowsAsync<StatusOrdemServicoNaoEncontradoException>(() => _service.Criar(request));
-        }
-
-        [Fact]
-        public async Task Criar_QuandoServicoNaoExiste_DeveLancarExcecao()
-        {
-            Guid servicoId = Guid.NewGuid();
-            var request = new OrdemServicoRequest
-            {
-                ClienteId = Guid.NewGuid(),
-                VeiculoId = Guid.NewGuid(),
-                ServicosIds = [servicoId],
-                PecasInsumoIds = []
-            };
-
-            _clienteRepositoryMock.Setup(r => r.ObterPorId(request.ClienteId))
-                .ReturnsAsync(new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999"));
-            _veiculoRepositoryMock.Setup(r => r.ObterPorId(request.VeiculoId))
-                .ReturnsAsync(new Veiculo("ABC1D23", "Fiat", "Argo", 2024));
-            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("RECEBIDA")))
-                .ReturnsAsync(new StatusOrdemServico("Recebida", "RECEBIDA"));
-            _servicoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([]);
-
-            await Assert.ThrowsAsync<ServicoNaoEncontradoException>(() => _service.Criar(request));
-        }
-
-        [Fact]
-        public async Task Criar_QuandoPecaNaoExiste_DeveLancarExcecao()
-        {
-            Guid pecaId = Guid.NewGuid();
-            var request = new OrdemServicoRequest
-            {
-                ClienteId = Guid.NewGuid(),
-                VeiculoId = Guid.NewGuid(),
-                ServicosIds = [],
-                PecasInsumoIds = [pecaId]
-            };
-
-            _clienteRepositoryMock.Setup(r => r.ObterPorId(request.ClienteId))
-                .ReturnsAsync(new Cliente("Joao Silva", "52998224725", "joao@email.com", "11999999999"));
-            _veiculoRepositoryMock.Setup(r => r.ObterPorId(request.VeiculoId))
-                .ReturnsAsync(new Veiculo("ABC1D23", "Fiat", "Argo", 2024));
-            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("RECEBIDA")))
-                .ReturnsAsync(new StatusOrdemServico("Recebida", "RECEBIDA"));
-            _servicoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([]);
-            _pecaInsumoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([]);
-
-            await Assert.ThrowsAsync<PecaInsumoNaoEncontradaException>(() => _service.Criar(request));
         }
 
         private static void AssociarServico(ItemServico item, Servico servico)

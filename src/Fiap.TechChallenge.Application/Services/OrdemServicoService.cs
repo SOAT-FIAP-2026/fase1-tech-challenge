@@ -41,12 +41,7 @@ namespace Fiap.TechChallenge.Application.Services
             await GarantirVeiculoExiste(request.VeiculoId);
             StatusOrdemServico statusInicial = await GarantirStatusExiste(StatusOS.Recebida);
 
-            IReadOnlyCollection<Servico> servicos = await ObterServicos(request.ServicosIds);
-            IReadOnlyCollection<PecaInsumo> pecas = await ObterPecas(request.PecasInsumoIds);
-
             OrdemServico ordemServico = new(request.ClienteId, request.VeiculoId, statusInicial.Id, request.Observacao);
-
-            ordemServico.SincronizarItens(servicos, pecas);
 
             await _ordemServicoRepository.Adicionar(ordemServico);
 

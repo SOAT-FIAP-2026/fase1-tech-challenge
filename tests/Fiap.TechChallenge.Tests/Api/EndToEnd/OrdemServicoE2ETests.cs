@@ -25,9 +25,7 @@ namespace Fiap.TechChallenge.Tests.Api.EndToEnd
             {
                 ClienteId = cliente.Id,
                 VeiculoId = veiculo.Id,
-                Observacao = "Fluxo E2E",
-                ServicosIds = [servico.Id],
-                PecasInsumoIds = [peca.Id]
+                Observacao = "Fluxo E2E"
             });
 
             criarResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -35,9 +33,9 @@ namespace Fiap.TechChallenge.Tests.Api.EndToEnd
 
             OrdemServicoResponse ordemCriada = (await client.GetFromJsonAsync<OrdemServicoResponse>($"/api/v1/ordens-servico/{ordemId}"))!;
             ordemCriada.IdStatus.Should().Be(DatabaseSeed.StatusRecebidaId);
-            ordemCriada.ItensServico.Should().ContainSingle(item => item.IdServico == servico.Id);
-            ordemCriada.ItensPecaInsumo.Should().ContainSingle(item => item.IdPecaInsumo == peca.Id);
-            ordemCriada.ValorTotal.Should().Be(servico.ValorUnitario + peca.ValorUnitario);
+            ordemCriada.ItensServico.Should().BeEmpty();
+            ordemCriada.ItensPecaInsumo.Should().BeEmpty();
+            ordemCriada.ValorTotal.Should().BeNull();
 
             var iniciarDiagnosticoResponse = await client.PatchAsync($"/api/v1/ordens-servico/{ordemId}/iniciar-diagnostico", null);
             iniciarDiagnosticoResponse.StatusCode.Should().Be(HttpStatusCode.OK);
