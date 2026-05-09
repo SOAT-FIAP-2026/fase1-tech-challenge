@@ -22,14 +22,14 @@ jobs:
           dotnet-version: 8.0.x
           cache: true
           cache-dependency-path: |
-            fase1-tech-challenge.sln
+            Fiap.TechChallenge.Api.slnx
             **/*.csproj
 
       - name: Restore
-        run: dotnet restore fase1-tech-challenge.sln
+        run: dotnet restore Fiap.TechChallenge.Api.slnx
 
       - name: Build
-        run: dotnet build fase1-tech-challenge.sln --configuration Release --no-restore
+        run: dotnet build Fiap.TechChallenge.Api.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test fase1-tech-challenge.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test Fiap.TechChallenge.Api.slnx --configuration Release --no-build --verbosity normal
