@@ -29,7 +29,13 @@ namespace Fiap.TechChallenge.Application.Services
 
         public async Task<PecaInsumoResponse> ObterPorDescricao(string descricao)
         {
+            if (string.IsNullOrWhiteSpace(descricao))
+                throw new ArgumentException("A descrição da peça/insumo é obrigatória.");
+
             PecaInsumo? pecaInsumo = await _pecaInsumoRepository.ObterPorDescricao(descricao);
+
+            if (pecaInsumo == null)
+                throw new InvalidOperationException($"Peça/Insumo com descrição '{descricao}' não encontrado.");
 
             return ToResponse(pecaInsumo);
         }
@@ -63,6 +69,9 @@ namespace Fiap.TechChallenge.Application.Services
         private async Task<PecaInsumo> ObterEntidadePorId(Guid id)
         {
             PecaInsumo? pecaInsumo = await _pecaInsumoRepository.ObterPorId(id);
+
+            if (pecaInsumo == null)
+                throw new PecaInsumoNaoEncontradaException(id);
 
             return pecaInsumo;
         }

@@ -6,6 +6,7 @@ namespace Fiap.TechChallenge.Domain.Interfaces.Repository
     {
         Task<int?> VerificarQuantidadePorIdPecaInsumo(Guid idPecaInsumo);
         Task<int?> VerificarQuantidadePorDescricaoPeca(string descricao);
+        Task<Estoque?> ObterPorId(Guid idEstoque);
         Task<Estoque?> ObterPorIdPecaInsumo(Guid idPecaInsumo);
         Task Adicionar(Estoque estoque);
         Task Atualizar(Estoque estoque);

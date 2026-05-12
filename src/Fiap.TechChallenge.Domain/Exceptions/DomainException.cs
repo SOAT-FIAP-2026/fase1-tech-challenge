@@ -105,6 +105,13 @@ namespace Fiap.TechChallenge.Domain.Exceptions
     }
 
     /// <summary>
+    /// Exceção lançada quando um estoque não é encontrado para uma peça ou insumo.
+    /// </summary>
+    public class EstoqueNaoEncontradoException(Guid idPecaInsumo) : DomainException($"Estoque da peça/insumo com id '{idPecaInsumo}' não encontrado.")
+    {
+    }
+
+    /// <summary>
     /// Exceção lançada quando um item de peça/insumo não é encontrado na ordem de serviço.
     /// </summary>
     public class ItemPecaInsumoNaoEncontradoException(Guid idPecaInsumo) : DomainException($"Item de peça/insumo com id '{idPecaInsumo}' não encontrado na ordem de serviço.")

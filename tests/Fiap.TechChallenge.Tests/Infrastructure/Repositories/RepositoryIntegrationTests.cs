@@ -23,8 +23,9 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
             await repository.Adicionar(estoque);
 
             (await repository.VerificarQuantidadePorIdPecaInsumo(peca.Id)).Should().Be(10);
+            (await repository.ObterPorId(estoque.Id)).Should().BeEquivalentTo(estoque);
             (await repository.ObterPorIdPecaInsumo(peca.Id)).Should().BeEquivalentTo(estoque);
-            (await repository.VerificarQuantidadePorDescricaoPeca("Sensor")).Should().BeNull();
+            (await repository.VerificarQuantidadePorDescricaoPeca("Sensor")).Should().Be(10);
 
             estoque.AdicionarQuantidade(5);
             await repository.Atualizar(estoque);
@@ -113,7 +114,7 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
             await repository.Adicionar(lampada);
 
             (await repository.ObterPorId(filtro.Id)).Should().NotBeNull();
-            (await repository.ObterPorDescricao("Filtro")).Should().BeNull();
+            (await repository.ObterPorDescricao("Filtro"))!.Id.Should().Be(filtro.Id);
             (await repository.ListarTodos()).Should().HaveCount(2);
             (await repository.ObterPorIds([filtro.Id, filtro.Id, Guid.NewGuid()]))
                 .Should()

@@ -1,6 +1,7 @@
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.Services;
 using Fiap.TechChallenge.Domain.Entities;
+using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
 using Moq;
 
@@ -59,7 +60,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 .Setup(r => r.ObterPorId(id))
                 .ReturnsAsync((PecaInsumo?)null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(() => _pecaInsumoService.ObterPorId(id));
+            await Assert.ThrowsAsync<PecaInsumoNaoEncontradaException>(() => _pecaInsumoService.ObterPorId(id));
         }
 
         [Fact]
@@ -84,7 +85,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 .Setup(r => r.ObterPorDescricao("Inexistente"))
                 .ReturnsAsync((PecaInsumo?)null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(() => _pecaInsumoService.ObterPorDescricao("Inexistente"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _pecaInsumoService.ObterPorDescricao("Inexistente"));
         }
 
         [Fact]
@@ -146,7 +147,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 .Setup(r => r.ObterPorId(id))
                 .ReturnsAsync((PecaInsumo?)null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(() => _pecaInsumoService.Atualizar(id, request));
+            await Assert.ThrowsAsync<PecaInsumoNaoEncontradaException>(() => _pecaInsumoService.Atualizar(id, request));
         }
 
         [Fact]
