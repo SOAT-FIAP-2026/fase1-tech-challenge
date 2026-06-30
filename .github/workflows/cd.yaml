@@ -4,7 +4,7 @@ on:
   push:
     branches:
       # - main
-      - feat-infra
+      - feat/infra
   workflow_dispatch: # Permite execução manual pelo GitHub UI
 
 env:
