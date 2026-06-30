@@ -1,4 +1,7 @@
 services:
+  # ===========================================================================
+  # PostgreSQL
+  # ===========================================================================
   postgres:
     image: postgres:16
     container_name: techchallenge_postgres
@@ -11,14 +14,20 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  api:
-    container_name: techchallenge_api
+  api-dev:
+    container_name: techchallenge_api_dev
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
@@ -30,5 +39,35 @@ services:
     volumes:
       - .:/src
     working_dir: /src
+    command: ["dotnet", "watch", "--project", "src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj", "run", "--no-launch-profile"]
+
+  # ===========================================================================
+  # API — Produção (imagem otimizada multi-stage)
+  # ===========================================================================
+  # api:
+  #   container_name: techchallenge_api
+  #   profiles: ["prod"]
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   environment:
+  #     ASPNETCORE_ENVIRONMENT: Production
+  #     ASPNETCORE_URLS: http://+:8080
+  #     ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=techchallengedb-dev;Username=postgres;Password=postgres
+  #     Jwt__Secret: QiIRd2qKY47zz0b8J367SqKaOYOPBTCu
+  #     Jwt__Issuer: TechChallenge
+  #     Jwt__Audience: techchallenge.com.br
+  #   ports:
+  #     - "8080:8080"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -f http://localhost:8080/api/ping || exit 1"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 30s
+
 volumes:
   postgres_data:

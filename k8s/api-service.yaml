@@ -1,0 +1,22 @@
+# ==============================================================================
+# API — Service (expõe a API para acesso externo)
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service
+  namespace: techchallenge
+  labels:
+    app.kubernetes.io/name: api
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: techchallenge
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: api
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+      protocol: TCP
+      name: http
