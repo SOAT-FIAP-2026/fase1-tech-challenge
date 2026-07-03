@@ -27,10 +27,12 @@ spec:
         app.kubernetes.io/component: backend
         app.kubernetes.io/part-of: techchallenge
     spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
       containers:
         - name: api
-          image: techchallenge-api:latest  # Sobrescrito pelo CD via: kubectl set image
-          imagePullPolicy: Always
+          image: gabrielnetto94/techchallenge-api:latest # Sobrescrito pelo CD via: kubectl set image
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -68,4 +70,4 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
-            failureThreshold: 12  # 5 + (5 * 12) = 65s max para startup
+            failureThreshold: 12 # 5 + (5 * 12) = 65s max para startup
