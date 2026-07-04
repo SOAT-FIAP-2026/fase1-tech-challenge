@@ -84,7 +84,6 @@ namespace Fiap.TechChallenge.Application.Services
             return ToResponse(ordemServico);
         }
 
-
         public async Task<OrdemServicoResponse> IncluirServico(Guid id, OrdemServicoServicosRequest request)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
@@ -116,7 +115,7 @@ namespace Fiap.TechChallenge.Application.Services
 
             return ToResponse(ordemServico);
         }
-        
+
         public async Task RemoverItemServico(Guid id, Guid idServico)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
@@ -186,6 +185,23 @@ namespace Fiap.TechChallenge.Application.Services
             return ToResponse(ordemServico);
         }
 
+        public async Task<OrdemServicoResponse> ConfirmarEntrega(Guid id)
+        {
+            OrdemServico ordemServico = await ObterEntidadePorId(id);
+
+            StatusOrdemServico statusEntregue = await GarantirStatusExiste(StatusOS.Entregue);
+
+            if (ordemServico.IdStatus == statusEntregue.Id)
+                throw new InvalidOperationException("A ordem de serviço já foi entregue.");
+
+            ordemServico.AlterarStatus(statusEntregue.Id);
+
+            await _ordemServicoRepository.Atualizar(ordemServico);
+
+            return ToResponse(ordemServico);
+        }
+
+
         public async Task<OrdemServicoResponse> ObterPorId(Guid id)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
@@ -225,7 +241,6 @@ namespace Fiap.TechChallenge.Application.Services
 
             return status;
         }
-
 
         private async Task<IReadOnlyCollection<Servico>> ObterServicos(IReadOnlyCollection<Guid> servicosIds)
         {
