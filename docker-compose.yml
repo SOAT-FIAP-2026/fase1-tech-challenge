@@ -7,9 +7,9 @@ services:
     container_name: techchallenge_postgres
     restart: always
     environment:
-      POSTGRES_DB: techchallengedb-dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -33,41 +33,17 @@ services:
       ASPNETCORE_URLS: http://+:8080
       DOTNET_USE_POLLING_FILE_WATCHER: "1"
       DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER: "1"
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=techchallengedb-dev;Username=postgres;Password=postgres
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
     ports:
-      - "8080:8080"
+      - "${API_PORT:-8080}:8080"
     volumes:
       - .:/src
     working_dir: /src
     command: ["dotnet", "watch", "--project", "src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj", "run", "--no-launch-profile"]
 
-  # ===========================================================================
-  # API — Produção (imagem otimizada multi-stage)
-  # ===========================================================================
-  # api:
-  #   container_name: techchallenge_api
-  #   profiles: ["prod"]
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   environment:
-  #     ASPNETCORE_ENVIRONMENT: Production
-  #     ASPNETCORE_URLS: http://+:8080
-  #     ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=techchallengedb-dev;Username=postgres;Password=postgres
-  #     Jwt__Secret: QiIRd2qKY47zz0b8J367SqKaOYOPBTCu
-  #     Jwt__Issuer: TechChallenge
-  #     Jwt__Audience: techchallenge.com.br
-  #   ports:
-  #     - "8080:8080"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:8080/api/ping || exit 1"]
-  #     interval: 15s
-  #     timeout: 5s
-  #     retries: 3
-  #     start_period: 30s
 
 volumes:
   postgres_data:

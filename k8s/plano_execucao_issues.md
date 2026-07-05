@@ -51,7 +51,7 @@ Apenas **1 item**: adicionar um usuário não-root no Dockerfile. É uma mudanç
 |---|---|---|
 | Healthcheck no banco de dados | ✅ Feito | `pg_isready` com interval/timeout/retries configurados |
 | `depends_on` com `condition: service_healthy` | ✅ Feito | API só sobe quando o banco está saudável |
-| Extrair credenciais para arquivo `.env` | ❌ **Falta** | Senhas estão hardcoded direto no `docker-compose.yml` |
+| Extrair credenciais para arquivo `.env` | ✅ **Feito** | `.env` + `.env.example` criados; variáveis referenciadas no `docker-compose.yml` |
 
 ### O que falta fazer:
 Criar um arquivo `.env` (não versionado, já está no `.gitignore`) e referenciar as variáveis no `docker-compose.yml`:
@@ -74,8 +74,8 @@ environment:
 
 Também criar um `.env.example` (versionado) como template para outros desenvolvedores.
 
-> [!TIP]
-> **Esforço estimado:** ~15 minutos.
+> [!IMPORTANT]
+> **Esta issue está 100% concluída!** `.env` criado (não versionado), `.env.example` adicionado como template, e todas as credenciais removidas do `docker-compose.yml`.
 
 ---
 
@@ -165,9 +165,9 @@ infra/
 
 | Issue | Progresso | Esforço Restante | Prioridade |
 |---|---|---|---|
-| **#41** K8s | ✅ 100% | Pode fechar agora | — |
-| **#32** Dockerfile | 🟡 90% | ~5 min (user não-root) | 1ª |
-| **#33** Docker Compose | 🟡 70% | ~15 min (arquivo .env) | 2ª |
+| **#41** K8s | ✅ 100% | 0 min | — |
+| **#32** Dockerfile | ✅ 100% | 0 min | 1ª |
+| **#33** Docker Compose | ✅ 100% | 0 min | — |
 | **#43** CI/CD | 🟡 75% | ~30 min (descomentar deploy + padronizar) | 3ª |
 | **#44** Config Arquivos | 🟠 60% | Depende das demais + Terraform | 4ª (última) |
 
