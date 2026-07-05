@@ -1,0 +1,55 @@
+# ==============================================================================
+# HPA — Horizontal Pod Autoscaler para a API
+# ==============================================================================
+# Escala automaticamente o número de réplicas da API baseado no consumo de
+# CPU e memória, garantindo escalabilidade dinâmica em horários de pico.
+#
+# Pré-requisito: Metrics Server deve estar instalado no cluster.
+#   kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+#
+# Para Kind (local), adicionar flag --kubelet-insecure-tls ao metrics-server:
+#   kubectl patch deployment metrics-server -n kube-system --type='json' \
+#     -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+# ==============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-hpa
+  namespace: techchallenge
+  labels:
+    app.kubernetes.io/name: api
+    app.kubernetes.io/component: autoscaler
+    app.kubernetes.io/part-of: techchallenge
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120

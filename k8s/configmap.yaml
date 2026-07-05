@@ -1,0 +1,34 @@
+# ==============================================================================
+# ConfigMap — Variáveis de configuração NÃO sensíveis
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: techchallenge
+  labels:
+    app.kubernetes.io/name: api
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: techchallenge
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_URLS: "http://+:8080"
+  Jwt__Issuer: "TechChallenge"
+  Jwt__Audience: "techchallenge.com.br"
+
+---
+# ==============================================================================
+# ConfigMap — Configuração do PostgreSQL
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: techchallenge
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: techchallenge
+data:
+  POSTGRES_DB: "techchallengedb"
+  POSTGRES_USER: "postgres"

@@ -53,3 +53,6 @@ TestResults/
 # Coverage
 coverage/
 *.coverage
+
+# Kubernetes Secrets
+k8s/secrets.yaml

@@ -1,0 +1,10 @@
+# ==============================================================================
+# Namespace — Isolamento lógico para todos os recursos do TechChallenge
+# ==============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: techchallenge
+  labels:
+    app.kubernetes.io/part-of: techchallenge
+    app.kubernetes.io/managed-by: kubectl
