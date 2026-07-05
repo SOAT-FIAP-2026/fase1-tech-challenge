@@ -28,6 +28,13 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
+# Create a non-root user and group for security (principle of least privilege)
+RUN addgroup --system appgroup && \
+    adduser --system --ingroup appgroup --no-create-home --shell /bin/false appuser && \
+    chown -R appuser:appgroup /app
+
+USER appuser
+
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
