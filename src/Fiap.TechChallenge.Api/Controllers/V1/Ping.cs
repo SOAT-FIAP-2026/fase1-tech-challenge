@@ -11,7 +11,7 @@ namespace Fiap.TechChallenge.Api.Controllers
         {
              return StatusCode(200, new
             {
-                message = "pong"
+                message = "pong3"
             });
         }
     }

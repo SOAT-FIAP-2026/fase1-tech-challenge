@@ -75,38 +75,42 @@ jobs:
   # ============================================================================
   # Job 3: Deploy no Kubernetes
   # ============================================================================
-  # deploy-k8s:
-  #   runs-on: ubuntu-latest
-  #   needs: docker-build-push
+  deploy-k8s:
+    runs-on: ubuntu-latest
+    needs: docker-build-push
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Configurar kubeconfig
-  #       run: |
-  #         mkdir -p $HOME/.kube
-  #         echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
-  #         chmod 600 $HOME/.kube/config
+      - name: Configurar AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: sa-east-1
 
-  #     - name: Aplicar manifestos Kubernetes
-  #       run: |
-  #         kubectl apply -f k8s/namespace.yaml
-  #         kubectl apply -f k8s/configmap.yaml
-  #         kubectl apply -f k8s/secret.yaml
-  #         kubectl apply -f k8s/postgres-deployment.yaml
-  #         kubectl apply -f k8s/api-deployment.yaml
-  #         kubectl apply -f k8s/api-service.yaml
-  #         kubectl apply -f k8s/hpa.yaml
+      - name: Configurar Kubeconfig do EKS
+        run: aws eks update-kubeconfig --name eks-fiap-soat-terraform --region sa-east-1
 
-  #     - name: Atualizar imagem do Deployment
-  #       run: |
-  #         kubectl set image deployment/api \
-  #           api=${{ env.DOCKERHUB_IMAGE }}:${{ github.sha }} \
-  #           -n techchallenge
+      - name: Aplicar manifestos Kubernetes
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/api-deployment.yaml
+          kubectl apply -f k8s/api-service.yaml
+          kubectl apply -f k8s/api-ingress.yaml
+          kubectl apply -f k8s/hpa.yaml
 
-  #     - name: Aguardar rollout
-  #       run: |
-  #         kubectl rollout status deployment/api \
-  #           -n techchallenge \
-  #           --timeout=120s
+      - name: Atualizar imagem do Deployment
+        run: |
+          # O action docker/metadata-action gera a tag no formato sha256-{github.sha}
+          kubectl set image deployment/api \
+            api=${{ env.DOCKERHUB_IMAGE }}:sha256-${{ github.sha }} \
+            -n techchallenge
+
+      - name: Aguardar rollout
+        run: |
+          kubectl rollout status deployment/api \
+            -n techchallenge \
+            --timeout=120s

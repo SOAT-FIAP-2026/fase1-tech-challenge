@@ -15,20 +15,5 @@ data:
   ASPNETCORE_URLS: "http://+:8080"
   Jwt__Issuer: "TechChallenge"
   Jwt__Audience: "techchallenge.com.br"
+  # A ConnectionString completa (host RDS) está no Secret api-secret
 
----
-# ==============================================================================
-# ConfigMap — Configuração do PostgreSQL
-# ==============================================================================
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-config
-  namespace: techchallenge
-  labels:
-    app.kubernetes.io/name: postgres
-    app.kubernetes.io/component: config
-    app.kubernetes.io/part-of: techchallenge
-data:
-  POSTGRES_DB: "techchallengedb"
-  POSTGRES_USER: "postgres"
