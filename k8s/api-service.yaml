@@ -1,5 +1,5 @@
 # ==============================================================================
-# API — Service (expõe a API para acesso externo)
+# API — Service (expõe a API para acesso externo via LoadBalancer AWS)
 # ==============================================================================
 apiVersion: v1
 kind: Service
@@ -11,12 +11,12 @@ metadata:
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: techchallenge
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app.kubernetes.io/name: api
   ports:
-    - port: 8080
-      targetPort: 8080
-      nodePort: 30081
+    - port: 80            # porta pública (HTTP padrão)
+      targetPort: 8080     # porta do container
       protocol: TCP
       name: http
+
