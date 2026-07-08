@@ -56,3 +56,19 @@ coverage/
 
 # Kubernetes Secrets
 k8s/secrets.yaml
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate
+*.tfstate.*
+
+# Arquivos sensíveis com variáveis reais — NUNCA versionar
+terraform.tfvars
+*.auto.tfvars
+
+# Misc
+data/
+.DS_Store
