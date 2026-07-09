@@ -1,0 +1,13 @@
+# ==============================================================================
+# ConfigMap patch — AWS (sobrescreve valores do base/configmap.yaml)
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: techchallenge
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_URLS: "http://+:8080"
+  Jwt__Issuer: "TechChallenge"
+  Jwt__Audience: "techchallenge.com.br"

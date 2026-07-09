@@ -1,0 +1,19 @@
+# ==============================================================================
+# ConfigMap — Variáveis de configuração NÃO sensíveis (base compartilhada)
+# Valores específicos de ambiente são sobrescritos nos overlays.
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: techchallenge
+  labels:
+    app.kubernetes.io/name: api
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: techchallenge
+data:
+  ASPNETCORE_URLS: "http://+:8080"
+  Jwt__Issuer: "TechChallenge"
+  Jwt__Audience: "techchallenge.com.br"
+  # ASPNETCORE_ENVIRONMENT é definido por cada overlay (Production / Development)
+  # ConnectionStrings__DefaultConnection é definido no Secret de cada overlay

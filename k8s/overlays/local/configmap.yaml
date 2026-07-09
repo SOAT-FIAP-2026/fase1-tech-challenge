@@ -1,19 +1,14 @@
 # ==============================================================================
-# ConfigMap — Variáveis de configuração NÃO sensíveis
+# ConfigMap patch — LOCAL (sobrescreve valores do base/configmap.yaml)
 # ==============================================================================
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: api-config
   namespace: techchallenge
-  labels:
-    app.kubernetes.io/name: api
-    app.kubernetes.io/component: config
-    app.kubernetes.io/part-of: techchallenge
 data:
-  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_ENVIRONMENT: "Development"
   ASPNETCORE_URLS: "http://+:8080"
   Jwt__Issuer: "TechChallenge"
   Jwt__Audience: "techchallenge.com.br"
-  # A ConnectionString completa (host RDS) está no Secret api-secret
-
+  DOTNET_USE_POLLING_FILE_WATCHER: "true" # Hot Reload em produção não é recomendado, mas aqui ajuda muito no desenvolvimento
