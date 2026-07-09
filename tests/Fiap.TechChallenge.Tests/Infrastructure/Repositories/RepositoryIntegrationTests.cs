@@ -2,8 +2,8 @@ using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Infrastructure.Data;
 using Fiap.TechChallenge.Infrastructure.Repositories;
 using FluentAssertions;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Testcontainers.PostgreSql;
 
 namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
 {
@@ -12,7 +12,7 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
         [Fact]
         public async Task EstoqueRepository_DeveCriarConsultarAtualizarEDeletarEstoque()
         {
-            using var database = CreateDatabase();
+            await using var database = await CreateDatabase();
             var peca = new PecaInsumo("Sensor de Estacionamento", 129.90m);
             database.Context.PecasInsumo.Add(peca);
             await database.Context.SaveChangesAsync();
@@ -41,7 +41,7 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
         [Fact]
         public async Task ServicoRepository_DeveCriarListarAtualizarEDeletarServico()
         {
-            using var database = CreateDatabase();
+            await using var database = await CreateDatabase();
             var repository = new ServicoRepository(database.Context);
             var alinhamento = new Servico("Alinhamento Premium", "Alinhamento completo", 180m, 50);
             var balanceamento = new Servico("Balanceamento Premium", "Balanceamento completo", 120m, 40);
@@ -74,7 +74,7 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
         [Fact]
         public async Task VeiculoRepository_DeveCriarListarAtualizarEDeletarVeiculo()
         {
-            using var database = CreateDatabase();
+            await using var database = await CreateDatabase();
             var repository = new VeiculoRepository(database.Context);
             var civic = new Veiculo("CAR1A23", "Honda", "Civic", 2020);
             var corolla = new Veiculo("CAR1B23", "Toyota", "Corolla", 2021);
@@ -105,7 +105,7 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
         [Fact]
         public async Task PecaInsumoRepository_DeveCriarListarAtualizarEDeletarPeca()
         {
-            using var database = CreateDatabase();
+            await using var database = await CreateDatabase();
             var repository = new PecaInsumoRepository(database.Context);
             var filtro = new PecaInsumo("Filtro de Cabine", 55m);
             var lampada = new PecaInsumo("Lampada H7", 42m);
@@ -133,31 +133,31 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
             (await repository.ObterPorId(filtro.Id)).Should().BeNull();
         }
 
-        private static TestDatabase CreateDatabase()
+        private static async Task<TestDatabase> CreateDatabase()
         {
-            var connection = new SqliteConnection("DataSource=:memory:");
-            connection.Open();
+            var postgreSqlContainer = new PostgreSqlBuilder("postgres:16-alpine").Build();
+            await postgreSqlContainer.StartAsync();
 
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlite(connection)
+                .UseNpgsql(postgreSqlContainer.GetConnectionString())
                 .Options;
 
             var context = new ApplicationDbContext(options);
-            context.Database.EnsureCreated();
+            await context.Database.EnsureCreatedAsync();
 
-            return new TestDatabase(connection, context);
+            return new TestDatabase(postgreSqlContainer, context);
         }
 
-        private sealed class TestDatabase(SqliteConnection connection, ApplicationDbContext context) : IDisposable
+        private sealed class TestDatabase(PostgreSqlContainer postgreSqlContainer, ApplicationDbContext context) : IAsyncDisposable
         {
-            private readonly SqliteConnection _connection = connection;
+            private readonly PostgreSqlContainer _postgreSqlContainer = postgreSqlContainer;
 
             public ApplicationDbContext Context { get; } = context;
 
-            public void Dispose()
+            public async ValueTask DisposeAsync()
             {
-                Context.Dispose();
-                _connection.Dispose();
+                await Context.DisposeAsync();
+                await _postgreSqlContainer.DisposeAsync();
             }
         }
     }

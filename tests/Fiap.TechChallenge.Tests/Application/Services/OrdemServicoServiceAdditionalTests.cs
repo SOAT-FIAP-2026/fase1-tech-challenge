@@ -16,6 +16,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         private readonly Mock<IStatusOrdemServicoRepository> _statusRepositoryMock = new();
         private readonly Mock<IServicoRepository> _servicoRepositoryMock = new();
         private readonly Mock<IPecaInsumoRepository> _pecaInsumoRepositoryMock = new();
+        private readonly Mock<IEstoqueRepository> _estoqueRepositoryMock = new();
         private readonly Mock<IOrdemServicoRepository> _ordemServicoRepositoryMock = new();
         private readonly OrdemServicoService _service;
 
@@ -27,6 +28,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 _statusRepositoryMock.Object,
                 _servicoRepositoryMock.Object,
                 _pecaInsumoRepositoryMock.Object,
+                _estoqueRepositoryMock.Object,
                 _ordemServicoRepositoryMock.Object);
         }
 
