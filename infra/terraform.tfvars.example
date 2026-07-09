@@ -1,0 +1,6 @@
+# Senha do RDS PostgreSQL (mínimo 8 caracteres)
+rds_password = "[PASSWORD]"
+
+# Opcional: sobrescrever outros defaults
+# rds_db_name  = "techchallengedb"
+# rds_username = "postgres"

@@ -1,15 +1,8 @@
 # ==============================================================================
-# HPA — Horizontal Pod Autoscaler para a API
+# HPA — Horizontal Pod Autoscaler (base compartilhada)
 # ==============================================================================
-# Escala automaticamente o número de réplicas da API baseado no consumo de
-# CPU e memória, garantindo escalabilidade dinâmica em horários de pico.
-#
-# Pré-requisito: Metrics Server deve estar instalado no cluster.
-#   kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-#
-# Para Kind (local), adicionar flag --kubelet-insecure-tls ao metrics-server:
-#   kubectl patch deployment metrics-server -n kube-system --type='json' \
-#     -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+# Pré-requisito: Metrics Server instalado no cluster.
+# Ver: k8s/metrics-server/install.sh
 # ==============================================================================
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -26,30 +19,30 @@ spec:
     kind: Deployment
     name: api
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 50 # threshold menor para disparar em testes
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 80
+          averageUtilization: 95
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 30
+      stabilizationWindowSeconds: 15 # responde rápido em testes
       policies:
         - type: Pods
           value: 2
-          periodSeconds: 60
+          periodSeconds: 30
     scaleDown:
-      stabilizationWindowSeconds: 300
+      stabilizationWindowSeconds: 30 # aguarda 30 segundos antes de escalar para baixo
       policies:
         - type: Pods
           value: 1
-          periodSeconds: 120
+          periodSeconds: 30

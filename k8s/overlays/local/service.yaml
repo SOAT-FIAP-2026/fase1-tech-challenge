@@ -1,5 +1,6 @@
 # ==============================================================================
-# API — Service (expõe a API para acesso externo via LoadBalancer AWS)
+# Service — LOCAL (Minikube / Kind)
+# NodePort: acessível via http://localhost:<nodePort> ou minikube service
 # ==============================================================================
 apiVersion: v1
 kind: Service
@@ -11,12 +12,12 @@ metadata:
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: techchallenge
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app.kubernetes.io/name: api
   ports:
-    - port: 80            # porta pública (HTTP padrão)
-      targetPort: 8080     # porta do container
+    - port: 80
+      targetPort: 8080
+      nodePort: 30080    # http://localhost:30080 (após port-forward ou minikube tunnel)
       protocol: TCP
       name: http
-

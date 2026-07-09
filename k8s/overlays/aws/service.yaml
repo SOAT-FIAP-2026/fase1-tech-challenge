@@ -1,0 +1,21 @@
+# ==============================================================================
+# Service — AWS / EKS (LoadBalancer provisionado pelo AWS Cloud Controller)
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service
+  namespace: techchallenge
+  labels:
+    app.kubernetes.io/name: api
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: techchallenge
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: api
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
