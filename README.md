@@ -2,7 +2,59 @@
 
 Esta é uma API desenvolvida em **.NET 8**, seguindo os princípios da **Clean Architecture** e **Domain-Driven Design (DDD)**, com foco em gestão de ordens de serviço, clientes e peças para uma oficina mecânica de médio porte.
 
-## 🏗️ Arquitetura
+## 🎯 Tech Challenge - Fase 2
+
+Este projeto foi evoluído para garantir maior qualidade, resiliência e escalabilidade, incorporando práticas modernas de infraestrutura e automação exigidas na Fase 2:
+- **Refatoração (Clean Code / Clean Arch)** e expansão de domínios (Ordens de Serviço).
+- **Cobertura de Testes Automatizados** (Unitários e E2E).
+- **Conteinerização e Orquestração** com Docker e Kubernetes (HPA, ConfigMaps, Secrets, Ingress).
+- **Infraestrutura como Código (IaC)** via Terraform provisionando cluster EKS e banco de dados RDS na AWS.
+- **Pipeline CI/CD** no GitHub Actions realizando build, testes, geração de imagem Docker e deploy no K8s.
+
+### 🔗 Entregáveis
+
+- 🎥 **Vídeo Demonstrativo:** [LINK_DO_YOUTUBE] (Demonstrando deploy, CI/CD, consumo de APIs e HPA).
+- 📚 **Collection / Documentação das APIs:** [Swagger UI](http://localhost:8080/swagger) (ou acesse a rota `/swagger` no Load Balancer da AWS após o deploy).
+- ☸️ **Manifestos Kubernetes:** Disponíveis na pasta [`/k8s`](./k8s/).
+- ☁️ **Scripts Terraform:** Disponíveis na pasta [`/infra`](./infra/).
+
+## 🏗️ Arquitetura e Infraestrutura
+
+Abaixo está o desenho da arquitetura proposta e infraestrutura provisionada na nuvem (AWS):
+
+```mermaid
+graph TB
+    subgraph GitHub["🤖 GitHub Actions (CI/CD)"]
+        CI["Build & Test"]
+        DOCKER["Docker Build & Push"]
+        CD["Deploy via Kubectl"]
+        CI --> DOCKER --> CD
+    end
+
+    subgraph AWS["☁️ AWS (sa-east-1)"]
+        subgraph VPC["VPC"]
+            subgraph EKS["Cluster Kubernetes (EKS)"]
+                NS["Namespace: techchallenge"]
+                NS --> POD1["API Pod 1 (.NET)"]
+                NS --> POD2["API Pod 2 (.NET)"]
+                NS --> HPA["Autoscaler (HPA)"]
+                HPA -.-> |Escala pods| POD1
+            end
+            RDS["Banco de Dados (RDS PostgreSQL)"]
+        end
+        ECR["Docker Hub / ECR"]
+    end
+
+    CD --> |Aplica YAMLs| EKS
+    DOCKER --> |Push Imagem| ECR
+    EKS --> |Pull Imagem| ECR
+    POD1 --> |Migrate & Conexão| RDS
+    POD2 --> |Conexão| RDS
+
+    USER["👤 Cliente / Mecânico"] --> |HTTP(s)| EKS
+```
+
+### Arquitetura de Software (Aplicação)
 
 O projeto está estruturado nas seguintes camadas, garantindo baixo acoplamento e alta coesão:
 
