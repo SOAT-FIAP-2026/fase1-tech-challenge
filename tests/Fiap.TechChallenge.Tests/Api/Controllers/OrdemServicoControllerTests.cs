@@ -46,9 +46,9 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
             var request = new OrdemServicoServicosRequest
             {
                 ServicosIds = [Guid.NewGuid()],
-                
+
             };
-            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(),Guid.NewGuid(),"Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 205m, [], []);
+            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 205m, [], []);
 
             _serviceMock.Setup(s => s.IncluirServico(id, request)).ReturnsAsync(response);
 
@@ -65,9 +65,9 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
             Guid id = Guid.NewGuid();
             var request = new OrdemServicoPecaInsumoRequest
             {
-                PecasInsumosIds = [Guid.NewGuid()]   
+                PecasInsumosIds = [Guid.NewGuid()]
             };
-            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(),Guid.NewGuid(),"Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 205m, [], []);
+            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 205m, [], []);
 
             _serviceMock.Setup(s => s.IncluirPecaInsumo(id, request)).ReturnsAsync(response);
 
@@ -77,7 +77,6 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
             var retorno = Assert.IsType<OrdemServicoResponse>(ok.Value);
             Assert.Equal(205m, retorno.ValorTotal);
         }
-
 
         [Fact]
         public async Task IniciarDiagnostico_DeveRetornar200ComOrdemAtualizada()
@@ -92,6 +91,21 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
             var ok = Assert.IsType<OkObjectResult>(result);
             var retorno = Assert.IsType<OrdemServicoResponse>(ok.Value);
             Assert.Equal("Em Diagnóstico", retorno.StatusDescricao);
+        }
+
+        [Fact]
+        public async Task ConfirmarEntrega_DeveRetornar200ComOrdemAtualizada()
+        {
+            Guid id = Guid.NewGuid();
+            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Nome do Cliente", "Entregue", "Teste", DateTime.UtcNow, null, null, [], []);
+
+            _serviceMock.Setup(s => s.ConfirmarEntrega(id)).ReturnsAsync(response);
+
+            IActionResult result = await _controller.ConfirmarEntrega(id);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var retorno = Assert.IsType<OrdemServicoResponse>(ok.Value);
+            Assert.Equal("Entregue", retorno.StatusDescricao);
         }
 
         [Fact]
@@ -126,7 +140,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
         public async Task ObterPorId_DeveRetornar200ComDetalhe()
         {
             Guid id = Guid.NewGuid();
-            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(),Guid.NewGuid(),"Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 10m, [], []);
+            var response = new OrdemServicoResponse(id, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, 10m, [], []);
 
             _serviceMock.Setup(s => s.ObterPorId(id)).ReturnsAsync(response);
 
@@ -140,7 +154,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
         [Fact]
         public async Task ObterTodos_DeveRetornar200ComLista()
         {
-            var response = new OrdemServicoResponse(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),"Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, null, [], []);
+            var response = new OrdemServicoResponse(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Nome do Cliente", "Recebida", "Teste", DateTime.UtcNow, null, null, [], []);
 
             _serviceMock.Setup(s => s.ObterTodos()).ReturnsAsync([response]);
 
