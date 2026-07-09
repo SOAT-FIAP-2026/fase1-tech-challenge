@@ -59,6 +59,22 @@ dotnet watch run
 docker compose up -d 
 ```
 
+### Execução com Kubernetes (local)
+
+Para deploy local via Minikube ou Kind, consulte a documentação completa em [**k8s/**](./k8s/).
+
+```bash
+./k8s/overlays/local/deploy.sh
+```
+
+### Infraestrutura AWS (Terraform)
+
+Para provisionar o ambiente na AWS (EKS + RDS), consulte a documentação em [**infra/**](./infra/).
+
+```bash
+cd infra && terraform init && terraform apply
+```
+
 ### Endpoints locais
 
 | Serviço | URL |
@@ -159,9 +175,11 @@ fase1-tech-challenge/
 │   └── Fiap.TechChallenge.Api/             # Camada de API (Controllers, Swagger)
 ├── tests/
 │   └── Fiap.TechChallenge.Tests/           # Testes Unitários e de Integração
+├── k8s/                                     # Manifests Kubernetes (base + overlays)
+├── infra/                                   # Infraestrutura AWS com Terraform (IaC)
 ├── .github/workflows/ci.yml                # Pipeline de CI (GitHub Actions)
 ├── Dockerfile                              # Configuração para build do container
 ├── docker-compose.yml                      # Orquestração de containers
 ├── dotnet-tools.json                       # Ferramentas locais do projeto
 └── README.md                               # Este arquivo
-
+```
