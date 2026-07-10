@@ -1,5 +1,6 @@
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fiap.TechChallenge.Api.Controllers.V1
@@ -18,6 +19,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPost("Cadastrar")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Cadastrar(CadastrarRequest request)
         {
             Guid idUsuario = await _autenticacaoService.Cadastrar(request);

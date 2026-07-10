@@ -2,6 +2,7 @@ using Fiap.TechChallenge.Application.DTOs.Common;
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.DTOs.Responses;
 using Fiap.TechChallenge.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fiap.TechChallenge.Api.Controllers.V1
@@ -9,6 +10,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
     [ApiController]
     [Route("api/v1/veiculos")]
     [Produces("application/json")]
+    [Authorize(Roles = "Administrador")]
     public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
     {
         private readonly IVeiculoService _veiculoService = veiculoService;

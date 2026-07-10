@@ -151,6 +151,8 @@ cd infra && terraform init && terraform apply
 
 O projeto usa **xUnit** como framework de testes e **coverlet** para coleta de cobertura. O `reportgenerator` está configurado como ferramenta local via `dotnet-tools.json`.
 
+Os testes de integração usam **Testcontainers com PostgreSQL**, então é necessário manter o Docker em execução antes de rodar a suíte.
+
 ### Pré-requisito: restaurar ferramentas locais
 
 ```bash

@@ -16,6 +16,7 @@ namespace Fiap.TechChallenge.Application.Services
         private readonly IStatusOrdemServicoRepository _statusRepository;
         private readonly IServicoRepository _servicoRepository;
         private readonly IPecaInsumoRepository _pecaInsumoRepository;
+        private readonly IEstoqueRepository _estoqueRepository;
         private readonly IOrdemServicoRepository _ordemServicoRepository;
 
 
@@ -25,6 +26,7 @@ namespace Fiap.TechChallenge.Application.Services
             IStatusOrdemServicoRepository statusRepository,
             IServicoRepository servicoRepository,
             IPecaInsumoRepository pecaInsumoRepository,
+            IEstoqueRepository estoqueRepository,
             IOrdemServicoRepository ordemServicoRepository)
         {
             _clienteRepository = clienteRepository;
@@ -32,6 +34,7 @@ namespace Fiap.TechChallenge.Application.Services
             _statusRepository = statusRepository;
             _servicoRepository = servicoRepository;
             _pecaInsumoRepository = pecaInsumoRepository;
+            _estoqueRepository = estoqueRepository;
             _ordemServicoRepository = ordemServicoRepository;
         }
 
@@ -106,9 +109,13 @@ namespace Fiap.TechChallenge.Application.Services
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
 
-            IReadOnlyCollection<Guid> pecasIds = [.. ordemServico.ItensPecaInsumo.Select(item => item.IdPecaInsumo).Concat(request.PecasInsumosIds).Distinct()];
+            HashSet<Guid> pecasExistentesIds = ordemServico.ItensPecaInsumo.Select(item => item.IdPecaInsumo).ToHashSet();
+            IReadOnlyCollection<Guid> pecasNovasIds = [.. request.PecasInsumosIds.Distinct().Where(idPeca => !pecasExistentesIds.Contains(idPeca))];
+            IReadOnlyCollection<Guid> pecasIds = [.. pecasExistentesIds.Concat(request.PecasInsumosIds).Distinct()];
             IReadOnlyCollection<PecaInsumo> pecas = await _pecaInsumoRepository.ObterPorIds(pecasIds);
             ValidarEntidadesEncontradas(pecasIds, pecas.Select(p => p.Id), idPeca => new PecaInsumoNaoEncontradaException(idPeca));
+
+            await BaixarEstoqueDasPecas(pecasNovasIds);
 
             ordemServico.SincronizarItens([.. ordemServico.ItensServico.Select(item => item.Servico).Where(s => s != null).Select(s => s!)], pecas);
 
@@ -255,6 +262,19 @@ namespace Fiap.TechChallenge.Application.Services
                 throw new ItemServicoNaoEncontradoException(idServico);
 
             return item;
+        }
+
+        private async Task BaixarEstoqueDasPecas(IReadOnlyCollection<Guid> pecasIds)
+        {
+            foreach (Guid idPecaInsumo in pecasIds)
+            {
+                Estoque? estoque = await _estoqueRepository.ObterPorIdPecaInsumo(idPecaInsumo);
+
+                if (estoque == null)
+                    throw new EstoqueNaoEncontradoException(idPecaInsumo);
+
+                estoque.RemoverQuantidade(1);
+            }
         }
 
         private async Task RecalcularOrcamentoDaOrdem(OrdemServico ordemServico)
