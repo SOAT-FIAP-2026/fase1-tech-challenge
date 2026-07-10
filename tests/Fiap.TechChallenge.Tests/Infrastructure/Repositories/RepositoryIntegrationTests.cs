@@ -143,7 +143,7 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
                 .Options;
 
             var context = new ApplicationDbContext(options);
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.MigrateAsync();
 
             return new TestDatabase(postgreSqlContainer, context);
         }

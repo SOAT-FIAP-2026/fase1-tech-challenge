@@ -186,6 +186,27 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         }
 
         [Fact]
+        public async Task IncluirPecaInsumo_QuandoEstoqueInsuficiente_DeveAbortarOperacao()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+            var peca = new PecaInsumo("Filtro de Ar", 25m);
+            var estoque = new Estoque(peca.Id, 0);
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _pecaInsumoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([peca]);
+            _estoqueRepositoryMock.Setup(r => r.ObterPorIdPecaInsumo(peca.Id)).ReturnsAsync(estoque);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.IncluirPecaInsumo(ordemServico.Id, new OrdemServicoPecaInsumoRequest
+            {
+                PecasInsumosIds = [peca.Id]
+            }));
+
+            Assert.Empty(ordemServico.ItensPecaInsumo);
+            Assert.Equal(0, estoque.Quantidade);
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Never);
+        }
+
+        [Fact]
         public async Task RemoverItemServico_QuandoDadosValidos_DeveAtualizarOrdemComNovoOrcamento()
         {
             var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
