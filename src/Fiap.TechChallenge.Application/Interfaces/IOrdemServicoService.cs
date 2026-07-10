@@ -14,7 +14,7 @@ namespace Fiap.TechChallenge.Application.Interfaces
         Task RemoverItemPecaInsumo(Guid id, Guid idPecaInsumo);
         Task IniciarServico(Guid id, Guid idServico);
         Task FinalizarServico(Guid id, Guid idServico);
-        Task<OrdemServicoResponse> AprovarOrdemServico(Guid id);
+        Task<OrdemServicoResponse> AprovarOrcamento(Guid id, bool aprovado);
         Task<OrdemServicoResponse> ObterPorId(Guid id);
         Task<OrdemServicoProgressoResponse> ObterProgresso(Guid id);
         Task<IReadOnlyCollection<OrdemServicoResponse>> ObterTodos();

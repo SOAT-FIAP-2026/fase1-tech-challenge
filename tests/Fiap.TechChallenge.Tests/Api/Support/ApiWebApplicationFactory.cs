@@ -31,6 +31,15 @@ namespace Fiap.TechChallenge.Tests.Api.Support
                 services.AddSingleton(_connection);
                 services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
                     options.UseSqlite(serviceProvider.GetRequiredService<DbConnection>()));
+
+                // Mock IEmailService to prevent actual emails from being sent during tests
+                var emailServiceMock = new Moq.Mock<global::Fiap.TechChallenge.Domain.Interfaces.Service.IEmailService>();
+                emailServiceMock
+                    .Setup(e => e.EnviarEmailAsync(Moq.It.IsAny<string>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()))
+                    .Returns(Task.CompletedTask);
+                
+                services.RemoveAll<global::Fiap.TechChallenge.Domain.Interfaces.Service.IEmailService>();
+                services.AddSingleton(emailServiceMock.Object);
             });
         }
 

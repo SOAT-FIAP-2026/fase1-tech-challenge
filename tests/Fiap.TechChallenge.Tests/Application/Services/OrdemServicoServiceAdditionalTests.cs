@@ -4,6 +4,7 @@ using Fiap.TechChallenge.Application.Services;
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
+using Fiap.TechChallenge.Domain.Interfaces.Service;
 using Fiap.TechChallenge.Domain.ValueObjects;
 using Moq;
 
@@ -17,6 +18,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         private readonly Mock<IServicoRepository> _servicoRepositoryMock = new();
         private readonly Mock<IPecaInsumoRepository> _pecaInsumoRepositoryMock = new();
         private readonly Mock<IOrdemServicoRepository> _ordemServicoRepositoryMock = new();
+        private readonly Mock<IEmailService> _emailServiceMock = new();
         private readonly OrdemServicoService _service;
 
         public OrdemServicoServiceAdditionalTests()
@@ -27,7 +29,8 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 _statusRepositoryMock.Object,
                 _servicoRepositoryMock.Object,
                 _pecaInsumoRepositoryMock.Object,
-                _ordemServicoRepositoryMock.Object);
+                _ordemServicoRepositoryMock.Object,
+                _emailServiceMock.Object);
         }
 
         [Fact]

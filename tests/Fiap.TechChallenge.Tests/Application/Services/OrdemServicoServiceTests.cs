@@ -4,6 +4,7 @@ using Fiap.TechChallenge.Application.Services;
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
+using Fiap.TechChallenge.Domain.Interfaces.Service;
 using Fiap.TechChallenge.Domain.ValueObjects;
 using Moq;
 
@@ -17,6 +18,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         private readonly Mock<IServicoRepository> _servicoRepositoryMock = new();
         private readonly Mock<IPecaInsumoRepository> _pecaInsumoRepositoryMock = new();
         private readonly Mock<IOrdemServicoRepository> _ordemServicoRepositoryMock = new();
+        private readonly Mock<IEmailService> _emailServiceMock = new();
         private readonly OrdemServicoService _service;
 
         public OrdemServicoServiceTests()
@@ -27,7 +29,8 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 _statusRepositoryMock.Object,
                 _servicoRepositoryMock.Object,
                 _pecaInsumoRepositoryMock.Object,
-                _ordemServicoRepositoryMock.Object);
+                _ordemServicoRepositoryMock.Object,
+                _emailServiceMock.Object);
         }
 
         [Fact]
@@ -288,15 +291,15 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         }
 
         [Fact]
-        public async Task AprovarOrdemServico_QuandoOrdemEstaAguardandoAprovacao_DeveAlterarStatusParaEmExecucao()
+        public async Task AprovarOrcamento_QuandoOrdemEstaAguardandoAprovacao_EAprovadoForTrue_DeveAlterarStatusParaOrcamentoAprovado()
         {
             var statusAguardandoAprovacao = new StatusOrdemServico("Aguardando aprovação", "AGUARDANDO_APROVACAO");
             var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), statusAguardandoAprovacao.Id, "Teste");
-            var statusEmExecucao = new StatusOrdemServico("Em Execução", "EM_EXECUCAO");
+            var statusOrcamentoAprovado = new StatusOrdemServico("Orçamento Aprovado", "ORCAMENTO_APROVADO");
 
             _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
             _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("AGUARDANDO_APROVACAO"))).ReturnsAsync(statusAguardandoAprovacao);
-            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("EM_EXECUCAO"))).ReturnsAsync(statusEmExecucao);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("ORCAMENTO_APROVADO"))).ReturnsAsync(statusOrcamentoAprovado);
 
             OrdemServico? captured = null;
             _ordemServicoRepositoryMock
@@ -304,23 +307,48 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 .Callback<OrdemServico>(ordem => captured = ordem)
                 .Returns(Task.CompletedTask);
 
-            OrdemServicoResponse response = await _service.AprovarOrdemServico(ordemServico.Id);
+            OrdemServicoResponse response = await _service.AprovarOrcamento(ordemServico.Id, true);
 
             Assert.NotNull(captured);
-            Assert.Equal(statusEmExecucao.Id, captured!.IdStatus);
-            Assert.Equal("Em Execução", response.StatusDescricao);
+            Assert.Equal(statusOrcamentoAprovado.Id, captured!.IdStatus);
+            Assert.Equal("Orçamento Aprovado", response.StatusDescricao);
             _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Once);
         }
 
         [Fact]
-        public async Task AprovarOrdemServico_QuandoOrdemNaoEstaAguardandoAprovacao_DeveLancarExcecao()
+        public async Task AprovarOrcamento_QuandoOrdemEstaAguardandoAprovacao_EAprovadoForFalse_DeveAlterarStatusParaOrcamentoReprovado()
+        {
+            var statusAguardandoAprovacao = new StatusOrdemServico("Aguardando aprovação", "AGUARDANDO_APROVACAO");
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), statusAguardandoAprovacao.Id, "Teste");
+            var statusOrcamentoReprovado = new StatusOrdemServico("Orçamento Reprovado", "ORCAMENTO_REPROVADO");
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("AGUARDANDO_APROVACAO"))).ReturnsAsync(statusAguardandoAprovacao);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("ORCAMENTO_REPROVADO"))).ReturnsAsync(statusOrcamentoReprovado);
+
+            OrdemServico? captured = null;
+            _ordemServicoRepositoryMock
+                .Setup(r => r.Atualizar(It.IsAny<OrdemServico>()))
+                .Callback<OrdemServico>(ordem => captured = ordem)
+                .Returns(Task.CompletedTask);
+
+            OrdemServicoResponse response = await _service.AprovarOrcamento(ordemServico.Id, false);
+
+            Assert.NotNull(captured);
+            Assert.Equal(statusOrcamentoReprovado.Id, captured!.IdStatus);
+            Assert.Equal("Orçamento Reprovado", response.StatusDescricao);
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AprovarOrcamento_QuandoOrdemNaoEstaAguardandoAprovacao_DeveLancarExcecao()
         {
             var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
 
             _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
             _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("AGUARDANDO_APROVACAO"))).ReturnsAsync(new StatusOrdemServico("Aguardando aprovação", "AGUARDANDO_APROVACAO"));
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AprovarOrdemServico(ordemServico.Id));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AprovarOrcamento(ordemServico.Id, true));
         }
     }
 }

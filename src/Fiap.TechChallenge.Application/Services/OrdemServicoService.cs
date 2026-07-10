@@ -5,6 +5,7 @@ using Fiap.TechChallenge.Application.Interfaces;
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
+using Fiap.TechChallenge.Domain.Interfaces.Service;
 using Fiap.TechChallenge.Domain.ValueObjects;
 
 namespace Fiap.TechChallenge.Application.Services
@@ -17,6 +18,7 @@ namespace Fiap.TechChallenge.Application.Services
         private readonly IServicoRepository _servicoRepository;
         private readonly IPecaInsumoRepository _pecaInsumoRepository;
         private readonly IOrdemServicoRepository _ordemServicoRepository;
+        private readonly IEmailService _emailService;
 
 
         public OrdemServicoService(
@@ -25,7 +27,8 @@ namespace Fiap.TechChallenge.Application.Services
             IStatusOrdemServicoRepository statusRepository,
             IServicoRepository servicoRepository,
             IPecaInsumoRepository pecaInsumoRepository,
-            IOrdemServicoRepository ordemServicoRepository)
+            IOrdemServicoRepository ordemServicoRepository,
+            IEmailService emailService)
         {
             _clienteRepository = clienteRepository;
             _veiculoRepository = veiculoRepository;
@@ -33,6 +36,7 @@ namespace Fiap.TechChallenge.Application.Services
             _servicoRepository = servicoRepository;
             _pecaInsumoRepository = pecaInsumoRepository;
             _ordemServicoRepository = ordemServicoRepository;
+            _emailService = emailService;
         }
 
         public async Task<Guid> Criar(OrdemServicoRequest request)
@@ -42,8 +46,10 @@ namespace Fiap.TechChallenge.Application.Services
             StatusOrdemServico statusInicial = await GarantirStatusExiste(StatusOS.Recebida);
 
             OrdemServico ordemServico = new(request.ClienteId, request.VeiculoId, statusInicial.Id, request.Observacao);
+            ordemServico.AlterarStatus(statusInicial);
 
             await _ordemServicoRepository.Adicionar(ordemServico);
+            await NotificarMudancaStatusAsync(ordemServico);
 
             return ordemServico.Id;
         }
@@ -62,6 +68,7 @@ namespace Fiap.TechChallenge.Application.Services
             ordemServico.AlterarStatus(statusEmDiagnostico);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
+            await NotificarMudancaStatusAsync(ordemServico);
 
             return ToResponse(ordemServico);
         }
@@ -80,6 +87,7 @@ namespace Fiap.TechChallenge.Application.Services
             ordemServico.AlterarStatus(statusAguardandoAprovacao);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
+            await NotificarMudancaStatusAsync(ordemServico);
 
             return ToResponse(ordemServico);
         }
@@ -116,7 +124,7 @@ namespace Fiap.TechChallenge.Application.Services
 
             return ToResponse(ordemServico);
         }
-        
+
         public async Task RemoverItemServico(Guid id, Guid idServico)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
@@ -146,9 +154,10 @@ namespace Fiap.TechChallenge.Application.Services
             StatusOrdemServico statusEmExecucao = await GarantirStatusExiste(StatusOS.EmExecucao);
 
             item.IniciarServico();
-            ordemServico.AlterarStatus(statusEmExecucao.Id);
+            ordemServico.AlterarStatus(statusEmExecucao);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
+            await NotificarMudancaStatusAsync(ordemServico);
         }
 
         public async Task FinalizarServico(Guid id, Guid idServico)
@@ -161,14 +170,15 @@ namespace Fiap.TechChallenge.Application.Services
             if (ordemServico.ItensServico.All(servico => servico.DataHoraFim != null))
             {
                 StatusOrdemServico statusFinalizada = await GarantirStatusExiste(StatusOS.Finalizada);
-                ordemServico.AlterarStatus(statusFinalizada.Id);
+                ordemServico.AlterarStatus(statusFinalizada);
                 ordemServico.Concluir();
             }
 
             await _ordemServicoRepository.Atualizar(ordemServico);
+            await NotificarMudancaStatusAsync(ordemServico);
         }
 
-        public async Task<OrdemServicoResponse> AprovarOrdemServico(Guid id)
+        public async Task<OrdemServicoResponse> AprovarOrcamento(Guid id, bool aprovado)
         {
             OrdemServico ordemServico = await ObterEntidadePorId(id);
 
@@ -177,11 +187,20 @@ namespace Fiap.TechChallenge.Application.Services
             if (ordemServico.IdStatus != statusAguardandoAprovacao.Id)
                 throw new InvalidOperationException("A ordem de serviço precisa estar no status Aguardando aprovação para ser aprovada.");
 
-            StatusOrdemServico statusEmExecucao = await GarantirStatusExiste(StatusOS.EmExecucao);
-
-            ordemServico.AlterarStatus(statusEmExecucao);
+            if (aprovado)
+            {
+                StatusOrdemServico statusOrcamentoAprovado = await GarantirStatusExiste(StatusOS.OrcamentoAprovado);
+                ordemServico.AlterarStatus(statusOrcamentoAprovado);
+            }
+            else
+            {
+                StatusOrdemServico statusOrcamentoReprovado = await GarantirStatusExiste(StatusOS.OrcamentoReprovado);
+                ordemServico.AlterarStatus(statusOrcamentoReprovado);
+                ordemServico.Concluir();
+            }
 
             await _ordemServicoRepository.Atualizar(ordemServico);
+            await NotificarMudancaStatusAsync(ordemServico);
 
             return ToResponse(ordemServico);
         }
@@ -255,6 +274,17 @@ namespace Fiap.TechChallenge.Application.Services
                 throw new ItemServicoNaoEncontradoException(idServico);
 
             return item;
+        }
+
+        private async Task NotificarMudancaStatusAsync(OrdemServico ordemServico)
+        {
+            var cliente = await _clienteRepository.ObterPorId(ordemServico.IdCliente);
+            if (cliente != null && ordemServico.Status != null)
+            {
+                string assunto = $"Status da sua Ordem de Serviço mudou para {ordemServico.Status.Descricao}";
+                string corpoHtml = $"<p>Olá {cliente.Nome.Valor},</p><p>O status da sua ordem de serviço foi atualizado para: <strong>{ordemServico.Status.Descricao}</strong>.</p>";
+                await _emailService.EnviarEmailAsync(cliente.Email.Endereco, assunto, corpoHtml);
+            }
         }
 
         private async Task RecalcularOrcamentoDaOrdem(OrdemServico ordemServico)
