@@ -194,7 +194,7 @@ namespace Fiap.TechChallenge.Application.Services
             if (ordemServico.IdStatus == statusEntregue.Id)
                 throw new InvalidOperationException("A ordem de serviço já foi entregue.");
 
-            if (ordemServico.IdStatus != statusEntregue.Id)
+            if (ordemServico.IdStatus != StatusOS.Finalizada.Id)
                 throw new InvalidOperationException("A ordem de serviço não pode ser entregue, pois não foi finalizada.");
 
             ordemServico.AlterarStatus(statusEntregue.Id);

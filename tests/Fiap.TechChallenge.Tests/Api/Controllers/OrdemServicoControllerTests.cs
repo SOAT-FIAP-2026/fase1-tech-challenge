@@ -109,6 +109,48 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
         }
 
         [Fact]
+        public async Task ConfirmarEntrega_DeveRetornar400SeOrdemJaEntregue()
+        {
+            Guid id = Guid.NewGuid();
+
+            _serviceMock.Setup(s => s.ConfirmarEntrega(id)).ThrowsAsync(new InvalidOperationException("A ordem de serviço já foi entregue."));
+
+            IActionResult result = await _controller.ConfirmarEntrega(id);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, badRequest.StatusCode);
+            Assert.Equal("A ordem de serviço já foi entregue.", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task ConfirmarEntrega_DeveRetornar400SeOrdemNaoFinalizada()
+        {
+            Guid id = Guid.NewGuid();
+
+            _serviceMock.Setup(s => s.ConfirmarEntrega(id)).ThrowsAsync(new InvalidOperationException("A ordem de serviço não pode ser entregue, pois não foi finalizada."));
+
+            IActionResult result = await _controller.ConfirmarEntrega(id);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, badRequest.StatusCode);
+            Assert.Equal("A ordem de serviço já foi entregue.", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task ConfirmarEntrega_DeveRetornar404SeOrdemNaoForEncontrada()
+        {
+            Guid id = Guid.NewGuid();
+
+            _serviceMock.Setup(s => s.ConfirmarEntrega(id)).ThrowsAsync(new KeyNotFoundException("Ordem de serviço não encontrada."));
+
+            IActionResult result = await _controller.ConfirmarEntrega(id);
+
+            var notFound = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal(404, notFound.StatusCode);
+            Assert.Equal("Ordem de serviço não encontrada.", notFound.Value);
+        }
+
+        [Fact]
         public async Task RemoverItemServico_DeveRetornar204()
         {
             Guid id = Guid.NewGuid();
