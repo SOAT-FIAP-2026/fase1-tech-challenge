@@ -43,7 +43,7 @@ jobs:
         shell: powershell
         run: |
           ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"SOAT-FIAP-2026_fase1-tech-challenge" /o:"soat-fiap-2026" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
-          dotnet build
+          dotnet build --configuration Release
           # Executa os testes usando o coverlet.collector e o coverlet.runsettings existente no projeto para gerar o opencover
           dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage" --settings coverlet.runsettings
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
