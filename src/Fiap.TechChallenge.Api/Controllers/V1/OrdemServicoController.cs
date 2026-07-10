@@ -31,8 +31,6 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
-
-
         [HttpPost("{id:guid}/servicos")]
         public async Task<IActionResult> IncluirServico(Guid id, OrdemServicoServicosRequest request)
         {
@@ -57,10 +55,10 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
-        [HttpPatch("{id:guid}/aprovar")]
-        public async Task<IActionResult> Aprovar(Guid id)
+        [HttpPatch("{id:guid}/aprovar-orcamento")]
+        public async Task<IActionResult> AprovarOrcamento(Guid id, bool aprovado)
         {
-            var ordemServico = await _ordemServicoService.AprovarOrdemServico(id);
+            var ordemServico = await _ordemServicoService.AprovarOrcamento(id, aprovado);
 
             return Ok(ordemServico);
         }
