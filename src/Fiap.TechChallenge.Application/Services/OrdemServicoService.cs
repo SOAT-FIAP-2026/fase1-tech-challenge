@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.IO;
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.DTOs.Responses;
 using Fiap.TechChallenge.Application.Interfaces;
@@ -358,9 +359,13 @@ namespace Fiap.TechChallenge.Application.Services
                     return await _emailService.EnviarEmailAsync(cliente.Email.Endereco, assunto, corpoHtml);
                 }
             }
-            catch (Exception)
+            catch (InvalidOperationException)
             {
-                // Ignora falhas no envio de e-mail para não quebrar a transação ou retornar erro 500
+                // Ignora falhas esperadas no envio de e-mail para não quebrar a transação ou retornar erro 500
+            }
+            catch (IOException)
+            {
+                // Ignora falhas de I/O no envio de e-mail para não quebrar a transação ou retornar erro 500
             }
 
             return false;
