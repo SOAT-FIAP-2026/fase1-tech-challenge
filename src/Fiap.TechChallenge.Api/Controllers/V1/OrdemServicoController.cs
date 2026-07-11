@@ -15,11 +15,12 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Criar(OrdemServicoRequest request)
         {
-            Guid id = await _ordemServicoService.Criar(request);
+            var result = await _ordemServicoService.Criar(request);
 
             return StatusCode(201, new
             {
-                id
+                id = result.Id,
+                clienteNotificado = result.ClienteNotificado
             });
         }
 
@@ -59,11 +60,10 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
-        [HttpPatch("{id:guid}/aprovar")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Aprovar(Guid id)
+        [HttpPatch("{id:guid}/aprovar-orcamento")]
+        public async Task<IActionResult> AprovarOrcamento(Guid id, bool aprovado)
         {
-            var ordemServico = await _ordemServicoService.AprovarOrdemServico(id);
+            var ordemServico = await _ordemServicoService.AprovarOrcamento(id, aprovado);
 
             return Ok(ordemServico);
         }

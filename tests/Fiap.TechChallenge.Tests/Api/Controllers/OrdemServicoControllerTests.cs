@@ -27,7 +27,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
             };
             Guid id = Guid.NewGuid();
 
-            _serviceMock.Setup(s => s.Criar(request)).ReturnsAsync(id);
+            _serviceMock.Setup(s => s.Criar(request)).ReturnsAsync((id, true));
 
             IActionResult result = await _controller.Criar(request);
 
@@ -37,6 +37,9 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
             var idProperty = created.Value!.GetType().GetProperty("id");
             Assert.NotNull(idProperty);
             Assert.Equal(id, idProperty!.GetValue(created.Value));
+            var notificadoProperty = created.Value!.GetType().GetProperty("clienteNotificado");
+            Assert.NotNull(notificadoProperty);
+            Assert.True((bool?)notificadoProperty!.GetValue(created.Value));
         }
 
         [Fact]

@@ -24,6 +24,7 @@ namespace Fiap.TechChallenge.Application.DTOs.Responses
         public DateTime DataAbertura { get; set; } = dataAbertura;
         public DateTime? DataConclusao { get; set; } = dataConclusao;
         public decimal? ValorTotal { get; set; } = valorTotal;
+        public bool ClienteNotificado { get; set; }
         public IReadOnlyCollection<OrdemServicoItemServicoResponse> ItensServico { get; set; } = itensServico;
         public IReadOnlyCollection<OrdemServicoItemPecaInsumoResponse> ItensPecaInsumo { get; set; } = itensPecaInsumo;
     }
