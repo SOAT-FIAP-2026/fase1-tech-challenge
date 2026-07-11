@@ -15,38 +15,46 @@ namespace Fiap.TechChallenge.Tests.External.Services
         public async Task EnviarEmailAsync_QuandoChamado_DeveFazerRequisicaoPostComPayloadCorreto()
         {
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-            
-            handlerMock
-               .Protected()
-               .Setup<Task<HttpResponseMessage>>(
-                  "SendAsync",
-                  ItExpr.IsAny<HttpRequestMessage>(),
-                  ItExpr.IsAny<CancellationToken>()
-               )
-               .ReturnsAsync(new HttpResponseMessage()
-               {
-                   StatusCode = HttpStatusCode.OK,
-               })
-               .Verifiable();
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+            };
 
-            var httpClient = new HttpClient(handlerMock.Object);
-            var service = new ResendEmailService(httpClient);
+            try
+            {
+                handlerMock
+                   .Protected()
+                   .Setup<Task<HttpResponseMessage>>(
+                      "SendAsync",
+                      ItExpr.IsAny<HttpRequestMessage>(),
+                      ItExpr.IsAny<CancellationToken>()
+                   )
+                   .ReturnsAsync(httpResponseMessage)
+                   .Verifiable();
 
-            await service.EnviarEmailAsync("cliente@teste.com", "Assunto Teste", "<p>Teste</p>");
+                var httpClient = new HttpClient(handlerMock.Object);
+                var service = new ResendEmailService(httpClient);
 
-            handlerMock.Protected().Verify(
-               "SendAsync",
-               Times.Exactly(1),
-               ItExpr.Is<HttpRequestMessage>(req =>
-                  req.Method == HttpMethod.Post 
-                  && req.RequestUri != null 
-                  && req.RequestUri.ToString() == "https://api.resend.com/emails"
-               ),
-               ItExpr.IsAny<CancellationToken>()
-            );
-            
-            Assert.Equal("Bearer", httpClient.DefaultRequestHeaders.Authorization?.Scheme);
-            Assert.Equal("re_HZC6QiGu_81MT8QTRGv9PdNPXRQKTCF9V", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
+                await service.EnviarEmailAsync("cliente@teste.com", "Assunto Teste", "<p>Teste</p>");
+
+                handlerMock.Protected().Verify(
+                   "SendAsync",
+                   Times.Exactly(1),
+                   ItExpr.Is<HttpRequestMessage>(req =>
+                      req.Method == HttpMethod.Post 
+                      && req.RequestUri != null 
+                      && req.RequestUri.ToString() == "https://api.resend.com/emails"
+                   ),
+                   ItExpr.IsAny<CancellationToken>()
+                );
+                
+                Assert.Equal("Bearer", httpClient.DefaultRequestHeaders.Authorization?.Scheme);
+                Assert.Equal("re_HZC6QiGu_81MT8QTRGv9PdNPXRQKTCF9V", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
+            }
+            finally
+            {
+                httpResponseMessage.Dispose();
+            }
         }
     }
 }
