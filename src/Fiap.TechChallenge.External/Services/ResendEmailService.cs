@@ -37,7 +37,14 @@ namespace Fiap.TechChallenge.External.Services
                     response.EnsureSuccessStatusCode();
                     return true;
                 }
-                catch (Exception)
+                catch (HttpRequestException)
+                {
+                    if (i == maxRetries - 1)
+                        return false;
+
+                    await Task.Delay(1000);
+                }
+                catch (TaskCanceledException)
                 {
                     if (i == maxRetries - 1)
                         return false;
