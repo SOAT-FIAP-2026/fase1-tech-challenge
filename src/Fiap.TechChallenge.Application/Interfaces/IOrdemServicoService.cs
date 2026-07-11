@@ -15,6 +15,7 @@ namespace Fiap.TechChallenge.Application.Interfaces
         Task IniciarServico(Guid id, Guid idServico);
         Task FinalizarServico(Guid id, Guid idServico);
         Task<OrdemServicoResponse> AprovarOrcamento(Guid id, bool aprovado);
+        Task<OrdemServicoResponse> ConfirmarEntrega(Guid id);
         Task<OrdemServicoResponse> ObterPorId(Guid id);
         Task<OrdemServicoProgressoResponse> ObterProgresso(Guid id);
         Task<IReadOnlyCollection<OrdemServicoResponse>> ObterTodos();

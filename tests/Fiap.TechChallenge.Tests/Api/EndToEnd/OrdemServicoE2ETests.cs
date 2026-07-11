@@ -13,6 +13,37 @@ namespace Fiap.TechChallenge.Tests.Api.EndToEnd
         private readonly ApiWebApplicationFactory _factory = factory;
 
         [Fact]
+        public async Task IncluirPecaInsumo_DeveExigirToken()
+        {
+            HttpClient client = _factory.CreateClient();
+
+            var response = await client.PostAsJsonAsync(
+                $"/api/v1/ordens-servico/{Guid.NewGuid()}/pecas-insumos",
+                new OrdemServicoPecaInsumoRequest
+                {
+                    PecasInsumosIds = [Guid.NewGuid()]
+                });
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
+        public async Task CriarVeiculo_DeveExigirToken()
+        {
+            HttpClient client = _factory.CreateClient();
+
+            var response = await client.PostAsJsonAsync("/api/v1/veiculos", new VeiculoRequest
+            {
+                Placa = "AUT1A23",
+                Marca = "Honda",
+                Modelo = "Civic",
+                Ano = 2020
+            });
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
         public async Task OrdemServico_DeveCriarComItensEAtualizarFluxoDeDiagnostico()
         {
             HttpClient client = await _factory.CreateAuthenticatedAdminClient();
@@ -36,6 +67,19 @@ namespace Fiap.TechChallenge.Tests.Api.EndToEnd
             ordemCriada.ItensServico.Should().BeEmpty();
             ordemCriada.ItensPecaInsumo.Should().BeEmpty();
             ordemCriada.ValorTotal.Should().BeNull();
+
+            int quantidadeAntes = await client.GetFromJsonAsync<int>($"/api/v1/estoques/quantidade/peca/{peca.Id}");
+            var incluirPecaResponse = await client.PostAsJsonAsync($"/api/v1/ordens-servico/{ordemId}/pecas-insumos", new OrdemServicoPecaInsumoRequest
+            {
+                PecasInsumosIds = [peca.Id]
+            });
+
+            incluirPecaResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            OrdemServicoResponse ordemComPeca = (await incluirPecaResponse.Content.ReadFromJsonAsync<OrdemServicoResponse>())!;
+            ordemComPeca.ItensPecaInsumo.Should().ContainSingle(item => item.IdPecaInsumo == peca.Id);
+
+            int quantidadeDepois = await client.GetFromJsonAsync<int>($"/api/v1/estoques/quantidade/peca/{peca.Id}");
+            quantidadeDepois.Should().Be(quantidadeAntes - 1);
 
             var iniciarDiagnosticoResponse = await client.PatchAsync($"/api/v1/ordens-servico/{ordemId}/iniciar-diagnostico", null);
             iniciarDiagnosticoResponse.StatusCode.Should().Be(HttpStatusCode.OK);

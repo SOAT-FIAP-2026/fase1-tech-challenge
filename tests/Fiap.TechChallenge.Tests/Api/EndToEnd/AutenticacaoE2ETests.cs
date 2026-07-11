@@ -11,6 +11,23 @@ namespace Fiap.TechChallenge.Tests.Api.EndToEnd
         private readonly ApiWebApplicationFactory _factory = factory;
 
         [Fact]
+        public async Task Cadastrar_DeveExigirToken()
+        {
+            HttpClient client = _factory.CreateClient();
+
+            var response = await client.PostAsJsonAsync("/api/v1/Autenticacao/Cadastrar", new CadastrarRequest
+            {
+                Nome = "Usuario E2E",
+                Email = "usuario.e2e@example.com",
+                Login = "usuario.e2e@example.com",
+                Senha = "Usuario@123",
+                IdPermissao = Guid.NewGuid()
+            });
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
         public async Task Login_DeveRetornarJwt_QuandoCredenciaisDoAdminSeedForemValidas()
         {
             HttpClient client = _factory.CreateClient();

@@ -25,6 +25,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPost("{id:guid}/pecas-insumos")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> IncluirPecaInsumo(Guid id, OrdemServicoPecaInsumoRequest request)
         {
             var ordemServico = await _ordemServicoService.IncluirPecaInsumo(id, request);
@@ -33,6 +34,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPost("{id:guid}/servicos")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> IncluirServico(Guid id, OrdemServicoServicosRequest request)
         {
             var ordemServico = await _ordemServicoService.IncluirServico(id, request);
@@ -41,6 +43,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPatch("{id:guid}/iniciar-diagnostico")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> IniciarDiagnostico(Guid id)
         {
             var ordemServico = await _ordemServicoService.IniciarDiagnostico(id);
@@ -49,6 +52,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPatch("{id:guid}/finalizar-diagnostico")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> FinalizarDiagnostico(Guid id)
         {
             var ordemServico = await _ordemServicoService.FinalizarDiagnostico(id);
@@ -64,7 +68,16 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
             return Ok(ordemServico);
         }
 
+        [HttpPatch("{id:guid}/confirmar-entrega")]
+        public async Task<IActionResult> ConfirmarEntrega(Guid id)
+        {
+            var ordemServico = await _ordemServicoService.ConfirmarEntrega(id);
+
+            return Ok(ordemServico);
+        }
+
         [HttpDelete("{id:guid}/servicos/{idServico:guid}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> RemoverItemServico(Guid id, Guid idServico)
         {
             await _ordemServicoService.RemoverItemServico(id, idServico);
@@ -73,6 +86,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpDelete("{id:guid}/pecas-insumos/{idPecaInsumo:guid}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> RemoverItemPecaInsumo(Guid id, Guid idPecaInsumo)
         {
             await _ordemServicoService.RemoverItemPecaInsumo(id, idPecaInsumo);
@@ -81,6 +95,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPatch("{id:guid}/servicos/{idServico:guid}/iniciar")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> IniciarServico(Guid id, Guid idServico)
         {
             await _ordemServicoService.IniciarServico(id, idServico);
@@ -89,6 +104,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPatch("{id:guid}/servicos/{idServico:guid}/finalizar")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> FinalizarServico(Guid id, Guid idServico)
         {
             await _ordemServicoService.FinalizarServico(id, idServico);
