@@ -15,18 +15,38 @@ namespace Fiap.TechChallenge.External.Services
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiKey);
         }
 
-        public async Task EnviarEmailAsync(string para, string assunto, string corpoHtml)
+        public async Task<bool> EnviarEmailAsync(string para, string assunto, string corpoHtml)
         {
+            // MOCK: O Resend só permite enviar para o e-mail cadastrado no plano gratuito
+            string emailDestino = "dio_kenedy@hotmail.com";
+
             var payload = new
             {
                 from = "osstatusupdate@resend.dev",
-                to = para,
+                to = emailDestino,
                 subject = assunto,
                 html = corpoHtml
             };
 
-            var response = await _httpClient.PostAsJsonAsync("https://api.resend.com/emails", payload);
-            response.EnsureSuccessStatusCode();
+            int maxRetries = 3;
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    var response = await _httpClient.PostAsJsonAsync("https://api.resend.com/emails", payload);
+                    response.EnsureSuccessStatusCode();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    if (i == maxRetries - 1)
+                        return false;
+
+                    await Task.Delay(1000);
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Fiap.TechChallenge.Application.Interfaces
 {
     public interface IOrdemServicoService
     {
-        Task<Guid> Criar(OrdemServicoRequest request);
+        Task<(Guid Id, bool ClienteNotificado)> Criar(OrdemServicoRequest request);
         Task<OrdemServicoResponse> IniciarDiagnostico(Guid id);
         Task<OrdemServicoResponse> FinalizarDiagnostico(Guid id);
         Task<OrdemServicoResponse> IncluirServico(Guid id, OrdemServicoServicosRequest request);

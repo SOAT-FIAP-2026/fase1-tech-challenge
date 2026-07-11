@@ -61,9 +61,9 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 .Callback<OrdemServico>(ordem => captured = ordem)
                 .Returns(Task.CompletedTask);
 
-            Guid id = await _service.Criar(request);
+            var result = await _service.Criar(request);
 
-            Assert.NotEqual(Guid.Empty, id);
+            Assert.NotEqual(Guid.Empty, result.Id);
             Assert.NotNull(captured);
             Assert.Equal(clienteId, captured!.IdCliente);
             Assert.Equal(veiculoId, captured.IdVeiculo);

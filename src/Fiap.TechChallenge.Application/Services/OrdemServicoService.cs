@@ -39,7 +39,7 @@ namespace Fiap.TechChallenge.Application.Services
             _emailService = emailService;
         }
 
-        public async Task<Guid> Criar(OrdemServicoRequest request)
+        public async Task<(Guid Id, bool ClienteNotificado)> Criar(OrdemServicoRequest request)
         {
             await GarantirClienteExiste(request.ClienteId);
             await GarantirVeiculoExiste(request.VeiculoId);
@@ -49,9 +49,9 @@ namespace Fiap.TechChallenge.Application.Services
             ordemServico.AlterarStatus(statusInicial);
 
             await _ordemServicoRepository.Adicionar(ordemServico);
-            await NotificarMudancaStatusAsync(ordemServico);
+            bool notificado = await NotificarMudancaStatusAsync(ordemServico);
 
-            return ordemServico.Id;
+            return (ordemServico.Id, notificado);
         }
 
         public async Task<OrdemServicoResponse> IniciarDiagnostico(Guid id)
@@ -68,9 +68,11 @@ namespace Fiap.TechChallenge.Application.Services
             ordemServico.AlterarStatus(statusEmDiagnostico);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
-            await NotificarMudancaStatusAsync(ordemServico);
+            bool notificado = await NotificarMudancaStatusAsync(ordemServico);
 
-            return ToResponse(ordemServico);
+            var response = ToResponse(ordemServico);
+            response.ClienteNotificado = notificado;
+            return response;
         }
 
         public async Task<OrdemServicoResponse> FinalizarDiagnostico(Guid id)
@@ -87,9 +89,11 @@ namespace Fiap.TechChallenge.Application.Services
             ordemServico.AlterarStatus(statusAguardandoAprovacao);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
-            await NotificarMudancaStatusAsync(ordemServico);
+            bool notificado = await NotificarMudancaStatusAsync(ordemServico);
 
-            return ToResponse(ordemServico);
+            var response = ToResponse(ordemServico);
+            response.ClienteNotificado = notificado;
+            return response;
         }
 
 
@@ -200,9 +204,11 @@ namespace Fiap.TechChallenge.Application.Services
             }
 
             await _ordemServicoRepository.Atualizar(ordemServico);
-            await NotificarMudancaStatusAsync(ordemServico);
+            bool notificado = await NotificarMudancaStatusAsync(ordemServico);
 
-            return ToResponse(ordemServico);
+            var response = ToResponse(ordemServico);
+            response.ClienteNotificado = notificado;
+            return response;
         }
 
         public async Task<OrdemServicoResponse> ObterPorId(Guid id)
@@ -276,15 +282,62 @@ namespace Fiap.TechChallenge.Application.Services
             return item;
         }
 
-        private async Task NotificarMudancaStatusAsync(OrdemServico ordemServico)
+        private async Task<bool> NotificarMudancaStatusAsync(OrdemServico ordemServico)
         {
-            var cliente = await _clienteRepository.ObterPorId(ordemServico.IdCliente);
-            if (cliente != null && ordemServico.Status != null)
+            try
             {
-                string assunto = $"Status da sua Ordem de Serviço mudou para {ordemServico.Status.Descricao}";
-                string corpoHtml = $"<p>Olá {cliente.Nome.Valor},</p><p>O status da sua ordem de serviço foi atualizado para: <strong>{ordemServico.Status.Descricao}</strong>.</p>";
-                await _emailService.EnviarEmailAsync(cliente.Email.Endereco, assunto, corpoHtml);
+                var cliente = await _clienteRepository.ObterPorId(ordemServico.IdCliente);
+                if (cliente != null && ordemServico.Status != null)
+                {
+                    string assunto = $"Status da sua Ordem de Serviço mudou para {ordemServico.Status.Descricao.Valor}";
+                    string corpoHtml = $$"""
+                        <!DOCTYPE html>
+                        <html lang="pt-BR">
+                        <head>
+                          <meta charset="UTF-8">
+                          <style>
+                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+                            .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                            .header { background-color: #0056b3; padding: 20px; text-align: center; color: #ffffff; }
+                            .header h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px; }
+                            .content { padding: 30px; color: #333333; line-height: 1.6; font-size: 16px; }
+                            .status-box { background-color: #e9f2fb; border-left: 4px solid #0056b3; padding: 20px; margin: 25px 0; border-radius: 0 4px 4px 0; text-align: center; }
+                            .status-label { font-size: 14px; color: #555555; text-transform: uppercase; letter-spacing: 1px; }
+                            .status-text { display: block; font-size: 22px; font-weight: bold; color: #0056b3; margin-top: 5px; text-transform: uppercase; }
+                            .footer { background-color: #f9f9f9; padding: 20px; text-align: center; font-size: 13px; color: #777777; border-top: 1px solid #eeeeee; }
+                          </style>
+                        </head>
+                        <body>
+                          <div class="container">
+                            <div class="header">
+                              <h1>Atualização de Serviço</h1>
+                            </div>
+                            <div class="content">
+                              <p>Olá, <strong>{{cliente.Nome.Valor}}</strong>!</p>
+                              <p>Passando para informar que temos uma atualização sobre o andamento da manutenção do seu veículo.</p>
+                              <div class="status-box">
+                                <span class="status-label">Status atual da sua ordem de serviço</span>
+                                <span class="status-text">{{ordemServico.Status.Descricao.Valor}}</span>
+                              </div>
+                              <p>Agradecemos a confiança em nossos serviços. Em caso de dúvidas, não hesite em entrar em contato com a nossa equipe.</p>
+                            </div>
+                            <div class="footer">
+                              Esta é uma mensagem automática, por favor não responda a este e-mail.<br/>
+                              Tech Challenge Auto Center &copy; {{DateTime.Now.Year}}
+                            </div>
+                          </div>
+                        </body>
+                        </html>
+                        """;
+                    return await _emailService.EnviarEmailAsync(cliente.Email.Endereco, assunto, corpoHtml);
+                }
             }
+            catch (Exception)
+            {
+                // Ignora falhas no envio de e-mail para não quebrar a transação ou retornar erro 500
+            }
+
+            return false;
         }
 
         private async Task RecalcularOrcamentoDaOrdem(OrdemServico ordemServico)

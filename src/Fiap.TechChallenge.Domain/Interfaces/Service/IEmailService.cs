@@ -2,6 +2,6 @@ namespace Fiap.TechChallenge.Domain.Interfaces.Service
 {
     public interface IEmailService
     {
-        Task EnviarEmailAsync(string para, string assunto, string corpoHtml);
+        Task<bool> EnviarEmailAsync(string para, string assunto, string corpoHtml);
     }
 }

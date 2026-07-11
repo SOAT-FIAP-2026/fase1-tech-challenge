@@ -15,11 +15,12 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Criar(OrdemServicoRequest request)
         {
-            Guid id = await _ordemServicoService.Criar(request);
+            var result = await _ordemServicoService.Criar(request);
 
             return StatusCode(201, new
             {
-                id
+                id = result.Id,
+                clienteNotificado = result.ClienteNotificado
             });
         }
 

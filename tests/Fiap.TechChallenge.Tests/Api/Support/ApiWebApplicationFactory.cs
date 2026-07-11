@@ -1,3 +1,4 @@
+using Moq;
 using System.Data.Common;
 using Fiap.TechChallenge.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
@@ -36,7 +37,7 @@ namespace Fiap.TechChallenge.Tests.Api.Support
                 var emailServiceMock = new Moq.Mock<global::Fiap.TechChallenge.Domain.Interfaces.Service.IEmailService>();
                 emailServiceMock
                     .Setup(e => e.EnviarEmailAsync(Moq.It.IsAny<string>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()))
-                    .Returns(Task.CompletedTask);
+                    .ReturnsAsync(true);
                 
                 services.RemoveAll<global::Fiap.TechChallenge.Domain.Interfaces.Service.IEmailService>();
                 services.AddSingleton(emailServiceMock.Object);
