@@ -16,6 +16,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         private readonly Mock<IStatusOrdemServicoRepository> _statusRepositoryMock = new();
         private readonly Mock<IServicoRepository> _servicoRepositoryMock = new();
         private readonly Mock<IPecaInsumoRepository> _pecaInsumoRepositoryMock = new();
+        private readonly Mock<IEstoqueRepository> _estoqueRepositoryMock = new();
         private readonly Mock<IOrdemServicoRepository> _ordemServicoRepositoryMock = new();
         private readonly OrdemServicoService _service;
 
@@ -27,6 +28,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 _statusRepositoryMock.Object,
                 _servicoRepositoryMock.Object,
                 _pecaInsumoRepositoryMock.Object,
+                _estoqueRepositoryMock.Object,
                 _ordemServicoRepositoryMock.Object);
         }
 
@@ -131,10 +133,12 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
 
             var servicoNovo = new Servico("Alinhamento", "Alinhamento dianteiro", 50m);
             var pecaNova = new PecaInsumo("Oleo Motor", 30m);
+            var estoquePecaNova = new Estoque(pecaNova.Id, 10);
 
             _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
             _servicoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([servicoExistente, servicoNovo]);
             _pecaInsumoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([pecaExistente, pecaNova]);
+            _estoqueRepositoryMock.Setup(r => r.ObterPorIdPecaInsumo(pecaNova.Id)).ReturnsAsync(estoquePecaNova);
 
             OrdemServico? captured = null;
             _ordemServicoRepositoryMock
@@ -157,8 +161,49 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             Assert.Equal(2, captured.ItensPecaInsumo.Count);
             Assert.Equal(55, captured.Orcamento!.ValorTotal.Valor);
             Assert.Equal(150, response.ValorTotal);
+            Assert.Equal(9, estoquePecaNova.Quantidade);
             
             _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task IncluirPecaInsumo_QuandoPecaJaExisteNaOrdem_NaoDeveBaixarEstoqueNovamente()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+            var pecaExistente = new PecaInsumo("Filtro de Ar", 25m);
+            ordemServico.SincronizarItens([], [pecaExistente]);
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _pecaInsumoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([pecaExistente]);
+
+            await _service.IncluirPecaInsumo(ordemServico.Id, new OrdemServicoPecaInsumoRequest
+            {
+                PecasInsumosIds = [pecaExistente.Id]
+            });
+
+            _estoqueRepositoryMock.Verify(r => r.ObterPorIdPecaInsumo(It.IsAny<Guid>()), Times.Never);
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(ordemServico), Times.Once);
+        }
+
+        [Fact]
+        public async Task IncluirPecaInsumo_QuandoEstoqueInsuficiente_DeveAbortarOperacao()
+        {
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Teste");
+            var peca = new PecaInsumo("Filtro de Ar", 25m);
+            var estoque = new Estoque(peca.Id, 0);
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _pecaInsumoRepositoryMock.Setup(r => r.ObterPorIds(It.IsAny<IReadOnlyCollection<Guid>>())).ReturnsAsync([peca]);
+            _estoqueRepositoryMock.Setup(r => r.ObterPorIdPecaInsumo(peca.Id)).ReturnsAsync(estoque);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.IncluirPecaInsumo(ordemServico.Id, new OrdemServicoPecaInsumoRequest
+            {
+                PecasInsumosIds = [peca.Id]
+            }));
+
+            Assert.Empty(ordemServico.ItensPecaInsumo);
+            Assert.Equal(0, estoque.Quantidade);
+            _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Never);
         }
 
         [Fact]

@@ -1,23 +1,17 @@
-using System.Data.Common;
 using Fiap.TechChallenge.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Testcontainers.PostgreSql;
+using Xunit;
 
 namespace Fiap.TechChallenge.Tests.Api.Support
 {
-    public sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>
+    public sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
-        private readonly DbConnection _connection;
-
-        public ApiWebApplicationFactory()
-        {
-            _connection = new SqliteConnection("DataSource=:memory:");
-            _connection.Open();
-        }
+        private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder("postgres:16-alpine").Build();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -26,20 +20,21 @@ namespace Fiap.TechChallenge.Tests.Api.Support
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
-                services.RemoveAll<DbConnection>();
 
-                services.AddSingleton(_connection);
-                services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
-                    options.UseSqlite(serviceProvider.GetRequiredService<DbConnection>()));
+                services.AddDbContext<ApplicationDbContext>(options =>
+                    options.UseNpgsql(_postgreSqlContainer.GetConnectionString()));
             });
         }
 
-        protected override void Dispose(bool disposing)
+        public async Task InitializeAsync()
         {
-            base.Dispose(disposing);
+            await _postgreSqlContainer.StartAsync();
+        }
 
-            if (disposing)
-                _connection.Dispose();
+        async Task IAsyncLifetime.DisposeAsync()
+        {
+            Dispose();
+            await _postgreSqlContainer.DisposeAsync();
         }
     }
 }

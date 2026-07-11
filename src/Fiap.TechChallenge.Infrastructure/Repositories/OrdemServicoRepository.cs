@@ -18,6 +18,7 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
 //@todo  revisar
         public async Task Atualizar(OrdemServico ordemServico)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             bool autoDetectChangesOriginal = _context.ChangeTracker.AutoDetectChangesEnabled;
             _context.ChangeTracker.AutoDetectChangesEnabled = false;
             try
@@ -93,6 +94,7 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
             }
 
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
         }
 
         public async Task<OrdemServico?> ObterPorId(Guid id)

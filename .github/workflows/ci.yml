@@ -4,9 +4,16 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
+  pull-requests: read
+
+env:
+  TEST_PROJECT: tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Tests.csproj
 
 jobs:
   build-and-test:
@@ -15,6 +22,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -25,11 +34,39 @@ jobs:
             Fiap.TechChallenge.Api.slnx
             **/*.csproj
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Restore
-        run: dotnet restore Fiap.TechChallenge.Api.slnx
+        run: dotnet restore ${{ env.TEST_PROJECT }}
+
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Begin SonarCloud analysis
+        run: >
+          dotnet sonarscanner begin
+          /k:"SOAT-FIAP-2026_fase1-tech-challenge"
+          /o:"soat-fiap-2026"
+          /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          /d:sonar.host.url="https://sonarcloud.io"
+          /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"
 
       - name: Build
-        run: dotnet build Fiap.TechChallenge.Api.slnx --configuration Release --no-restore
+        run: dotnet build ${{ env.TEST_PROJECT }} --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test Fiap.TechChallenge.Api.slnx --configuration Release --no-build --verbosity normal
+        run: >
+          dotnet test ${{ env.TEST_PROJECT }}
+          --configuration Release
+          --no-build
+          --verbosity normal
+          --settings coverlet.runsettings
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults
+
+      - name: End SonarCloud analysis
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
