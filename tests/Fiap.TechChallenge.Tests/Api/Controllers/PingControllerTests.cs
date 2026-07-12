@@ -18,7 +18,7 @@ namespace Fiap.TechChallenge.Tests.Api.Controllers
             Assert.NotNull(objectResult.Value);
             var messageProperty = objectResult.Value!.GetType().GetProperty("message");
             Assert.NotNull(messageProperty);
-            Assert.Equal("pong2", messageProperty!.GetValue(objectResult.Value));
+            Assert.Equal("working", messageProperty!.GetValue(objectResult.Value));
         }
     }
 }
