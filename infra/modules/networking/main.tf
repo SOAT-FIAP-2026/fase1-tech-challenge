@@ -69,7 +69,7 @@ resource "aws_route_table_association" "public" {
 # --- Security Group principal (EKS / Load Balancer) --------------------------
 resource "aws_security_group" "main" {
   name        = "${var.project_name}-sg"
-  description = "Expõe services do cluster EKS na internet"
+  description = "Security group para o EKS"
   vpc_id      = aws_vpc.main.id
 
   ingress {
