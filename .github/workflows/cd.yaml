@@ -5,6 +5,10 @@ on:
     branches:
       - main
       # - feat/infra
+    paths:
+      - "src/**"
+      - "k8s/**"
+      - ".github/workflows/cd.yaml"
   workflow_dispatch:
 
 env:
