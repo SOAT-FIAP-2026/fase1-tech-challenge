@@ -23,9 +23,8 @@ namespace Fiap.TechChallenge.Tests.Api.Support
             {
                 services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
 
-                services.AddSingleton(_connection);
                 services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
-                    options.UseSqlite(serviceProvider.GetRequiredService<DbConnection>()));
+                    options.UseNpgsql(_postgreSqlContainer.GetConnectionString()));
 
                 // Mock IEmailService to prevent actual emails from being sent during tests
                 var emailServiceMock = new Moq.Mock<global::Fiap.TechChallenge.Domain.Interfaces.Service.IEmailService>();

@@ -118,11 +118,8 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
 
             _serviceMock.Setup(s => s.ConfirmarEntrega(id)).ThrowsAsync(new InvalidOperationException("A ordem de serviço já foi entregue."));
 
-            IActionResult result = await _controller.ConfirmarEntrega(id);
-
-            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(400, badRequest.StatusCode);
-            Assert.Equal("A ordem de serviço já foi entregue.", badRequest.Value);
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.ConfirmarEntrega(id));
+            Assert.Equal("A ordem de serviço já foi entregue.", exception.Message);
         }
 
         [Fact]
@@ -132,11 +129,8 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
 
             _serviceMock.Setup(s => s.ConfirmarEntrega(id)).ThrowsAsync(new InvalidOperationException("A ordem de serviço não pode ser entregue, pois não foi finalizada."));
 
-            IActionResult result = await _controller.ConfirmarEntrega(id);
-
-            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(400, badRequest.StatusCode);
-            Assert.Equal("A ordem de serviço já foi entregue.", badRequest.Value);
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.ConfirmarEntrega(id));
+            Assert.Equal("A ordem de serviço não pode ser entregue, pois não foi finalizada.", exception.Message);
         }
 
         [Fact]
@@ -146,11 +140,8 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Api.Controllers
 
             _serviceMock.Setup(s => s.ConfirmarEntrega(id)).ThrowsAsync(new KeyNotFoundException("Ordem de serviço não encontrada."));
 
-            IActionResult result = await _controller.ConfirmarEntrega(id);
-
-            var notFound = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal(404, notFound.StatusCode);
-            Assert.Equal("Ordem de serviço não encontrada.", notFound.Value);
+            var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.ConfirmarEntrega(id));
+            Assert.Equal("Ordem de serviço não encontrada.", exception.Message);
         }
 
         [Fact]
