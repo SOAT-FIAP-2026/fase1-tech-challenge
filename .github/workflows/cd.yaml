@@ -3,8 +3,8 @@ name: CD
 on:
   push:
     branches:
-      - main
-      # - feat/infra
+      # - main #Deploy desabilitado no momento, pois o EKS está desligado
+      - feat/infra
     paths:
       - "src/**"
       - "k8s/**"
