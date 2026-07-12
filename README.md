@@ -84,6 +84,14 @@ O projeto está estruturado nas seguintes camadas, garantindo baixo acoplamento 
 
 ### Setup inicial (na raiz do repositório)
 
+Primeiro, crie o seu arquivo de variáveis de ambiente baseando-se no arquivo de exemplo:
+
+```bash
+cp .env.example .env
+```
+
+Depois, restaure as dependências e compile o projeto:
+
 ```bash
 dotnet restore fase1-tech-challenge.sln
 dotnet build fase1-tech-challenge.sln
