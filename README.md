@@ -51,7 +51,7 @@ graph TB
     POD1 --> |Migrate & Conexão| RDS
     POD2 --> |Conexão| RDS
 
-    USER["👤 Cliente / Mecânico"] --> |HTTP(s)| EKS
+    USER["👤 Cliente / Mecânico"] --> |HTTP| EKS
 ```
 
 ### Arquitetura de Software (Aplicação)
