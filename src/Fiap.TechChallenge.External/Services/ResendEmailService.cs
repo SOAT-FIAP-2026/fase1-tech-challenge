@@ -1,18 +1,19 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Fiap.TechChallenge.Domain.Interfaces.Service;
+using Microsoft.Extensions.Configuration;
 
 namespace Fiap.TechChallenge.External.Services
 {
     public class ResendEmailService : IEmailService
     {
         private readonly HttpClient _httpClient;
-        private const string ApiKey = "re_HZC6QiGu_81MT8QTRGv9PdNPXRQKTCF9V";
 
-        public ResendEmailService(HttpClient httpClient)
+        public ResendEmailService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiKey);
+            var apiKey = configuration["RESEND_API_KEY"];
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
         }
 
         public async Task<bool> EnviarEmailAsync(string para, string assunto, string corpoHtml)
