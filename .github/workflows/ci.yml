@@ -61,6 +61,8 @@ jobs:
         run: dotnet build ${{ env.TEST_PROJECT }} --configuration Release --no-restore
 
       - name: Test
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: >
           dotnet test ${{ env.TEST_PROJECT }}
           --configuration Release
