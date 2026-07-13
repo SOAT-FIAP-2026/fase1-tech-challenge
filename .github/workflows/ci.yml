@@ -47,11 +47,13 @@ jobs:
         run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Begin SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: >
           dotnet sonarscanner begin
           /k:"SOAT-FIAP-2026_fase1-tech-challenge"
           /o:"soat-fiap-2026"
-          /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          /d:sonar.token="$SONAR_TOKEN"
           /d:sonar.host.url="https://sonarcloud.io"
           /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"
 
@@ -69,4 +71,6 @@ jobs:
           --results-directory TestResults
 
       - name: End SonarCloud analysis
-        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"

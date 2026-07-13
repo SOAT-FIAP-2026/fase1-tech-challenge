@@ -98,7 +98,7 @@ jobs:
         run: |
           # O action docker/metadata-action gera a tag no formato sha256-{github.sha}
           kubectl set image deployment/api \
-            api=${{ env.DOCKERHUB_IMAGE }}:sha256-${{ github.sha }} \
+            api=$DOCKERHUB_IMAGE:sha256-${{ github.sha }} \
             -n techchallenge
 
       - name: Aguardar rollout
