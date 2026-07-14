@@ -11,8 +11,9 @@ namespace Fiap.TechChallenge.Api.Configurations
     {
         public static void AddJWTConfig(this IServiceCollection services, IConfiguration configuration)
         {
-            var jwtSecret = configuration["Jwt:Secret"];
-            var key = Encoding.ASCII.GetBytes(jwtSecret);
+            var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
+                throw new ApplicationException("JWT secret is not configured.");
+            var key = Encoding.UTF8.GetBytes(jwtSecret);
 
             services.AddAuthentication(options =>
             {
