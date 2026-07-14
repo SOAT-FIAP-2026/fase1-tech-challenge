@@ -18,7 +18,7 @@ namespace Fiap.TechChallenge.External.Services
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
-                throw new ApplicationException("JWT secret is not configured.");
+                throw new ArgumentNullException(jwtSecret);
             var key = Encoding.UTF8.GetBytes(jwtSecret);
 
             var tokenDescriptor = new SecurityTokenDescriptor

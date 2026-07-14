@@ -12,7 +12,7 @@ namespace Fiap.TechChallenge.Api.Configurations
         public static void AddJWTConfig(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
-                throw new ApplicationException("JWT secret is not configured.");
+                throw new ArgumentNullException(jwtSecret);
             var key = Encoding.UTF8.GetBytes(jwtSecret);
 
             services.AddAuthentication(options =>
@@ -32,7 +32,7 @@ namespace Fiap.TechChallenge.Api.Configurations
                     ValidIssuer = configuration["Jwt:Issuer"],
                     ValidateAudience = true,
                     ValidAudience = configuration["Jwt:Audience"],
-                    ValidateLifetime = true, 
+                    ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };
             });
