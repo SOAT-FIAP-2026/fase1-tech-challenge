@@ -8,7 +8,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Domain.ValueObjects
         public void Construtor_EmailValido_DeveCriarObjeto()
         {
             // 1. Arrange (Preparar)
-            string emailValido = "diogenes@friboi.com.br";
+            string emailValido = "diogenes@indigo.com.br";
 
             // 2. Act (Agir)
             var emailVO = new EmailVO(emailValido);
@@ -21,7 +21,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Domain.ValueObjects
         public void Construtor_EmailInvalido_DeveLancarExcecao()
         {
             // 1. Arrange
-            string emailInvalido = "diogenes@friboi";
+            string emailInvalido = "diogenes@indigo";
 
             // 2 e 3. Act & Assert juntos
             Assert.Throws<ArgumentException>(() => new EmailVO(emailInvalido));
