@@ -12,7 +12,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Domain.Entities
         {
             // 1. Arrange (Preparar)
             string nomeValido = "Diogenes";
-            string emailValido = "diogenes@friboi.com.br";
+            string emailValido = "diogenes@indigo.com.br";
             string senhaValida = "Junior123@";
             string hashEsperado = "$2a$11$codigo_embaralhado_falso";
 
@@ -42,7 +42,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Domain.Entities
         {
             // 1. Arrange (Preparar)
             string nomeValido = "Diogenes";
-            string emailValido = "diogenes@friboi.com.br";
+            string emailValido = "diogenes@indigo.com.br";
             string senhaValida = "Junior123@";
             string novoNome = "Kenedy";
 
