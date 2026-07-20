@@ -67,7 +67,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Domain.ValueObjects
         public void Construtor_SenhaGrandeDemais_DeveLancarExcecao()
         {
             // 1. Arrange
-            string senhaInvalida = "diogenes.kenedy.nascimento.oliveira.junior@friboi.com123";
+            string senhaInvalida = "diogenes.kenedy.nascimento.oliveira.junior@indigo.com123";
 
             var cryptoMock = new Mock<ICrypto>();
             cryptoMock
