@@ -245,3 +245,4 @@ fase1-tech-challenge/
 ├── dotnet-tools.json                       # Ferramentas locais do projeto
 └── README.md                               # Este arquivo
 ```
+
