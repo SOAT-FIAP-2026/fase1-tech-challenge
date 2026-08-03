@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,16 +31,15 @@ services:
       DOTNET_USE_POLLING_FILE_WATCHER: "1"
       DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER: "1"
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      Jwt__Secret: ${JWT_SECRET}
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
     ports:
       - "${API_PORT:-8080}:8080"
     volumes:
       - .:/src
     working_dir: /src
-    command: ["dotnet", "watch", "--project", "src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj", "run", "--no-launch-profile"]
-
+    command: [ "dotnet", "watch", "--project", "src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj", "run", "--no-launch-profile" ]
 
 volumes:
   postgres_data:

@@ -88,6 +88,27 @@ jobs:
       - name: Configurar Kubeconfig do EKS
         run: aws eks update-kubeconfig --name eks-fiap-soat-terraform --region sa-east-1
 
+      - name: Substituir secrets via envsubst
+        env:
+          JWT_SECRET_BASE64: ${{ secrets.JWT_SECRET_BASE64 }}
+          DB_CONNECTION_BASE64: ${{ secrets.DB_CONNECTION_BASE64 }}
+          DOCKER_CONFIG_JSON_BASE64: ${{ secrets.DOCKER_CONFIG_JSON_BASE64 }}
+        run: |
+          # Validar que as variáveis obrigatórias estão definidas
+          if [ -z "$JWT_SECRET_BASE64" ] || [ -z "$DB_CONNECTION_BASE64" ] || [ -z "$DOCKER_CONFIG_JSON_BASE64" ]; then
+            echo "❌ Erro: Uma ou mais variáveis de secrets não estão definidas no GitHub Actions."
+            echo "Variáveis obrigatórias:"
+            echo "  - JWT_SECRET_BASE64"
+            echo "  - DB_CONNECTION_BASE64"
+            echo "  - DOCKER_CONFIG_JSON_BASE64"
+            exit 1
+          fi
+          
+          # Substituir as variáveis no template
+          envsubst < k8s/overlays/aws/secrets.yaml.template > k8s/overlays/aws/secrets.yaml
+          
+          echo "✅ Secrets gerados com sucesso via envsubst"
+
       - name: Aplicar manifestos Kubernetes
         run: |
           # O script de deploy usa o padrão base+overlays para aplicar na ordem correta
