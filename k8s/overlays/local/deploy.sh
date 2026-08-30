@@ -35,11 +35,11 @@ echo "📁 Aplicando namespace..."
 kubectl apply -f "$BASE_DIR/namespace.yaml"
 
 # --- 3. PostgreSQL local ---------------------------------------------------
-echo "🐘 Aplicando PostgreSQL local..."
-kubectl apply -f "$OVERLAY_DIR/postgres.yaml"
+# echo "🐘 Aplicando PostgreSQL local..."
+# kubectl apply -f "$OVERLAY_DIR/postgres.yaml"
 
-echo "⏳ Aguardando PostgreSQL ficar pronto..."
-kubectl rollout status deployment/postgres -n techchallenge --timeout=120s
+# echo "⏳ Aguardando PostgreSQL ficar pronto..."
+# kubectl rollout status deployment/postgres -n techchallenge --timeout=120s
 
 # --- 4. ConfigMap e Secrets -----------------------------------------------
 echo "🔧 Aplicando ConfigMap e Secrets..."

@@ -15,6 +15,7 @@ Este projeto foi evoluído para garantir maior qualidade, resiliência e escalab
 
 - 🎥 **Vídeo Demonstrativo:** [Link do vídeo](https://www.youtube.com/watch?v=kkmQnF3PrXk) (Demonstrando deploy, CI/CD, consumo de APIs e HPA).
 - 📚 **Collection / Documentação das APIs:** [Swagger UI](http://localhost:8080/swagger) (ou acesse a rota `/swagger` no Load Balancer da AWS após o deploy).
+- 📊 **Diagramas de Arquitetura:** Disponíveis em [`docs/diagrams.md`](./docs/diagrams.md).
 - ☸️ **Manifestos Kubernetes:** Disponíveis na pasta [`/k8s`](./k8s/).
 - ☁️ **Scripts Terraform:** Disponíveis na pasta [`/infra`](./infra/).
 
