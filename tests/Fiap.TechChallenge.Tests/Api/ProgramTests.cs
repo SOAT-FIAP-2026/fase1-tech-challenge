@@ -31,6 +31,22 @@ namespace Fiap.TechChallenge.Tests.Api
         }
 
         [Fact]
+        public async Task Application_DeveExporHealthcheckMetricsECorrelationId()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/health/live");
+            request.Headers.Add("X-Correlation-ID", "teste-correlation-id");
+
+            var response = await _factory.CreateClient().SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Headers.GetValues("X-Correlation-ID").Should().ContainSingle("teste-correlation-id");
+
+            var metricsResponse = await _factory.CreateClient().GetAsync("/metrics");
+            metricsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            metricsResponse.Content.Headers.ContentType?.MediaType.Should().Contain("text");
+        }
+
+        [Fact]
         public void ServiceProvider_DeveResolverDependenciasSemErros()
         {
             // Arrange

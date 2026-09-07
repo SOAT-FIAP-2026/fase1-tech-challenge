@@ -17,6 +17,7 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Configurations
             builder.Property(o => o.IdStatus).HasColumnName("id_status").IsRequired();
             builder.Property(o => o.Observacao).HasColumnName("observacao").HasColumnType("text");
             builder.Property(o => o.DataAbertura).HasColumnName("data_abertura").IsRequired();
+            builder.Property(o => o.DataInicioDiagnostico).HasColumnName("data_inicio_diagnostico");
             builder.Property(o => o.DataConclusao).HasColumnName("data_conclusao");
 
             builder.HasOne(o => o.Cliente)

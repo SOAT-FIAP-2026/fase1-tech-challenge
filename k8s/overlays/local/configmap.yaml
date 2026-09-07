@@ -11,4 +11,8 @@ data:
   ASPNETCORE_URLS: "http://+:8080"
   Jwt__Issuer: "TechChallenge"
   Jwt__Audience: "techchallenge.com.br"
+  OTEL_SERVICE_NAME: "techchallenge-api"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_EXPORTER_OTLP_ENDPOINT: ""
+  OTEL_RESOURCE_ATTRIBUTES: "service.namespace=techchallenge,deployment.environment=development"
   DOTNET_USE_POLLING_FILE_WATCHER: "true" # Hot Reload em produção não é recomendado, mas aqui ajuda muito no desenvolvimento

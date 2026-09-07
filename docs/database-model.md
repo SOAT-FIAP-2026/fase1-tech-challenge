@@ -1,5 +1,11 @@
 # Modelo Relacional e Diagrama ER — Tech Challenge Fase 3
 
+> Revisão de 07/09/2026: o código local inclui a coluna nullable
+> data_inicio_diagnostico (DateTime? / timestamp with time zone), adicionada pela
+> migração 20260907000000_AddDataInicioDiagnostico. Ela registra o início do diagnóstico
+> e não cria novos relacionamentos. O ER abaixo ainda precisa incorporar esse campo;
+> a aplicação da migração não foi revalidada nesta revisão. Veja o [relatório](validation-report.md).
+
 Justificativa formal para a escolha do banco de dados, detalhamento completo do modelo relacional, diagrama ER e explicação de cada relacionamento.
 
 ---

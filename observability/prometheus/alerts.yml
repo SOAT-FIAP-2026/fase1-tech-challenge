@@ -1,0 +1,38 @@
+groups:
+  - name: techchallenge-business
+    rules:
+      - alert: TechChallengeOrderProcessingFailure
+        expr: sum(increase(techchallenge_orders_processing_failures_total[5m])) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Falha no processamento de ordem de serviço
+          description: A API registrou falha no processamento de uma ordem nos últimos 5 minutos.
+
+      - alert: TechChallengeIntegrationError
+        expr: sum(increase(techchallenge_integrations_errors_total[5m])) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Erro em integração externa
+          description: Uma integração externa registrou erro nos últimos 5 minutos.
+
+      - alert: TechChallengeApiHighLatency
+        expr: histogram_quantile(0.95, sum(rate(techchallenge_http_request_duration_milliseconds_bucket[5m])) by (le)) > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Latência p95 da API acima de 1 segundo
+          description: A latência p95 das requisições HTTP está acima do limite por 5 minutos.
+
+      - alert: TechChallengeHealthcheckDown
+        expr: probe_success{job="techchallenge-health"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Healthcheck da API indisponível
+          description: O endpoint /health/ready não respondeu com sucesso por 2 minutos.

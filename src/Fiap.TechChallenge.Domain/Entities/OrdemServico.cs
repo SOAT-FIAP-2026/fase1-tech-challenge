@@ -7,6 +7,7 @@ namespace Fiap.TechChallenge.Domain.Entities
         public Guid IdStatus { get; private set; }
         public string? Observacao { get; private set; }
         public DateTime DataAbertura { get; private set; }
+        public DateTime? DataInicioDiagnostico { get; private set; }
         public DateTime? DataConclusao { get; private set; }
 
         public Cliente Cliente { get; private set; } = null!;
@@ -29,6 +30,11 @@ namespace Fiap.TechChallenge.Domain.Entities
             IdStatus = idStatus;
             Observacao = observacao;
             DataAbertura = DateTime.UtcNow;
+        }
+
+        public void IniciarDiagnostico()
+        {
+            DataInicioDiagnostico ??= DateTime.UtcNow;
         }
 
         public void AlterarStatus(Guid idStatus)

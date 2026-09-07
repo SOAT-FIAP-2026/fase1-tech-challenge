@@ -34,6 +34,9 @@ services:
       Jwt__Secret: ${JWT_SECRET}
       Jwt__Issuer: ${JWT_ISSUER}
       Jwt__Audience: ${JWT_AUDIENCE}
+      OTEL_SERVICE_NAME: techchallenge-api
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
     ports:
       - "${API_PORT:-8080}:8080"
     volumes:
@@ -41,6 +44,121 @@ services:
     working_dir: /src
     command: ["dotnet", "watch", "--project", "src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj", "run", "--no-launch-profile"]
 
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: techchallenge_prometheus
+    restart: unless-stopped
+    depends_on:
+      - api-dev
+      - blackbox-exporter
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    container_name: techchallenge_blackbox
+    restart: unless-stopped
+    ports:
+      - "9115:9115"
+    volumes:
+      - ./observability/blackbox/blackbox.yml:/config/blackbox.yml:ro
+    command:
+      - --config.file=/config/blackbox.yml
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: techchallenge_alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    depends_on:
+      - alert-receiver
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+
+  alert-receiver:
+    image: python:3.12-alpine
+    container_name: techchallenge_alert_receiver
+    restart: unless-stopped
+    ports:
+      - "9094:8080"
+    volumes:
+      - ./observability/alertmanager/receiver.py:/app/receiver.py:ro
+    command: ["python", "/app/receiver.py"]
+
+  loki:
+    image: grafana/loki:3.1.0
+    container_name: techchallenge_loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki/loki.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+
+  tempo:
+    image: grafana/tempo:2.5.0
+    container_name: techchallenge_tempo
+    restart: unless-stopped
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./observability/tempo/tempo.yml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.102.1
+    container_name: techchallenge_otel_collector
+    restart: unless-stopped
+    depends_on:
+      - loki
+      - tempo
+    ports:
+      - "4319:4317"
+      - "4320:4318"
+    volumes:
+      - ./observability/otel/otel-collector.yml:/etc/otelcol-contrib/config.yaml:ro
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: techchallenge_grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./observability/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
 
 volumes:
   postgres_data:
+  prometheus_data:
+  alertmanager_data:
+  grafana_data:
+  loki_data:
+  tempo_data:

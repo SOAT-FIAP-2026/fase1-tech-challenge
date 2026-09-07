@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Diagnostics;
+using Fiap.TechChallenge.Api.Middlewares;
 using Fiap.TechChallenge.Domain.Exceptions;
 
 namespace Fiap.TechChallenge.Api.Middlewares
@@ -29,17 +31,26 @@ namespace Fiap.TechChallenge.Api.Middlewares
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception while processing request {Method} {Path}", context.Request.Method, context.Request.Path);
+                string correlationId = context.Request.Headers[CorrelationIdMiddleware.HeaderName].FirstOrDefault()
+                    ?? context.TraceIdentifier;
+                string traceId = Activity.Current?.TraceId.ToHexString() ?? context.TraceIdentifier;
+
+                _logger.LogError(
+                    ex,
+                    "Unhandled exception while processing request {Method} {Path} with status {StatusCode}",
+                    context.Request.Method,
+                    context.Request.Path,
+                    GetStatusCode(ex));
 
                 context.Response.Clear();
+                context.Response.Headers[CorrelationIdMiddleware.HeaderName] = correlationId;
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = GetStatusCode(ex);
 
                 var payload = new ErrorResponse(
                     context.Response.StatusCode,
-                    GetMessage(ex)
-                    // context.TraceIdentifier,
-                    // DateTime.UtcNow
+                    GetMessage(ex),
+                    traceId
                 );
 
                 var json = JsonSerializer.Serialize(payload, JsonOptions);
@@ -73,9 +84,8 @@ namespace Fiap.TechChallenge.Api.Middlewares
 
         private sealed record ErrorResponse(
             int StatusCode,
-            string Message
-            // string TraceId,
-            // DateTime TimestampUtc
+            string Message,
+            string TraceId
         );
     }
 }

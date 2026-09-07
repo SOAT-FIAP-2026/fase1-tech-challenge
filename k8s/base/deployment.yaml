@@ -26,6 +26,8 @@ spec:
         app.kubernetes.io/name: api
         app.kubernetes.io/component: backend
         app.kubernetes.io/part-of: techchallenge
+      annotations:
+        ad.datadoghq.com/api.logs: '[{"source":"csharp","service":"techchallenge-api"}]'
     spec:
       imagePullSecrets:
         - name: dockerhub-secret
@@ -50,7 +52,7 @@ spec:
               memory: 512Mi
           readinessProbe:
             httpGet:
-              path: /api/ping
+              path: /health/ready
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
@@ -58,7 +60,7 @@ spec:
             failureThreshold: 3
           livenessProbe:
             httpGet:
-              path: /api/ping
+              path: /health/live
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 30
@@ -66,7 +68,7 @@ spec:
             failureThreshold: 3
           startupProbe:
             httpGet:
-              path: /api/ping
+              path: /health/live
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5

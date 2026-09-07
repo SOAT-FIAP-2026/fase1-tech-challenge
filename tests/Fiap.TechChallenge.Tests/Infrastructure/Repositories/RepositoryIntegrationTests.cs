@@ -133,6 +133,71 @@ namespace Fiap.TechChallenge.Tests.Infrastructure.Repositories
             (await repository.ObterPorId(filtro.Id)).Should().BeNull();
         }
 
+        [Fact]
+        public async Task OrdemServicoRepository_ObterTodos_DeveOrdenarPorPrioridadeEAntiguidadeEExcluirConcluidas()
+        {
+            await using var database = await CreateDatabase();
+            var cliente = new Cliente("Cliente da Oficina", "52998224725", "cliente@oficina.com", "11999999999");
+            var veiculo = new Veiculo("ORD1A23", "Honda", "Civic", 2020);
+            var recebida = new StatusOrdemServico("Recebida", StatusOS.Recebida.Codigo);
+            var diagnostico = new StatusOrdemServico("Em Diagnostico", StatusOS.EmDiagnostico.Codigo);
+            var aguardandoAprovacao = new StatusOrdemServico("Aguardando Aprovacao", StatusOS.AguardandoAprovacao.Codigo);
+            var emExecucao = new StatusOrdemServico("Em Execucao", StatusOS.EmExecucao.Codigo);
+            var finalizada = new StatusOrdemServico("Finalizada", StatusOS.Finalizada.Codigo);
+            var entregue = new StatusOrdemServico("Entregue", StatusOS.Entregue.Codigo);
+            var cancelada = new StatusOrdemServico("Cancelada", StatusOS.Cancelada.Codigo);
+
+            database.Context.AddRange(
+                cliente,
+                veiculo,
+                recebida,
+                diagnostico,
+                aguardandoAprovacao,
+                emExecucao,
+                finalizada,
+                entregue,
+                cancelada);
+            await database.Context.SaveChangesAsync();
+
+            DateTime agora = DateTime.UtcNow;
+            var execucaoAntiga = new OrdemServico(cliente.Id, veiculo.Id, emExecucao.Id, "Execucao antiga");
+            var execucaoNova = new OrdemServico(cliente.Id, veiculo.Id, emExecucao.Id, "Execucao nova");
+            var aguardando = new OrdemServico(cliente.Id, veiculo.Id, aguardandoAprovacao.Id);
+            var emDiagnostico = new OrdemServico(cliente.Id, veiculo.Id, diagnostico.Id);
+            var ordemRecebida = new OrdemServico(cliente.Id, veiculo.Id, recebida.Id);
+            var ordemCancelada = new OrdemServico(cliente.Id, veiculo.Id, cancelada.Id);
+            var ordemFinalizada = new OrdemServico(cliente.Id, veiculo.Id, finalizada.Id);
+            var ordemEntregue = new OrdemServico(cliente.Id, veiculo.Id, entregue.Id);
+
+            database.Context.OrdensServico.AddRange(
+                execucaoNova,
+                ordemEntregue,
+                ordemRecebida,
+                ordemFinalizada,
+                emDiagnostico,
+                aguardando,
+                execucaoAntiga,
+                ordemCancelada);
+
+            database.Context.Entry(execucaoAntiga).Property(o => o.DataAbertura).CurrentValue = agora.AddDays(-2);
+            database.Context.Entry(execucaoNova).Property(o => o.DataAbertura).CurrentValue = agora.AddDays(-1);
+            await database.Context.SaveChangesAsync();
+            database.Context.ChangeTracker.Clear();
+
+            var repository = new OrdemServicoRepository(database.Context);
+
+            IReadOnlyCollection<OrdemServico> ordens = await repository.ObterTodos();
+
+            ordens.Select(o => o.Id).Should().Equal(
+                execucaoAntiga.Id,
+                execucaoNova.Id,
+                aguardando.Id,
+                emDiagnostico.Id,
+                ordemRecebida.Id,
+                ordemCancelada.Id);
+            ordens.Should().NotContain(o => o.Id == ordemFinalizada.Id || o.Id == ordemEntregue.Id);
+        }
+
         private static async Task<TestDatabase> CreateDatabase()
         {
             var postgreSqlContainer = new PostgreSqlBuilder("postgres:16-alpine").Build();

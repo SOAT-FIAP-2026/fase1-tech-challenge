@@ -17,6 +17,8 @@ Este projeto foi evoluído para garantir maior qualidade, resiliência e escalab
 - 📚 **Collection / Documentação das APIs:** [Swagger UI](http://localhost:8080/swagger) (ou acesse a rota `/swagger` no Load Balancer da AWS após o deploy).
 - 📖 **Central de Documentação (RFCs & ADRs):** Disponível na pasta [`/docs`](./docs/README.md).
 - 📊 **Diagramas de Arquitetura:** [Diagrama de Componentes](./docs/component-diagram.md) e [Diagrama de Sequência](./docs/sequence-diagram.md).
+- 🔭 **Observabilidade:** [Métricas, healthchecks, correlação e stack local Prometheus + Grafana](./docs/observability.md).
+- **Validação e pendências:** [Auditoria de 07/09/2026, testes, CI/CD e requisitos ainda não atendidos](./docs/validation-report.md).
 - 🗃️ **Modelo de Dados e Diagrama ER:** [Modelo Relacional Completo](./docs/database-model.md) (11 entidades, relacionamentos, máquina de estados da OS).
 - 📜 **Decisões Técnicas (RFCs):** [RFC-001 (Nuvem)](./docs/rfcs/RFC-001-cloud-provider-choice.md) | [RFC-002 (Banco)](./docs/rfcs/RFC-002-managed-database-choice.md) | [RFC-003 (Auth Serverless)](./docs/rfcs/RFC-003-serverless-authentication-strategy.md)
 - 🏛️ **Decisões Arquiteturais (ADRs):** [ADR-001 (Comunicação)](./docs/adrs/ADR-001-communication-pattern.md) | [ADR-002 (Auto-scaling HPA)](./docs/adrs/ADR-002-kubernetes-hpa-autoscaling.md)
@@ -79,6 +81,7 @@ O projeto está estruturado nas seguintes camadas, garantindo baixo acoplamento 
 - **Swagger/OpenAPI** para documentação
 - **PostgreSQL** como banco de dados
 - **Docker** e **docker-compose** para containerização
+- **OpenTelemetry**, **Prometheus** e **Grafana** para métricas, dashboards e alertas locais
 
 ## 🚀 Como Executar o Projeto
 
@@ -146,6 +149,17 @@ cd infra && terraform init && terraform apply
 |---|---|
 | Swagger UI | http://localhost:8080/swagger |
 | HTTP | http://localhost:8080/api/ping |
+| Healthcheck | http://localhost:8080/health |
+| Métricas Prometheus | http://localhost:8080/metrics |
+
+Para subir a observabilidade local, prepare as variáveis e execute o Compose:
+
+    copy .env.example .env
+    docker compose up -d
+
+Acesse o Grafana em http://localhost:3000 (usuário admin, senha admin). O Prometheus
+fica disponível em http://localhost:9090, o Alertmanager em http://localhost:9093,
+o Loki em http://localhost:3100 e o Tempo em http://localhost:3200.
 
 ## Usuário para testes de rotas autenticadas
 
