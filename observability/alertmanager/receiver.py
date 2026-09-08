@@ -19,5 +19,5 @@ class AlertReceiver(BaseHTTPRequestHandler):
         return
 
 
-# Receiver exclusivo do Compose local; não deve ser exposto fora da rede de demonstração. NOSONAR
-HTTPServer(("0.0.0.0", 8080), AlertReceiver).serve_forever()
+# Receiver exclusivo do Compose local; não deve ser exposto fora da rede de demonstração.
+HTTPServer(("0.0.0.0", 8080), AlertReceiver).serve_forever()  # NOSONAR
