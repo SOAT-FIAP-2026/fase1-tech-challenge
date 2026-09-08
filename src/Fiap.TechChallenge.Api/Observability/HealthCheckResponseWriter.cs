@@ -26,7 +26,9 @@ namespace Fiap.TechChallenge.Api.Observability
                     })
             };
 
-            await context.Response.WriteAsync(JsonSerializer.Serialize(payload, JsonOptions));
+            await context.Response.WriteAsync(
+                JsonSerializer.Serialize(payload, JsonOptions),
+                context.RequestAborted);
         }
     }
 }
