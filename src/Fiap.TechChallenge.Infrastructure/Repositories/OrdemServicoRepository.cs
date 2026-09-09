@@ -1,5 +1,6 @@
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
+using Fiap.TechChallenge.Domain.ValueObjects;
 using Fiap.TechChallenge.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -113,6 +114,13 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
 
         public async Task<IReadOnlyCollection<OrdemServico>> ObterTodos()
         {
+            CodigoVO statusEmExecucao = new(StatusOS.EmExecucao.Codigo);
+            CodigoVO statusAguardandoAprovacao = new(StatusOS.AguardandoAprovacao.Codigo);
+            CodigoVO statusEmDiagnostico = new(StatusOS.EmDiagnostico.Codigo);
+            CodigoVO statusRecebida = new(StatusOS.Recebida.Codigo);
+            CodigoVO statusFinalizada = new(StatusOS.Finalizada.Codigo);
+            CodigoVO statusEntregue = new(StatusOS.Entregue.Codigo);
+
             return await _context.OrdensServico
                 .Include(o => o.Cliente)
                 .Include(o => o.Veiculo)
@@ -122,7 +130,13 @@ namespace Fiap.TechChallenge.Infrastructure.Repositories
                     .ThenInclude(item => item.Servico)
                 .Include(o => o.ItensPecaInsumo)
                     .ThenInclude(item => item.PecaInsumo)
-                .OrderByDescending(o => o.DataAbertura)
+                .Where(o => o.Status.Codigo != statusFinalizada && o.Status.Codigo != statusEntregue)
+                .OrderBy(o => o.Status.Codigo == statusEmExecucao ? 0
+                    : o.Status.Codigo == statusAguardandoAprovacao ? 1
+                    : o.Status.Codigo == statusEmDiagnostico ? 2
+                    : o.Status.Codigo == statusRecebida ? 3
+                    : 4)
+                .ThenBy(o => o.DataAbertura)
                 .ToListAsync();
         }
 

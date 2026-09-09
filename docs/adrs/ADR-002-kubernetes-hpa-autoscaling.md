@@ -1,5 +1,9 @@
 # ADR-002: Estratégia de Auto-scaling da Aplicação via Kubernetes HPA
 
+> Revisão de 07/09/2026: esta decisão descreve alvos de 70% CPU/80% memória.
+> O manifest atual k8s/base/hpa.yaml usa 50%/95% para testes locais. A divergência
+> está registrada na [validação](../validation-report.md); a decisão aceita não foi alterada.
+
 * **Status**: Aceito
 * **Data**: 2026-08-31
 * **Decisores**: Equipe de Arquitetura (SOAT - Tech Challenge)

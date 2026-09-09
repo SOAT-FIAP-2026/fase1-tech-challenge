@@ -5,6 +5,7 @@ using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
 using Fiap.TechChallenge.Domain.Interfaces.Service;
+using Fiap.TechChallenge.Domain.Interfaces.Observability;
 using Fiap.TechChallenge.Domain.ValueObjects;
 using Moq;
 
@@ -20,6 +21,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         private readonly Mock<IEstoqueRepository> _estoqueRepositoryMock = new();
         private readonly Mock<IOrdemServicoRepository> _ordemServicoRepositoryMock = new();
         private readonly Mock<IEmailService> _emailServiceMock = new();
+        private readonly Mock<IObservabilityMetrics> _observabilityMetricsMock = new();
         private readonly OrdemServicoService _service;
 
         public OrdemServicoServiceAdditionalTests()
@@ -32,7 +34,8 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 _pecaInsumoRepositoryMock.Object,
                 _emailServiceMock.Object,
                 _estoqueRepositoryMock.Object,
-                _ordemServicoRepositoryMock.Object);
+                _ordemServicoRepositoryMock.Object,
+                _observabilityMetricsMock.Object);
         }
 
         [Fact]
@@ -83,6 +86,9 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             Assert.NotNull(ordemServico.DataConclusao);
             Assert.NotNull(ordemServico.ItensServico.Single().DataHoraFim);
             _ordemServicoRepositoryMock.Verify(r => r.Atualizar(ordemServico), Times.Once);
+            _observabilityMetricsMock.Verify(
+                metrics => metrics.RecordOrderStatusDuration("execucao", It.Is<TimeSpan>(duration => duration >= TimeSpan.Zero)),
+                Times.Once);
         }
 
         [Fact]

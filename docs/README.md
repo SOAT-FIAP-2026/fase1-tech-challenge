@@ -2,6 +2,13 @@
 
 Esta pasta contém toda a documentação arquitetural, especificações técnicas, diagramas, solicitações de comentários (RFCs) e registros de decisões de arquitetura (ADRs) do projeto da **Oficina Mecânica**.
 
+## Estado da implementação
+
+Consulte o [relatório de validação de 07/09/2026](validation-report.md) para resultados
+dos testes, pendências por repositório e evidências do GitHub. Os diagramas de nuvem
+e autenticação CPF/Lambda descrevem a arquitetura alvo, ainda não inteiramente implementada.
+O ambiente local escolhido está descrito em [Observabilidade com Grafana](observability.md).
+
 ---
 
 ## 🗺️ Índice Geral de Documentação
@@ -44,7 +51,7 @@ Esta pasta contém toda a documentação arquitetural, especificações técnica
 
 | Repositório | Responsabilidade | Tecnologias |
 |---|---|---|
-| 📦 `tech-challenge-auth-serverless` | Função Serverless de Autenticação | AWS Lambda, Node.js / C#, JWT, CI/CD |
-| 📦 `tech-challenge-infra-k8s` | Infraestrutura do Cluster e Rede | Terraform, AWS EKS, VPC, API Gateway |
-| 📦 `tech-challenge-infra-db` | Infraestrutura do Banco de Dados Gerenciado | Terraform, AWS RDS PostgreSQL 16 |
+| 📦 [lambda-auth-function](https://github.com/SOAT-FIAP-2026/lambda-auth-function) | Função Serverless de Autenticação (repo ainda vazio) | Implementação pendente |
+| 📦 [soat-infra](https://github.com/SOAT-FIAP-2026/soat-infra) | Infraestrutura do Cluster e Rede | Terraform, AWS EKS, VPC; stack local Grafana/Prometheus |
+| 📦 [soat-db](https://github.com/SOAT-FIAP-2026/soat-db) | Infraestrutura do Banco de Dados Gerenciado | Terraform, AWS RDS PostgreSQL 16 |
 | 📦 `fase1-tech-challenge` | Aplicação Backend Principal + Manifestos K8s | .NET 8, C#, Clean Arch, K8s Manifests, CI/CD |

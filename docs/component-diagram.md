@@ -1,5 +1,9 @@
 # Diagrama de Componentes — Visão de Nuvem (Tech Challenge Fase 3)
 
+> Estado em 07/09/2026: os componentes AWS/Gateway/Lambda representam arquitetura
+> alvo, não evidência de deploy. Veja a [validação](validation-report.md) e o
+> [diagrama do ambiente local com Grafana](observability.md#arquitetura-local-configurada).
+
 Contempla a visão completa de infraestrutura AWS e local: API Gateway, Lambda Authorizer, EKS, RDS, CI/CD e Monitoramento.
 
 > **Requisito**: TC Fase 3 — *"Diagrama de Componentes (com a visão de nuvem, APIs, banco e monitoramento)."*

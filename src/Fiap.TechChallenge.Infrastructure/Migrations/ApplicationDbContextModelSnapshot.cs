@@ -228,6 +228,10 @@ namespace Fiap.TechChallenge.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("data_abertura");
 
+                    b.Property<DateTime?>("DataInicioDiagnostico")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_inicio_diagnostico");
+
                     b.Property<DateTime?>("DataConclusao")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("data_conclusao");

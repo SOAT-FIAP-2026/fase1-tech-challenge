@@ -1,5 +1,7 @@
 using Fiap.TechChallenge.Api.Configurations;
 using Fiap.TechChallenge.Api.Middlewares;
+using Fiap.TechChallenge.Api.Observability;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace Fiap.TechChallenge.Api
 {
@@ -14,10 +16,13 @@ namespace Fiap.TechChallenge.Api
             services.AddDependencyInjection(Configuration);
             services.AddJWTConfig(Configuration);
             services.AddSwaggerConfig();
+            services.AddObservability(Configuration);
         }
 
         public void Configure(WebApplication app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<CorrelationIdMiddleware>();
+            app.UseMiddleware<RequestObservabilityMiddleware>();
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseHttpsRedirection();
@@ -33,6 +38,22 @@ namespace Fiap.TechChallenge.Api
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+
+            app.MapHealthChecks("/health", new HealthCheckOptions
+            {
+                ResponseWriter = HealthCheckResponseWriter.WriteAsync
+            });
+            app.MapHealthChecks("/health/live", new HealthCheckOptions
+            {
+                Predicate = _ => false,
+                ResponseWriter = HealthCheckResponseWriter.WriteAsync
+            });
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready"),
+                ResponseWriter = HealthCheckResponseWriter.WriteAsync
+            });
+            app.MapPrometheusScrapingEndpoint("/metrics");
         }
     }
 }

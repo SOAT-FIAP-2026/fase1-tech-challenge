@@ -1,5 +1,9 @@
 # Diagramas de Arquitetura — Tech Challenge Fase 3
 
+> O fluxo CPF/Gateway/Lambda abaixo é planejado. A aplicação atual autentica por
+> e-mail e senha, e lambda-auth-function está vazio. Consulte a
+> [validação da implementação](validation-report.md) antes de usar este diagrama como evidência.
+
 ## 1. Diagrama de Sequência — Autenticação (CPF → JWT)
 
 Fluxo completo de quando um cliente se autentica com CPF via API Gateway e Lambda Authorizer.

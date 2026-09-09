@@ -45,6 +45,25 @@ namespace Fiap.TechChallenge.Tests.Api.Middlewares
         }
 
         [Fact]
+        public async Task InvokeAsync_QuandoExcecaoLancada_DevePreservarCorrelationIdNaResposta()
+        {
+            // Arrange
+            const string correlationId = "correlation-error-test";
+            _context.Request.Headers[CorrelationIdMiddleware.HeaderName] = correlationId;
+            RequestDelegate next = (innerContext) => throw new InvalidOperationException("Erro de negócio");
+            var middleware = new ExceptionHandlingMiddleware(next, _loggerMock.Object);
+
+            // Act
+            await middleware.InvokeAsync(_context);
+
+            // Assert
+            _context.Response.Headers[CorrelationIdMiddleware.HeaderName]
+                .ToString()
+                .Should()
+                .Be(correlationId);
+        }
+
+        [Fact]
         public async Task InvokeAsync_QuandoExceptionGenericaLancada_DeveRetornarInternalServerError()
         {
             // Arrange

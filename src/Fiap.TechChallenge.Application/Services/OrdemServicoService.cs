@@ -7,6 +7,7 @@ using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
 using Fiap.TechChallenge.Domain.Interfaces.Service;
+using Fiap.TechChallenge.Domain.Interfaces.Observability;
 using Fiap.TechChallenge.Domain.ValueObjects;
 
 namespace Fiap.TechChallenge.Application.Services
@@ -21,6 +22,7 @@ namespace Fiap.TechChallenge.Application.Services
         private readonly IEstoqueRepository _estoqueRepository;
         private readonly IOrdemServicoRepository _ordemServicoRepository;
         private readonly IEmailService _emailService;
+        private readonly IObservabilityMetrics? _observabilityMetrics;
 
 
         public OrdemServicoService(
@@ -31,7 +33,8 @@ namespace Fiap.TechChallenge.Application.Services
             IPecaInsumoRepository pecaInsumoRepository,
             IEmailService emailService,
             IEstoqueRepository estoqueRepository,
-            IOrdemServicoRepository ordemServicoRepository)
+            IOrdemServicoRepository ordemServicoRepository,
+            IObservabilityMetrics? observabilityMetrics = null)
         {
             _clienteRepository = clienteRepository;
             _veiculoRepository = veiculoRepository;
@@ -41,6 +44,7 @@ namespace Fiap.TechChallenge.Application.Services
             _estoqueRepository = estoqueRepository;
             _ordemServicoRepository = ordemServicoRepository;
             _emailService = emailService;
+            _observabilityMetrics = observabilityMetrics;
         }
 
         public async Task<(Guid Id, bool ClienteNotificado)> Criar(OrdemServicoRequest request)
@@ -53,6 +57,7 @@ namespace Fiap.TechChallenge.Application.Services
             ordemServico.AlterarStatus(statusInicial);
 
             await _ordemServicoRepository.Adicionar(ordemServico);
+            _observabilityMetrics?.RecordOrderCreated(StatusOS.Recebida.Codigo);
             bool notificado = await NotificarMudancaStatusAsync(ordemServico);
 
             return (ordemServico.Id, notificado);
@@ -69,6 +74,7 @@ namespace Fiap.TechChallenge.Application.Services
 
             StatusOrdemServico statusEmDiagnostico = await GarantirStatusExiste(StatusOS.EmDiagnostico);
 
+            ordemServico.IniciarDiagnostico();
             ordemServico.AlterarStatus(statusEmDiagnostico);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
@@ -90,9 +96,15 @@ namespace Fiap.TechChallenge.Application.Services
 
             StatusOrdemServico statusAguardandoAprovacao = await GarantirStatusExiste(StatusOS.AguardandoAprovacao);
 
+            TimeSpan? diagnosticoDuration = ordemServico.DataInicioDiagnostico.HasValue
+                ? DateTime.UtcNow - ordemServico.DataInicioDiagnostico.Value
+                : null;
+
             ordemServico.AlterarStatus(statusAguardandoAprovacao);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
+            if (diagnosticoDuration.HasValue)
+                _observabilityMetrics?.RecordOrderStatusDuration("diagnostico", diagnosticoDuration.Value);
             bool notificado = await NotificarMudancaStatusAsync(ordemServico);
 
             var response = ToResponse(ordemServico);
@@ -178,14 +190,29 @@ namespace Fiap.TechChallenge.Application.Services
 
             item.FinalizarServico();
 
+            TimeSpan? execucaoDuration = null;
             if (ordemServico.ItensServico.All(servico => servico.DataHoraFim != null))
             {
+                DateTime? inicioExecucao = ordemServico.ItensServico
+                    .Where(servico => servico.DataHoraInicio.HasValue)
+                    .Select(servico => servico.DataHoraInicio)
+                    .Min();
+                DateTime? fimExecucao = ordemServico.ItensServico
+                    .Where(servico => servico.DataHoraFim.HasValue)
+                    .Select(servico => servico.DataHoraFim)
+                    .Max();
+
+                if (inicioExecucao.HasValue && fimExecucao.HasValue)
+                    execucaoDuration = fimExecucao.Value - inicioExecucao.Value;
+
                 StatusOrdemServico statusFinalizada = await GarantirStatusExiste(StatusOS.Finalizada);
                 ordemServico.AlterarStatus(statusFinalizada);
                 ordemServico.Concluir();
             }
 
             await _ordemServicoRepository.Atualizar(ordemServico);
+            if (execucaoDuration.HasValue)
+                _observabilityMetrics?.RecordOrderStatusDuration("execucao", execucaoDuration.Value);
             await NotificarMudancaStatusAsync(ordemServico);
         }
 
@@ -231,9 +258,15 @@ namespace Fiap.TechChallenge.Application.Services
             if (ordemServico.IdStatus != statusFinalizada.Id)
                 throw new InvalidOperationException("A ordem de serviço não pode ser entregue, pois não foi finalizada.");
 
+            TimeSpan? finalizacaoDuration = ordemServico.DataConclusao.HasValue
+                ? DateTime.UtcNow - ordemServico.DataConclusao.Value
+                : null;
+
             ordemServico.AlterarStatus(statusEntregue.Id);
 
             await _ordemServicoRepository.Atualizar(ordemServico);
+            if (finalizacaoDuration.HasValue)
+                _observabilityMetrics?.RecordOrderStatusDuration("finalizacao", finalizacaoDuration.Value);
 
             return ToResponse(ordemServico);
         }

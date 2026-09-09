@@ -29,7 +29,23 @@ k8s/
 │
 └── metrics-server/
     └── install.sh             # Instala o Metrics Server (necessário para HPA)
+
+observability/
+├── install.sh                 # Publica ServiceMonitor, Probe, dashboard e alertas
+├── servicemonitor.yaml        # Scraping do endpoint /metrics
+├── probe.yaml                 # Uptime HTTP do endpoint /health/ready
+└── prometheusrule.yaml        # Alertas de negócio e disponibilidade
 ```
+
+## Healthchecks e métricas
+
+O deployment usa endpoints separados para evitar que a API seja considerada saudável quando o processo está vivo, mas o banco está indisponível:
+
+- /health/live: liveness e startup probes.
+- /health/ready: readiness probe, com validação do PostgreSQL.
+- /metrics: métricas Prometheus/OpenTelemetry.
+
+Os pods produzem logs estruturados em JSON e expõem métricas para o Prometheus.
 
 **Base** contém o Deployment, HPA e Namespace — comuns a qualquer ambiente.  
 **Overlays** sobrescrevem ConfigMap, Secrets e Service conforme o ambiente.
@@ -54,7 +70,27 @@ k8s/
 ./k8s/overlays/local/deploy.sh kind
 ```
 
-O script aplica tudo na ordem correta: namespace → postgres → configmap/secrets → deployment/service/hpa.
+O script aplica namespace → configmap/secrets → deployment/service/hpa. A etapa de
+PostgreSQL está comentada no script atual: prepare o banco antes ou use o deploy manual
+abaixo. Consulte as [pendências de validação](../docs/validation-report.md).
+
+### Grafana, Prometheus e alertas no cluster local
+
+O kube-prometheus-stack deve estar instalado pelo repositório soat-infra. Depois,
+publique o ServiceMonitor, o dashboard e os alertas da aplicação:
+
+    No repositório soat-infra:
+    ./observability/install-grafana.sh
+
+    Neste repositório:
+    ./k8s/observability/install.sh
+
+Para abrir as interfaces:
+
+    kubectl port-forward svc/monitoring-grafana 3000:80 -n monitoring
+    kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090 -n monitoring
+
+O Grafana local usa admin/admin. Troque a senha antes de qualquer ambiente compartilhado.
 
 ### Deploy manual (passo a passo)
 
@@ -132,6 +168,11 @@ kubectl rollout restart deployment/api -n techchallenge
 
 # Status do HPA
 kubectl get hpa -n techchallenge -w
+
+# Healthcheck e métricas
+kubectl port-forward svc/api-service 8080:80 -n techchallenge
+curl http://localhost:8080/health
+curl http://localhost:8080/metrics
 
 # Testar HPA com carga artificial
 kubectl run load-gen --image=busybox --restart=Never -n techchallenge -- \

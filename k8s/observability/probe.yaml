@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: techchallenge-health
+  namespace: techchallenge
+  labels:
+    app.kubernetes.io/part-of: techchallenge
+spec:
+  jobName: techchallenge-health
+  prober:
+    url: blackbox-prometheus-blackbox-exporter.monitoring.svc.cluster.local:9115
+  module: http_2xx
+  targets:
+    staticConfig:
+      static:
+        - http://api-service.techchallenge.svc.cluster.local/health/ready

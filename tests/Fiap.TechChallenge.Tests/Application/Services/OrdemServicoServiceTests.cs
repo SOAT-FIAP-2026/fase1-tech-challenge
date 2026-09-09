@@ -5,6 +5,7 @@ using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.Exceptions;
 using Fiap.TechChallenge.Domain.Interfaces.Repository;
 using Fiap.TechChallenge.Domain.Interfaces.Service;
+using Fiap.TechChallenge.Domain.Interfaces.Observability;
 using Fiap.TechChallenge.Domain.ValueObjects;
 using Moq;
 
@@ -20,6 +21,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         private readonly Mock<IEstoqueRepository> _estoqueRepositoryMock = new();
         private readonly Mock<IOrdemServicoRepository> _ordemServicoRepositoryMock = new();
         private readonly Mock<IEmailService> _emailServiceMock = new();
+        private readonly Mock<IObservabilityMetrics> _observabilityMetricsMock = new();
         private readonly OrdemServicoService _service;
 
         public OrdemServicoServiceTests()
@@ -32,7 +34,8 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
                 _pecaInsumoRepositoryMock.Object,
                 _emailServiceMock.Object,
                 _estoqueRepositoryMock.Object,
-                _ordemServicoRepositoryMock.Object);
+                _ordemServicoRepositoryMock.Object,
+                _observabilityMetricsMock.Object);
         }
 
         [Fact]
@@ -304,6 +307,7 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
         {
             var statusEmDiagnostico = new StatusOrdemServico("Em Diagnóstico", "EM_DIAGNOSTICO");
             var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), statusEmDiagnostico.Id, "Teste");
+            ordemServico.IniciarDiagnostico();
             var statusAguardandoAprovacao = new StatusOrdemServico("Aguardando aprovação", "AGUARDANDO_APROVACAO");
 
             _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
@@ -322,6 +326,9 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             Assert.Equal(statusAguardandoAprovacao.Id, captured!.IdStatus);
             Assert.Equal("Aguardando aprovação", response.StatusDescricao);
             _ordemServicoRepositoryMock.Verify(r => r.Atualizar(It.IsAny<OrdemServico>()), Times.Once);
+            _observabilityMetricsMock.Verify(
+                metrics => metrics.RecordOrderStatusDuration("diagnostico", It.Is<TimeSpan>(duration => duration >= TimeSpan.Zero)),
+                Times.Once);
         }
 
         [Fact]
@@ -394,6 +401,28 @@ namespace Fiap.TechChallenge.Tests.Fiap.TechChallenge.Application.Services
             _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("AGUARDANDO_APROVACAO"))).ReturnsAsync(new StatusOrdemServico("Aguardando aprovação", "AGUARDANDO_APROVACAO"));
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AprovarOrcamento(ordemServico.Id, true));
+        }
+
+        [Fact]
+        public async Task ConfirmarEntrega_QuandoOrdemFinalizada_DeveRegistrarDuracaoDaFinalizacao()
+        {
+            var statusFinalizada = new StatusOrdemServico("Finalizada", "FINALIZADA");
+            var statusEntregue = new StatusOrdemServico("Entregue", "ENTREGUE");
+            var ordemServico = new OrdemServico(Guid.NewGuid(), Guid.NewGuid(), statusFinalizada.Id, "Teste");
+            ordemServico.AlterarStatus(statusFinalizada);
+            ordemServico.Concluir();
+
+            _ordemServicoRepositoryMock.Setup(r => r.ObterPorId(ordemServico.Id)).ReturnsAsync(ordemServico);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("ENTREGUE"))).ReturnsAsync(statusEntregue);
+            _statusRepositoryMock.Setup(r => r.ObterPorCodigo(new CodigoVO("FINALIZADA"))).ReturnsAsync(statusFinalizada);
+            _ordemServicoRepositoryMock.Setup(r => r.Atualizar(ordemServico)).Returns(Task.CompletedTask);
+
+            await _service.ConfirmarEntrega(ordemServico.Id);
+
+            Assert.Equal(statusEntregue.Id, ordemServico.IdStatus);
+            _observabilityMetricsMock.Verify(
+                metrics => metrics.RecordOrderStatusDuration("finalizacao", It.Is<TimeSpan>(duration => duration >= TimeSpan.Zero)),
+                Times.Once);
         }
     }
 }
