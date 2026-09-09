@@ -4,6 +4,8 @@ using Fiap.TechChallenge.Domain.Interfaces.Observability;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 namespace Fiap.TechChallenge.Tests.Api.Configurations;
 
@@ -31,5 +33,9 @@ public class ObservabilityConfigTests
         services.Should().Contain(descriptor => descriptor.ServiceType == typeof(ObservabilityMetrics));
         services.Should().Contain(descriptor => descriptor.ServiceType == typeof(IObservabilityMetrics));
         services.Should().Contain(descriptor => descriptor.ServiceType.FullName == "Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService");
+
+        using var serviceProvider = services.BuildServiceProvider();
+        serviceProvider.GetRequiredService<TracerProvider>().Should().NotBeNull();
+        serviceProvider.GetRequiredService<MeterProvider>().Should().NotBeNull();
     }
 }
