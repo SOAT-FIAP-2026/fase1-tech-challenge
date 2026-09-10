@@ -17,9 +17,10 @@ k8s/
 │   ├── local/                 # Overlay para Minikube / Kind
 │   │   ├── postgres.yaml      # PostgreSQL in-cluster (dev only)
 │   │   ├── configmap.yaml     # ConfigMap apontando para postgres-service
-│   │   ├── secrets.yaml       # Secrets locais (base64)
+│   │   ├── secrets.yaml       # Secrets locais
 │   │   ├── service.yaml       # Service NodePort
 │   │   └── deploy.sh          # Script de deploy automatizado
+│   │   └── deploy.ps1         # Script de deploy para PowerShell
 │   │
 │   └── aws/                   # Overlay para EKS
 │       ├── configmap.yaml     # ConfigMap apontando para RDS
@@ -28,7 +29,8 @@ k8s/
 │       └── deploy.sh          # Script de deploy automatizado
 │
 └── metrics-server/
-    └── install.sh             # Instala o Metrics Server (necessário para HPA)
+    ├── install.sh             # Instala o Metrics Server (necessário para HPA)
+    └── install.ps1            # Instalação para PowerShell/Kind
 
 observability/
 ├── install.sh                 # Publica ServiceMonitor, Probe, dashboard e alertas
@@ -58,7 +60,7 @@ Os pods produzem logs estruturados em JSON e expõem métricas para o Prometheus
 
 - [Minikube](https://minikube.sigs.k8s.io/) ou [Kind](https://kind.sigs.k8s.io/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
-- Metrics Server instalado (`./k8s/metrics-server/install.sh`)
+- Metrics Server instalado (`./k8s/metrics-server/install.sh` ou `./k8s/metrics-server/install.ps1`)
 
 ### Deploy automatizado
 
@@ -70,9 +72,14 @@ Os pods produzem logs estruturados em JSON e expõem métricas para o Prometheus
 ./k8s/overlays/local/deploy.sh kind
 ```
 
-O script aplica namespace → configmap/secrets → deployment/service/hpa. A etapa de
-PostgreSQL está comentada no script atual: prepare o banco antes ou use o deploy manual
-abaixo. Consulte as [pendências de validação](../docs/validation-report.md).
+No PowerShell:
+
+```powershell
+.\k8s\metrics-server\install.ps1
+.\k8s\overlays\local\deploy.ps1 -ClusterType kind
+```
+
+Os scripts aplicam namespace → PostgreSQL → configmap/secrets → deployment/service/hpa.
 
 ### Grafana, Prometheus e alertas no cluster local
 
@@ -81,9 +88,13 @@ publique o ServiceMonitor, o dashboard e os alertas da aplicação:
 
     No repositório soat-infra:
     ./observability/install-grafana.sh
+    # ou, no PowerShell:
+    .\observability\install-grafana.ps1
 
     Neste repositório:
     ./k8s/observability/install.sh
+    # ou, no PowerShell:
+    .\k8s\observability\install.ps1
 
 Para abrir as interfaces:
 

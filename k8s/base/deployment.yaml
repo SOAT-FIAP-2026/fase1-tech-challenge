@@ -29,8 +29,6 @@ spec:
       annotations:
         ad.datadoghq.com/api.logs: '[{"source":"csharp","service":"techchallenge-api"}]'
     spec:
-      imagePullSecrets:
-        - name: dockerhub-secret
       containers:
         - name: api
           image: gabrielnetto94/techchallenge-api:latest

@@ -2,11 +2,15 @@
 
 ## Situação validada
 
-Configuração versionada. A validação runtime do Compose foi executada em 07/09/2026:
+Configuração versionada. Prometheus + Grafana é a solução oficial de monitoramento e
+dashboards deste projeto; Datadog e New Relic não são pré-requisitos. A validação runtime do Compose foi executada em 07/09/2026:
 268 testes passaram, a API respondeu aos healthchecks, os targets do Prometheus ficaram
 `UP`, o dashboard e os três datasources foram provisionados, o Loki recebeu logs e o
-Tempo recebeu traces. A validação em Kubernetes ainda depende de um cluster disponível.
-As limitações e correções necessárias estão no [relatório de validação](validation-report.md).
+Tempo recebeu traces. A validação em Kubernetes local foi concluída em 09/09/2026 com
+Kind: API e PostgreSQL ficaram saudáveis; o ServiceMonitor ficou `UP`; o Blackbox Probe
+retornou `probe_success=1`; o HPA recebeu CPU/memória reais; e as regras de alerta e o
+dashboard foram carregados. As evidências e limitações remanescentes estão no
+[relatório de validação](validation-report.md).
 
 Prometheus/Grafana exibem métricas. O Compose inclui Loki, Tempo e OpenTelemetry
 Collector: quando os serviços estão ativos, a API envia logs, traces e métricas OTLP
@@ -112,7 +116,7 @@ No Kubernetes, kubelet/cAdvisor fornece CPU e memória dos containers e kube-sta
 fornece estado e requests dos pods. O Metrics Server usado pelo HPA não substitui essa
 coleta. A instalação está documentada no [README Kubernetes](../k8s/README.md).
 
-## Roteiro de aceite operacional pendente
+## Roteiro de aceite operacional
 
 1. Iniciar Docker e executar o Compose com .env configurado; conferir docker compose ps.
 2. Consultar /health/live, /health/ready e /metrics; confirmar o target UP no Prometheus.
@@ -127,8 +131,10 @@ coleta. A instalação está documentada no [README Kubernetes](../k8s/README.md
    o header foi preservado, o Loki recebeu `correlation_id`/`trace_id` como metadados
    estruturados e o Tempo recebeu traces; ainda falta registrar uma resposta 400/500 no vídeo.
 7. No cluster local, instalar também o Blackbox Exporter e aplicar ServiceMonitor,
-   Probe e PrometheusRule; confirmar CPU/memória,
-   probes e comportamento diante de indisponibilidade. Registrar evidências para o vídeo.
+   Probe e PrometheusRule; confirmar CPU/memória, probes e comportamento diante de
+   indisponibilidade. Este roteiro foi concluído em Kind em 09/09/2026, exceto pela
+   demonstração visual em vídeo e por um canal externo de notificação, caso a equipe
+   queira um além do Alertmanager.
 
 Executar cada port-forward em um terminal separado. No Windows, os scripts .sh podem
 ser chamados com Git Bash; não dependem obrigatoriamente de WSL. O uso de admin/admin

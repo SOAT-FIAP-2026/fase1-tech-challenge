@@ -44,6 +44,24 @@ Comandos de reprodução na raiz da aplicação:
 Com Docker ativo, executar todos os testes usando o caminho do .csproj, sem o filtro. Nesta
 rodada, o comando retornou 268 testes aprovados.
 
+## Atualização — Kubernetes local (09/09/2026)
+
+Foi criado um cluster Kind com Kubernetes 1.37 e instalado o kube-prometheus-stack
+(chart 90.0.0), Metrics Server e Blackbox Exporter. A aplicação foi compilada a partir
+do código atual e implantada juntamente com PostgreSQL local.
+
+| Evidência | Resultado |
+|---|---|
+| API e banco | Pods `api` e `postgres` ficaram `Running`; `/health/live`, `/health/ready` e `/metrics` responderam HTTP 200 |
+| Métricas e scraping | ServiceMonitor da API ficou `UP`; a métrica `techchallenge_http_request_duration_milliseconds_count` foi consultada no Prometheus |
+| Recursos Kubernetes | `kubectl top` retornou CPU/memória dos pods e o HPA recebeu percentuais reais de CPU e memória |
+| Uptime | Probe Blackbox de `/health/ready` entrou na configuração do Prometheus e retornou `probe_success=1` |
+| Alertas | As cinco regras `TechChallenge*` foram carregadas pelo Prometheus |
+| Dashboard | O ConfigMap foi importado pelo sidecar; a API do Grafana retornou o dashboard `Tech Challenge - Observabilidade` |
+
+O receiver externo de incidentes continua uma escolha operacional da equipe. O
+Alertmanager, as regras e sua visualização no Grafana já estão funcionais localmente.
+
 ## Situação confirmada no GitHub
 
 | Repositório | main protegida | soat-architecture | Evidência de execução |
