@@ -15,10 +15,11 @@ if [[ ! -f "$DASHBOARD_FILE" ]]; then
   exit 1
 fi
 
-echo "Publicando dashboard no Grafana..."
-kubectl create configmap techchallenge-grafana-dashboard --namespace techchallenge --from-file=techchallenge-observability.json="$DASHBOARD_FILE" --dry-run=client -o yaml | kubectl apply -f -
-kubectl label configmap techchallenge-grafana-dashboard --namespace techchallenge grafana_dashboard=1 --overwrite
+echo "Publicando dashboard no Grafana (namespace monitoring)..."
+kubectl create configmap techchallenge-grafana-dashboard --namespace monitoring --from-file=techchallenge-observability.json="$DASHBOARD_FILE" --dry-run=client -o yaml | kubectl apply -f -
+kubectl label configmap techchallenge-grafana-dashboard --namespace monitoring grafana_dashboard=1 --overwrite
 
 echo "Observabilidade aplicada."
-echo "Grafana: kubectl port-forward svc/monitoring-grafana 3000:80 -n monitoring"
-echo "Prometheus: kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090 -n monitoring"
+echo "Grafana: kubectl get svc -n monitoring kube-prometheus-stack-grafana (EXTERNAL-IP na AWS)"
+echo "Prometheus: kubectl port-forward svc/kube-prometheus-stack-prometheus 9090:9090 -n monitoring"
+
