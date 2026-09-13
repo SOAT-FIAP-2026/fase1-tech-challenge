@@ -27,6 +27,9 @@ spec:
         app.kubernetes.io/component: backend
         app.kubernetes.io/part-of: techchallenge
       annotations:
+        # Autodiscovery do Datadog Agent — inerte sem o Agent instalado. Mantida
+        # apenas para o caminho alternativo descrito no ADR-003; a coleta oficial
+        # usa o ServiceMonitor do Prometheus e o OpenTelemetry Collector.
         ad.datadoghq.com/api.logs: '[{"source":"csharp","service":"techchallenge-api"}]'
     spec:
       containers:
