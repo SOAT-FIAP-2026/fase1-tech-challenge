@@ -167,3 +167,25 @@ Ordem sugerida: resolver execução local e observabilidade, validar com dados s
 corrigir CI/proteções e implementar Lambda/Gateway; depois alinhar a entrega cloud com
 o enunciado e gravar a demonstração. Estes itens são backlog da revisão, não correções
 já aplicadas.
+
+## Atualização — Lacunas de documentação e observabilidade (13/09/2026)
+
+Itens desta revisão que foram fechados, com o artefato correspondente:
+
+| Item anterior | Situação | Artefato |
+|---|---|---|
+| README da Lambda descrevia o repositório como vazio, apesar de a função já estar implementada | Corrigido | README reescrito em lambda-auth-function com tecnologias usadas, contrato, variáveis de ambiente, empacotamento e deploy |
+| Faltava contrato/collection da Lambda | Corrigido | `docs/postman/lambda-auth.postman_collection.json` no repositório da Lambda |
+| Swagger citado sem collection Postman da API | Corrigido | `docs/postman/techchallenge-api.postman_collection.json` (34 requisições, fluxo completo da OS) |
+| Escolha de Prometheus/Grafana em vez de Datadog/New Relic não estava justificada | Corrigido | [ADR-003](adrs/ADR-003-observability-stack.md), com mapeamento requisito → métrica → painel → alerta |
+| Dashboard sem uptime, logs e traces | Corrigido | 7 painéis novos: uptime, healthcheck, réplicas, reinícios, erros por integração, logs Loki com variável Correlation ID, traces Tempo |
+| Sem alerta de consumo de recursos do Kubernetes | Corrigido | grupo `techchallenge.kubernetes`: CPU, memória, CrashLoopBackOff, OOMKilled, reinícios e HPA no teto |
+| Alertmanager sem destino externo | Parcial | módulo Terraform de soat-infra aceita webhook de Slack ou HTTP; o valor ainda precisa ser fornecido pela equipe |
+| Lambda sem log estruturado nem correlação | Corrigido | `StructuredLogger` + propagação de `X-Correlation-ID`, com testes em `tests/.../Observability/CorrelationTests.cs` |
+| RDS sem alarmes nem Enhanced Monitoring | Corrigido | `soat-db/modules/rds/monitoring.tf`: 5 alarmes CloudWatch, Enhanced Monitoring e exportação de logs configuráveis |
+| `terraform fmt` falhando em soat-infra | Corrigido | `modules/networking/main.tf` reformatado |
+
+Permanecem abertos os itens de execução e entrega: CD da aplicação, Terraform e API
+Gateway da Lambda, proteção de branches, deploy AWS ativo, vídeo de demonstração e PDF
+final. A ausência do .NET SDK na estação usada nesta revisão impediu rodar `dotnet build`
+e `dotnet test` localmente; a validação das mudanças em C# depende da execução do CI.

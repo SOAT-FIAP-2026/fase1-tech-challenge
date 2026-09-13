@@ -1,0 +1,1284 @@
+{
+  "info": {
+    "name": "Tech Challenge - API Oficina Mecanica",
+    "description": "Collection da API .NET do Tech Challenge (mesmo contrato do Swagger em /swagger).\n\nComo usar:\n1. Ajuste a variavel baseUrl (padrao http://localhost:8080).\n2. Rode 'Autenticacao > Login' — o token e salvo na variavel access_token e aplicado automaticamente as demais requisicoes.\n3. O fluxo da pasta '4. Fluxo completo da ordem de servico' cria cliente, veiculo e ordem, e percorre Diagnostico, Execucao e Finalizacao, alimentando as metricas do dashboard.\n\nTodas as requisicoes enviam X-Correlation-ID; use o mesmo valor no painel de logs do Grafana.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "login",
+      "value": "admin@techchallenge.com",
+      "type": "string"
+    },
+    {
+      "key": "senha",
+      "value": "Admin@123",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clienteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "veiculoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "servicoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pecaInsumoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ordemServicoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "idPermissao",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Saude e observabilidade",
+      "description": "Endpoints usados pelas probes do Kubernetes, pelo Blackbox Exporter e pelo Prometheus.",
+      "item": [
+        {
+          "name": "Ping",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ping",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ping"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Health - liveness",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health/live",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "live"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Health - readiness",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Endpoint sondado pelo Blackbox Exporter; alimenta os paineis de uptime."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Metrics (Prometheus)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "metrics"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Exposicao OpenMetrics coletada pelo ServiceMonitor."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('expoe metricas de negocio', () => pm.expect(pm.response.text()).to.include('techchallenge_'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Autenticacao",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/Autenticacao/Login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "Autenticacao",
+                "Login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{login}}\",\n  \"senha\": \"{{senha}}\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Salva o JWT em {{access_token}}; as demais requisicoes herdam o Bearer."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const token = body.token;",
+                  "pm.test('token recebido', () => pm.expect(token).to.be.a('string').and.not.empty);",
+                  "pm.collectionVariables.set('access_token', token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar usuario (requer perfil Administrador)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/Autenticacao/Cadastrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "Autenticacao",
+                "Cadastrar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"usuario.teste@techchallenge.com\",\n  \"login\": \"usuario.teste@techchallenge.com\",\n  \"senha\": \"Teste@123\",\n  \"idPermissao\": \"{{idPermissao}}\"\n}"
+            },
+            "description": "Rota protegida: exige token de um usuario Administrador e o id de uma permissao existente."
+          }
+        },
+        {
+          "name": "Login - credencial invalida (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/Autenticacao/Login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "Autenticacao",
+                "Login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{login}}\",\n  \"senha\": \"senha-errada\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Cadastros",
+      "item": [
+        {
+          "name": "Criar cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "clientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Maria Souza\",\n  \"cpfCnpj\": \"529.982.247-25\",\n  \"email\": \"maria.souza@exemplo.com\",\n  \"celular\": \"11988887777\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const body = pm.response.json();",
+                  "if (body && body.id) pm.collectionVariables.set('clienteId', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar clientes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/clientes?pagina=1&tamanhoPagina=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "clientes"
+              ],
+              "query": [
+                {
+                  "key": "pagina",
+                  "value": "1"
+                },
+                {
+                  "key": "tamanhoPagina",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obter cliente por id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/clientes/{{clienteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "clientes",
+                "{{clienteId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar cliente por CPF/CNPJ",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/clientes/buscar-por-cpf-cnpj?cpfCnpj=52998224725",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "clientes",
+                "buscar-por-cpf-cnpj"
+              ],
+              "query": [
+                {
+                  "key": "cpfCnpj",
+                  "value": "52998224725"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar cliente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/clientes/{{clienteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "clientes",
+                "{{clienteId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Maria Souza Lima\",\n  \"cpfCnpj\": \"529.982.247-25\",\n  \"email\": \"maria.lima@exemplo.com\",\n  \"celular\": \"11988887777\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Criar veiculo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/veiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "veiculos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"ABC1D23\",\n  \"marca\": \"Volkswagen\",\n  \"modelo\": \"Gol\",\n  \"ano\": 2020\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const body = pm.response.json();",
+                  "if (body && body.id) pm.collectionVariables.set('veiculoId', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar veiculos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/veiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "veiculos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar servico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/servicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "servicos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Troca de oleo\",\n  \"descricao\": \"Troca de oleo e filtro\",\n  \"valorUnitario\": 180.0,\n  \"tempoEstimadoMinutos\": 45\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const body = pm.response.json();",
+                  "if (body && body.id) pm.collectionVariables.set('servicoId', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Metricas de tempo por servico",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/servicos/metricas-tempo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "servicos",
+                "metricas-tempo"
+              ]
+            },
+            "description": "Tempo medio de execucao por servico, calculado a partir do historico das ordens."
+          }
+        },
+        {
+          "name": "Criar peca/insumo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pecas-insumos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pecas-insumos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Filtro de oleo\",\n  \"valorUnitario\": 45.9\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const body = pm.response.json();",
+                  "if (body && body.id) pm.collectionVariables.set('pecaInsumoId', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Entrada em estoque",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/estoques",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "estoques"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPecaInsumo\": \"{{pecaInsumoId}}\",\n  \"quantidade\": 20\n}"
+            }
+          }
+        },
+        {
+          "name": "Consultar quantidade em estoque",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/estoques/quantidade/peca/{{pecaInsumoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "estoques",
+                "quantidade",
+                "peca",
+                "{{pecaInsumoId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Fluxo completo da ordem de servico",
+      "description": "Execute em ordem. Cada transicao alimenta as metricas techchallenge_orders_created_total e techchallenge_orders_status_duration_milliseconds, visiveis nos paineis 'Ordens criadas' e 'Tempo medio por etapa'.",
+      "item": [
+        {
+          "name": "Criar ordem de servico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": \"{{clienteId}}\",\n  \"veiculoId\": \"{{veiculoId}}\",\n  \"observacao\": \"Cliente relata ruido na suspensao\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const body = pm.response.json();",
+                  "if (body && body.id) pm.collectionVariables.set('ordemServicoId', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Adicionar servicos a ordem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}/servicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}",
+                "servicos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicosIds\": [\n    \"{{servicoId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Adicionar pecas/insumos a ordem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}/pecas-insumos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}",
+                "pecas-insumos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pecasInsumosIds\": [\n    \"{{pecaInsumoId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Iniciar diagnostico",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}/iniciar-diagnostico",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}",
+                "iniciar-diagnostico"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Finalizar diagnostico",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}/finalizar-diagnostico",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}",
+                "finalizar-diagnostico"
+              ]
+            },
+            "description": "Registra a duracao da etapa Diagnostico."
+          }
+        },
+        {
+          "name": "Aprovar orcamento",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}/aprovar-orcamento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}",
+                "aprovar-orcamento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Iniciar servico da ordem",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}/servicos/{{servicoId}}/iniciar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}",
+                "servicos",
+                "{{servicoId}}",
+                "iniciar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Finalizar servico da ordem",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}/servicos/{{servicoId}}/finalizar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}",
+                "servicos",
+                "{{servicoId}}",
+                "finalizar"
+              ]
+            },
+            "description": "Registra a duracao da etapa Execucao."
+          }
+        },
+        {
+          "name": "Confirmar entrega",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}/confirmar-entrega",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}",
+                "confirmar-entrega"
+              ]
+            },
+            "description": "Registra a duracao da etapa Finalizacao."
+          }
+        },
+        {
+          "name": "Consultar progresso da ordem",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}/progresso",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}",
+                "progresso"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar ordem",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/{{ordemServicoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "{{ordemServicoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar ordens",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico?pagina=1&tamanhoPagina=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico"
+              ],
+              "query": [
+                {
+                  "key": "pagina",
+                  "value": "1"
+                },
+                {
+                  "key": "tamanhoPagina",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Cenarios de erro e observabilidade",
+      "description": "Usados na demonstracao para provar correlacao de logs e disparo de alertas.",
+      "item": [
+        {
+          "name": "401 - sem token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "clientes"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Rota protegida sem Authorization."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 - cliente com CPF invalido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "clientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Teste\",\n  \"cpfCnpj\": \"111.111.111-11\",\n  \"email\": \"teste@exemplo.com\",\n  \"celular\": \"11988887777\"\n}"
+            },
+            "description": "A resposta devolve X-Correlation-ID; use o mesmo valor no painel de logs."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 - ordem inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordens-servico/00000000-0000-0000-0000-000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ordens-servico",
+                "00000000-0000-0000-0000-000000000000"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.expect(pm.response.code).to.be.oneOf([404, 400]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

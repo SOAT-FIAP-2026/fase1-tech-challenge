@@ -50,6 +50,56 @@ O fluxo das etapas é persistido com data_inicio_diagnostico, o intervalo dos se
 
 Os logs são emitidos em JSON no stdout. Cada requisição recebe ou propaga o header X-Correlation-ID, devolvido também na resposta e incluído no escopo dos logs junto com o trace_id.
 
+A Lambda de autenticação usa o mesmo contrato: `StructuredLogger` escreve uma linha JSON
+por invocação com `service`, `correlation_id`, `aws_request_id`, `duration_ms`,
+`status_code` e `outcome`, reaproveitando o `X-Correlation-ID` recebido. Com isso o mesmo
+identificador segue do API Gateway até a API .NET. CPF nunca é registrado em log.
+
+No Grafana, o painel "Logs estruturados (JSON)" consome o Loki e aceita a variável
+**Correlation ID** no topo do dashboard: cole o valor devolvido no header e o painel
+mostra somente as linhas daquela requisição.
+
+## Painéis do dashboard
+
+O dashboard `Tech Challenge - Observabilidade` cobre os requisitos na seguinte ordem:
+
+| Painel | Requisito atendido |
+|---|---|
+| Ordens criadas - últimas 24h | volume diário de ordens de serviço |
+| Tempo médio por etapa | tempo médio por status (Diagnóstico, Execução, Finalização) |
+| Erros de integrações / Erros por integração externa | erros e falhas nas integrações |
+| Falhas de processamento | falhas no processamento de ordens |
+| Latência p95 da API / Taxa de requisições | latência das APIs |
+| CPU dos pods / Memória dos pods | consumo de recursos do Kubernetes |
+| Uptime da API / Healthcheck / Réplicas disponíveis / Reinícios de pods | healthchecks e uptime |
+| Logs estruturados (JSON) | logs estruturados com correlação |
+| Traces recentes (Tempo) | rastreamento distribuído |
+
+## Alertas
+
+Regras em `observability/prometheus/alerts.yml` (Compose) e
+`k8s/observability/prometheusrule.yaml` (cluster):
+
+| Alerta | Severidade | Disparo |
+|---|---|---|
+| TechChallengeOrderProcessingFailure | critical | qualquer falha no processamento de ordem em 5 min |
+| TechChallengeIntegrationError | warning | erro de integração externa em 5 min |
+| TechChallengeApiHighLatency | warning | p95 acima de 1 s por 5 min |
+| TechChallengeApiHighErrorRate | warning | mais de 5% de respostas 5xx por 5 min |
+| TechChallengeHealthcheckDown | critical | `/health/ready` sem sucesso por 2 min |
+| TechChallengeApiUnavailable | critical | deployment sem réplicas disponíveis (cluster) |
+| TechChallengePodCpuHigh / TechChallengePodMemoryHigh | warning | acima de 85% do limite por 10 min (cluster) |
+| TechChallengePodCrashLooping | critical | container em CrashLoopBackOff por 5 min (cluster) |
+| TechChallengePodOOMKilled | critical | container encerrado por falta de memória (cluster) |
+| TechChallengePodRestarting | warning | mais de 2 reinícios em 15 min (cluster) |
+| TechChallengeHpaAtMaxReplicas | warning | HPA no teto de réplicas por 15 min (cluster) |
+| TechChallengeHealthcheckSlow / TechChallengeApiDown | warning / critical | sonda lenta ou alvo fora do ar (Compose) |
+
+No Compose, os alertas caem no `alert-receiver` local. No cluster, o destino é definido
+pelas variáveis `alertmanager_slack_webhook_url` / `alertmanager_webhook_url` do módulo
+`modules/observability` do repositório soat-infra; sem elas, ficam apenas visíveis na
+interface do Alertmanager.
+
 ## Stack local
 
 O docker-compose.yml sobe a API, Prometheus, Grafana e Alertmanager:
