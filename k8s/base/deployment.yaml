@@ -50,7 +50,7 @@ spec:
               memory: 512Mi
           readinessProbe:
             httpGet:
-              path: /health/ready
+              path: /api/ping
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
@@ -58,7 +58,7 @@ spec:
             failureThreshold: 3
           livenessProbe:
             httpGet:
-              path: /health/live
+              path: /api/ping
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 30
@@ -66,7 +66,7 @@ spec:
             failureThreshold: 3
           startupProbe:
             httpGet:
-              path: /health/live
+              path: /api/ping
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5

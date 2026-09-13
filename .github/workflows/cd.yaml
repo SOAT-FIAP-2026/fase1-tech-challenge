@@ -3,7 +3,7 @@ name: CD
 on:
   push:
     branches:
-      # - main #Deploy desabilitado no momento, pois o EKS está desligado
+      - main
       - feat/infra
     paths:
       - "src/**"
@@ -31,13 +31,15 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore
-        run: dotnet restore src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj
+        run: |
+          dotnet restore src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj
+          dotnet restore tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Tests.csproj
 
       - name: Build
         run: dotnet build src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test Fiap.TechChallenge.Api.slnx --configuration Release --verbosity normal
+        run: dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Tests.csproj --configuration Release --verbosity normal
 
   docker-build-push:
     runs-on: ubuntu-latest
