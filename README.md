@@ -14,14 +14,15 @@ Este projeto foi evoluído para garantir maior qualidade, resiliência e escalab
 ### 🔗 Entregáveis
 
 - 🎥 **Vídeo Demonstrativo:** [Link do vídeo](https://www.youtube.com/watch?v=kkmQnF3PrXk) (Demonstrando deploy, CI/CD, consumo de APIs e HPA).
-- 📚 **Collection / Documentação das APIs:** [Swagger UI](http://localhost:8080/swagger) (ou acesse a rota `/swagger` no Load Balancer da AWS após o deploy).
+- 📚 **Documentação das APIs:** [Swagger UI](http://localhost:8080/swagger) (ou acesse a rota `/swagger` no Load Balancer da AWS após o deploy).
+- 📮 **Collection Postman:** [`docs/postman/techchallenge-api.postman_collection.json`](./docs/postman/techchallenge-api.postman_collection.json) — importe no Postman, rode `Login` e siga a pasta "Fluxo completo da ordem de serviço". A collection da Lambda de autenticação está em [lambda-auth-function](https://github.com/SOAT-FIAP-2026/lambda-auth-function/blob/main/docs/postman/lambda-auth.postman_collection.json).
 - 📖 **Central de Documentação (RFCs & ADRs):** Disponível na pasta [`/docs`](./docs/README.md).
 - 📊 **Diagramas de Arquitetura:** [Diagrama de Componentes](./docs/component-diagram.md) e [Diagrama de Sequência](./docs/sequence-diagram.md).
 - 🔭 **Observabilidade:** [Métricas, healthchecks, correlação e stack local Prometheus + Grafana](./docs/observability.md).
 - **Validação e pendências:** [Auditoria de 07/09/2026, testes, CI/CD e requisitos ainda não atendidos](./docs/validation-report.md).
 - 🗃️ **Modelo de Dados e Diagrama ER:** [Modelo Relacional Completo](./docs/database-model.md) (11 entidades, relacionamentos, máquina de estados da OS).
 - 📜 **Decisões Técnicas (RFCs):** [RFC-001 (Nuvem)](./docs/rfcs/RFC-001-cloud-provider-choice.md) | [RFC-002 (Banco)](./docs/rfcs/RFC-002-managed-database-choice.md) | [RFC-003 (Auth Serverless)](./docs/rfcs/RFC-003-serverless-authentication-strategy.md)
-- 🏛️ **Decisões Arquiteturais (ADRs):** [ADR-001 (Comunicação)](./docs/adrs/ADR-001-communication-pattern.md) | [ADR-002 (Auto-scaling HPA)](./docs/adrs/ADR-002-kubernetes-hpa-autoscaling.md)
+- 🏛️ **Decisões Arquiteturais (ADRs):** [ADR-001 (Comunicação)](./docs/adrs/ADR-001-communication-pattern.md) | [ADR-002 (Auto-scaling HPA)](./docs/adrs/ADR-002-kubernetes-hpa-autoscaling.md) | [ADR-003 (Stack de Observabilidade)](./docs/adrs/ADR-003-observability-stack.md)
 - ☸️ **Manifestos Kubernetes:** Disponíveis na pasta [`/k8s`](./k8s/).
 - ☁️ **Scripts Terraform:** Disponíveis na pasta [`/infra`](./infra/).
 

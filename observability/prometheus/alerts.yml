@@ -36,3 +36,35 @@ groups:
         annotations:
           summary: Healthcheck da API indisponível
           description: O endpoint /health/ready não respondeu com sucesso por 2 minutos.
+
+      - alert: TechChallengeApiHighErrorRate
+        expr: |
+          sum(rate(techchallenge_http_request_duration_milliseconds_count{status_code=~"5.."}[5m]))
+            /
+          clamp_min(sum(rate(techchallenge_http_request_duration_milliseconds_count[5m])), 0.001) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Taxa de erro 5xx acima de 5%
+          description: Mais de 5% das requisições HTTP retornaram erro de servidor nos últimos 5 minutos.
+
+  - name: techchallenge-runtime
+    rules:
+      - alert: TechChallengeHealthcheckSlow
+        expr: probe_duration_seconds{job="techchallenge-health"} > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Healthcheck lento
+          description: O /health/ready está demorando mais de 2 segundos para responder.
+
+      - alert: TechChallengeApiDown
+        expr: up{job="techchallenge-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Prometheus não consegue coletar a API
+          description: O alvo techchallenge-api está fora do ar há 2 minutos.

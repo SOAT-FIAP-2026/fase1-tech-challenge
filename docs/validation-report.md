@@ -44,6 +44,24 @@ Comandos de reprodução na raiz da aplicação:
 Com Docker ativo, executar todos os testes usando o caminho do .csproj, sem o filtro. Nesta
 rodada, o comando retornou 268 testes aprovados.
 
+## Atualização — Kubernetes local (09/09/2026)
+
+Foi criado um cluster Kind com Kubernetes 1.37 e instalado o kube-prometheus-stack
+(chart 90.0.0), Metrics Server e Blackbox Exporter. A aplicação foi compilada a partir
+do código atual e implantada juntamente com PostgreSQL local.
+
+| Evidência | Resultado |
+|---|---|
+| API e banco | Pods `api` e `postgres` ficaram `Running`; `/health/live`, `/health/ready` e `/metrics` responderam HTTP 200 |
+| Métricas e scraping | ServiceMonitor da API ficou `UP`; a métrica `techchallenge_http_request_duration_milliseconds_count` foi consultada no Prometheus |
+| Recursos Kubernetes | `kubectl top` retornou CPU/memória dos pods e o HPA recebeu percentuais reais de CPU e memória |
+| Uptime | Probe Blackbox de `/health/ready` entrou na configuração do Prometheus e retornou `probe_success=1` |
+| Alertas | As cinco regras `TechChallenge*` foram carregadas pelo Prometheus |
+| Dashboard | O ConfigMap foi importado pelo sidecar; a API do Grafana retornou o dashboard `Tech Challenge - Observabilidade` |
+
+O receiver externo de incidentes continua uma escolha operacional da equipe. O
+Alertmanager, as regras e sua visualização no Grafana já estão funcionais localmente.
+
 ## Situação confirmada no GitHub
 
 | Repositório | main protegida | soat-architecture | Evidência de execução |
@@ -149,3 +167,69 @@ Ordem sugerida: resolver execução local e observabilidade, validar com dados s
 corrigir CI/proteções e implementar Lambda/Gateway; depois alinhar a entrega cloud com
 o enunciado e gravar a demonstração. Estes itens são backlog da revisão, não correções
 já aplicadas.
+
+## Atualização — Lacunas de documentação e observabilidade (13/09/2026)
+
+Itens desta revisão que foram fechados, com o artefato correspondente:
+
+| Item anterior | Situação | Artefato |
+|---|---|---|
+| README da Lambda descrevia o repositório como vazio, apesar de a função já estar implementada | Corrigido | README reescrito em lambda-auth-function com tecnologias usadas, contrato, variáveis de ambiente, empacotamento e deploy |
+| Faltava contrato/collection da Lambda | Corrigido | `docs/postman/lambda-auth.postman_collection.json` no repositório da Lambda |
+| Swagger citado sem collection Postman da API | Corrigido | `docs/postman/techchallenge-api.postman_collection.json` (34 requisições, fluxo completo da OS) |
+| Escolha de Prometheus/Grafana em vez de Datadog/New Relic não estava justificada | Corrigido | [ADR-003](adrs/ADR-003-observability-stack.md), com mapeamento requisito → métrica → painel → alerta |
+| Dashboard sem uptime, logs e traces | Corrigido | 7 painéis novos: uptime, healthcheck, réplicas, reinícios, erros por integração, logs Loki com variável Correlation ID, traces Tempo |
+| Sem alerta de consumo de recursos do Kubernetes | Corrigido | grupo `techchallenge.kubernetes`: CPU, memória, CrashLoopBackOff, OOMKilled, reinícios e HPA no teto |
+| Alertmanager sem destino externo | Parcial | módulo Terraform de soat-infra aceita webhook de Slack ou HTTP; o valor ainda precisa ser fornecido pela equipe |
+| Lambda sem log estruturado nem correlação | Corrigido | `StructuredLogger` + propagação de `X-Correlation-ID`, com testes em `tests/.../Observability/CorrelationTests.cs` |
+| RDS sem alarmes nem Enhanced Monitoring | Corrigido | `soat-db/modules/rds/monitoring.tf`: 5 alarmes CloudWatch, Enhanced Monitoring e exportação de logs configuráveis |
+| `terraform fmt` falhando em soat-infra | Corrigido | `modules/networking/main.tf` reformatado |
+
+Permanecem abertos os itens de execução e entrega: CD da aplicação, Terraform e API
+Gateway da Lambda, proteção de branches, deploy AWS ativo, vídeo de demonstração e PDF
+final. A ausência do .NET SDK na estação usada nesta revisão impediu rodar `dotnet build`
+e `dotnet test` localmente; a validação das mudanças em C# depende da execução do CI.
+
+## Atualização — Segurança, CI/CD e testes (13/09/2026)
+
+Ambiente desta rodada: .NET SDK 8.0.425 instalado localmente, o que permitiu executar
+build e testes de verdade — o que não tinha sido possível na atualização anterior.
+
+| Item anterior | Situação | Evidência |
+|---|---|---|
+| Branch `fix/correcao-issues-seguranca-sonar` aberta e conflitante | Integrada | merge com correção de build, do caminho local e das credenciais |
+| `JWTConfig`/`TokenService` não compilavam (`throw new ArgumentNullException(jwtSecret)` dentro do próprio inicializador) | Corrigido | `JwtSecretResolver` único, com fallback de configuração e validação de tamanho mínimo |
+| `k8s/overlays/aws/secrets.yaml` com endpoint, senha do RDS e chave JWT reais versionados | Corrigido no HEAD | arquivo destrackeado e ignorado; apenas o `.template` é versionado. **Os valores seguem no histórico e precisam ser rotacionados** |
+| `.env.example` com a chave JWT real | Corrigido | placeholder |
+| Overlay local removido pela branch de segurança | Restaurado | `secrets.yaml.template` renderizado por `deploy.sh`/`deploy.ps1` |
+| Lambda sem Terraform, API Gateway e CD | Corrigido | `infra/` com Lambda, IAM, Security Group, log groups e rota `POST /auth/token`; workflow `cd.yml` |
+| CI da Lambda não executava testes nem cobertura | Corrigido | `build.yml` roda a suíte com OpenCover e entrega ao Sonar |
+| `UnitTest1` vazio e literais de CPF duplicados | Corrigido | teste removido, literais extraídos para constantes |
+| Workflows do soat-db executando Terraform na raiz, sem `.tf` | Corrigido | `working-directory: environments/prod`, variáveis injetadas, gatilho só na `main` |
+| Região do soat-db divergente da VPC | Corrigido | padrão passou para `sa-east-1` |
+| ER sem `data_inicio_diagnostico` | Corrigido | coluna incorporada ao diagrama |
+| Painéis de logs e traces sem datasource no caminho de script | Corrigido | `install-grafana.sh`/`.ps1` passam a instalar Loki, Tempo e OTel Collector |
+
+Resultado dos testes nesta revisão:
+
+| Repositório | Testes | Cobertura |
+|---|---|---|
+| fase1-tech-challenge | 289 passando, 0 falhas | coletada no CI pelo `coverlet.runsettings` |
+| lambda-auth-function | 33 passando, 0 falhas | 86,9% de sequência (OpenCover) |
+
+### Ação obrigatória de segurança
+
+A chave JWT e a senha do RDS de produção estiveram versionadas em
+`k8s/overlays/aws/secrets.yaml` e em `.env.example`, presentes no histórico público do
+repositório desde 10/09/2026. Removê-las do HEAD não as remove do histórico. É preciso:
+
+1. rotacionar a senha do usuário `postgres` no RDS e atualizar o secret `DB_CONNECTION_BASE64`;
+2. gerar uma nova chave JWT e atualizar `JWT_SECRET_BASE64`;
+3. avaliar reescrita do histórico (`git filter-repo`) ou considerar os valores comprometidos.
+
+### Ainda aberto
+
+Deploy AWS ativo e comprovado, proteção de branch com PR obrigatório nos quatro
+repositórios, execução do CD da Lambda (depende de credenciais e da VPC), vídeo de
+demonstração e PDF final de entrega. A divergência do ADR-002 (70%/80% na decisão,
+50%/95% no manifesto para facilitar o teste local) segue registrada e não foi alterada.
