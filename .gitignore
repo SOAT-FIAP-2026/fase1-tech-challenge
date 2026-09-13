@@ -54,8 +54,11 @@ TestResults/
 coverage/
 *.coverage
 
-# Kubernetes Secrets
+# Kubernetes Secrets — apenas os *.template sao versionados.
+# Os secrets.yaml reais sao gerados pelos scripts de deploy / pelo CD via envsubst.
 k8s/secrets.yaml
+k8s/overlays/*/secrets.yaml
+!k8s/overlays/*/secrets.yaml.template
 
 # Terraform
 .terraform/

@@ -1,4 +1,5 @@
 using Fiap.TechChallenge.Domain.Entities;
+using Fiap.TechChallenge.External.Configurations;
 using Fiap.TechChallenge.Domain.Interfaces.Service;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -17,7 +18,7 @@ namespace Fiap.TechChallenge.External.Services
         public string GerarToken(Usuario usuario)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_config["Jwt:Secret"]);
+            var key = Encoding.UTF8.GetBytes(JwtSecretResolver.Resolve(_config));
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {

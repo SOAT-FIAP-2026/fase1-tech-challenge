@@ -36,6 +36,18 @@ kubectl apply -f "$BASE_DIR/namespace.yaml"
 # --- 3. ConfigMap e Secrets -----------------------------------------------
 echo "🔧 Aplicando ConfigMap e Secrets..."
 kubectl apply -f "$OVERLAY_DIR/configmap.yaml"
+
+# secrets.yaml nao e versionado. O workflow de CD o gera a partir do template com
+# envsubst antes de chamar este script; em execucao manual, gere-o do mesmo jeito.
+if [ ! -f "$OVERLAY_DIR/secrets.yaml" ]; then
+  echo "❌ $OVERLAY_DIR/secrets.yaml nao encontrado."
+  echo "   Gere-o a partir do template antes do deploy:"
+  echo "     export JWT_SECRET_BASE64=\$(echo -n \"<chave>\" | base64)"
+  echo "     export DB_CONNECTION_BASE64=\$(echo -n \"<connection string>\" | base64)"
+  echo "     export DOCKER_CONFIG_JSON_BASE64=\$(cat ~/.docker/config.json | base64 -w0)"
+  echo "     envsubst < $OVERLAY_DIR/secrets.yaml.template > $OVERLAY_DIR/secrets.yaml"
+  exit 1
+fi
 kubectl apply -f "$OVERLAY_DIR/secrets.yaml"
 
 # --- 4. Deployment, Service e HPA ----------------------------------------

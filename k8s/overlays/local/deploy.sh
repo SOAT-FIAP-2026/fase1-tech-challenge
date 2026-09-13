@@ -42,6 +42,18 @@ echo "⏳ Aguardando PostgreSQL ficar pronto..."
 kubectl rollout status deployment/postgres -n techchallenge --timeout=120s
 
 # --- 4. ConfigMap e Secrets -----------------------------------------------
+# O secrets.yaml nao e versionado: ele e gerado a partir do template. Os valores
+# padrao servem apenas para o cluster local descartavel.
+export JWT_SECRET="${JWT_SECRET:-chave-local-de-desenvolvimento-32-chars}"
+export POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
+
+echo "🔐 Gerando Secret local a partir do template..."
+if command -v envsubst >/dev/null 2>&1; then
+  envsubst < "$OVERLAY_DIR/secrets.yaml.template" > "$OVERLAY_DIR/secrets.yaml"
+else
+  sed -e "s|\${JWT_SECRET}|$JWT_SECRET|g" \n      -e "s|\${POSTGRES_PASSWORD}|$POSTGRES_PASSWORD|g" \n      "$OVERLAY_DIR/secrets.yaml.template" > "$OVERLAY_DIR/secrets.yaml"
+fi
+
 echo "🔧 Aplicando ConfigMap e Secrets..."
 kubectl apply -f "$OVERLAY_DIR/configmap.yaml"
 kubectl apply -f "$OVERLAY_DIR/secrets.yaml"
