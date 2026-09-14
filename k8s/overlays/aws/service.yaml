@@ -1,5 +1,5 @@
 # ==============================================================================
-# Service — AWS / EKS (LoadBalancer provisionado pelo AWS Cloud Controller)
+# Service — AWS / EKS (NodePort para ALB gerenciado pelo Terraform)
 # ==============================================================================
 apiVersion: v1
 kind: Service
@@ -11,11 +11,12 @@ metadata:
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: techchallenge
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app.kubernetes.io/name: api
   ports:
     - port: 80
       targetPort: 8080
+      nodePort: 30080
       protocol: TCP
       name: http
