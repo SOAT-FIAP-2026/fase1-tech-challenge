@@ -12,7 +12,7 @@ namespace Fiap.TechChallenge.Api.Configurations
         public static void AddJWTConfig(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
-                throw new ArgumentNullException(jwtSecret);
+                throw new ArgumentNullException("JWT_SECRET");
             var key = Encoding.UTF8.GetBytes(jwtSecret);
 
             services.AddAuthentication(options =>
