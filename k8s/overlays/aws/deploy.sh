@@ -37,27 +37,45 @@ kubectl apply -f "$BASE_DIR/namespace.yaml"
 echo "🔧 Aplicando ConfigMap e Secrets..."
 kubectl apply -f "$OVERLAY_DIR/configmap.yaml"
 
-# secrets.yaml nao e versionado. Se nao existir, busca os valores automaticamente da AWS:
-if [ ! -f "$OVERLAY_DIR/secrets.yaml" ]; then
-  echo "🔍 secrets.yaml não encontrado. Tentando obter dados automaticamente da AWS..."
+# Gera e atualiza o secrets.yaml com os dados vigentes da AWS (SSM):
+echo "🔍 Obtendo credenciais atualizadas do AWS SSM Parameter Store..."
   
-  # 1. Busca endpoint do RDS PostgreSQL
-  RDS_HOST=$(aws rds describe-db-instances \
-    --db-instance-identifier "fiap-soat-terraform-prod-db" \
-    --region sa-east-1 \
-    --query "DBInstances[0].Endpoint.Address" \
-    --output text 2>/dev/null || true)
-  
-  if [ -n "$RDS_HOST" ] && [ "$RDS_HOST" != "None" ]; then
-    echo "   ✅ RDS PostgreSQL encontrado: $RDS_HOST"
-    DB_CONN="Host=${RDS_HOST};Port=5432;Database=techchallengedb;Username=postgres;Password=TechChallenge2026!#$%"
+  # 1. Busca Connection String diretamente do SSM Parameter Store (publicado pelo soat-db)
+  DB_CONN=$(aws ssm get-parameter \
+    --name "/techchallenge/prod/db_connection_string" \
+    --with-decryption \
+    --query "Parameter.Value" \
+    --output text \
+    --region sa-east-1 2>/dev/null || true)
+
+  if [ -n "$DB_CONN" ] && [ "$DB_CONN" != "None" ]; then
+    echo "   ✅ Connection string obtida do SSM com sucesso!"
   else
-    echo "   ⚠️ RDS não encontrado via AWS CLI. Usando placeholder temporário..."
-    DB_CONN="Host=placeholder.rds.amazonaws.com;Port=5432;Database=techchallengedb;Username=postgres;Password=placeholder"
+    echo "   ⚠️ SSM não retornou connection string. Buscando endpoint do RDS..."
+    RDS_HOST=$(aws rds describe-db-instances \
+      --region sa-east-1 \
+      --query "DBInstances[?contains(DBInstanceIdentifier, 'prod-db')].Endpoint.Address" \
+      --output text 2>/dev/null | awk '{print $1}' || true)
+    
+    if [ -n "$RDS_HOST" ] && [ "$RDS_HOST" != "None" ]; then
+      echo "   ✅ RDS PostgreSQL encontrado: $RDS_HOST"
+      DB_CONN="Host=${RDS_HOST};Port=5432;Database=techchallengedb;Username=postgres;Password=TechChallenge2026!#$%"
+    else
+      echo "   ⚠️ RDS não encontrado via AWS CLI. Usando placeholder temporário..."
+      DB_CONN="Host=placeholder.rds.amazonaws.com;Port=5432;Database=techchallengedb;Username=postgres;Password=placeholder"
+    fi
   fi
 
-  # 2. Gera os valores em Base64 (usando -w0 para evitar quebra de linha na coluna 76)
-  export JWT_SECRET_BASE64=$(echo -n "chave-secreta-jwt-techchallenge-fiap-2026-segura" | base64 -w0)
+  # 2. Busca JWT Secret do SSM
+  JWT_SEC=$(aws ssm get-parameter \
+    --name "/techchallenge/prod/jwt_secret" \
+    --with-decryption \
+    --query "Parameter.Value" \
+    --output text \
+    --region sa-east-1 2>/dev/null || echo "chave-secreta-jwt-techchallenge-fiap-2026-segura")
+
+  # 3. Gera os valores em Base64 (usando -w0 para evitar quebra de linha na coluna 76)
+  export JWT_SECRET_BASE64=$(echo -n "$JWT_SEC" | base64 -w0)
   export DB_CONNECTION_BASE64=$(echo -n "$DB_CONN" | base64 -w0)
 
   if [ -f ~/.docker/config.json ]; then
@@ -69,7 +87,7 @@ if [ ! -f "$OVERLAY_DIR/secrets.yaml" ]; then
   # 3. Substitui as variáveis no template via envsubst
   envsubst < "$OVERLAY_DIR/secrets.yaml.template" > "$OVERLAY_DIR/secrets.yaml"
   echo "   ✅ $OVERLAY_DIR/secrets.yaml gerado com sucesso!"
-fi
+
 kubectl apply -f "$OVERLAY_DIR/secrets.yaml"
 
 # --- 4. Deployment, Service e HPA ----------------------------------------
