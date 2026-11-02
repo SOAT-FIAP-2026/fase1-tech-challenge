@@ -21,7 +21,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("quantidade/peca/{idPecaInsumo:guid}")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Operador,Mecanico")]
         public async Task<IActionResult> VerificarQuantidadePorIdPecaInsumo(Guid idPecaInsumo)
         {
             int? quantidade = await _estoqueService.VerificarQuantidadePorIdPecaInsumo(idPecaInsumo);
@@ -33,7 +33,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("quantidade/descricao")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Operador,Mecanico")]
         public async Task<IActionResult> VerificarQuantidadePorDescricaoPeca([FromQuery] string descricao)
         {
             int? quantidade = await _estoqueService.VerificarQuantidadePorDescricaoPeca(descricao);

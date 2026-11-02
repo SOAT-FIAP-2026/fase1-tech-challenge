@@ -7,6 +7,7 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
     {
         public static readonly Guid PermissaoAdminId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
         public static readonly Guid PermissaoOperadorId = Guid.Parse("b2c3d4e5-f6a7-8901-bcde-f12345678901");
+        public static readonly Guid PermissaoMecanicoId = Guid.Parse("c3d4e5f6-a7b8-9012-cdef-f12345678902");
         public static readonly Guid StatusRecebidaId = Guid.Parse("c3d4e5f6-a7b8-9012-cdef-123456789012");
         public static readonly Guid StatusEmDiagnosticoId = Guid.Parse("d3e4f5a6-b7c8-9012-defa-234567890123");
         public static readonly Guid StatusEmAguardandoAprovacaoId = Guid.Parse("e3f4a5b6-c7d8-9012-efab-345678901234");
@@ -15,6 +16,7 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
         public static readonly Guid StatusEntregueId = Guid.Parse("e5f6a7b8-c9d0-1234-efab-345678901234");
         public static readonly Guid StatusCanceladaId = Guid.Parse("f6a7b8c9-d0e1-2345-fabc-456789012345");
         public static readonly Guid UsuarioAdminId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        public static readonly Guid UsuarioMecanicoId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         
         // GUIDs das Peças e Insumos
         public static readonly Guid PecaOleoMotoId = Guid.Parse("550e8400-e29b-41d4-a716-446655440000");
@@ -42,7 +44,7 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
         {
             SeedPermissoes(context);
             SeedStatusOrdemServico(context);
-            SeedUsuarioAdmin(context);
+            SeedUsuarios(context);
             SeedClientes(context);
             SeedServicos(context);
             SeedPecasInsumo(context);
@@ -52,15 +54,27 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
 
         private static void SeedPermissoes(ApplicationDbContext context)
         {
-            if (context.Permissoes.Any()) return;
+            if (!context.Permissoes.Any(p => p.Id == PermissaoAdminId))
+            {
+                var admin = new Permissao("Administrador");
+                context.Entry(admin).Property(p => p.Id).CurrentValue = PermissaoAdminId;
+                context.Permissoes.Add(admin);
+            }
 
-            var admin = new Permissao("Administrador");
-            context.Entry(admin).Property(p => p.Id).CurrentValue = PermissaoAdminId;
+            if (!context.Permissoes.Any(p => p.Id == PermissaoOperadorId))
+            {
+                var operador = new Permissao("Operador");
+                context.Entry(operador).Property(p => p.Id).CurrentValue = PermissaoOperadorId;
+                context.Permissoes.Add(operador);
+            }
 
-            var operador = new Permissao("Operador");
-            context.Entry(operador).Property(p => p.Id).CurrentValue = PermissaoOperadorId;
+            if (!context.Permissoes.Any(p => p.Id == PermissaoMecanicoId))
+            {
+                var mecanico = new Permissao("Mecanico");
+                context.Entry(mecanico).Property(p => p.Id).CurrentValue = PermissaoMecanicoId;
+                context.Permissoes.Add(mecanico);
+            }
 
-            context.Permissoes.AddRange(admin, operador);
             context.SaveChanges();
         }
 
@@ -94,17 +108,26 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
             context.SaveChanges();
         }
 
-        private static void SeedUsuarioAdmin(ApplicationDbContext context)
+        private static void SeedUsuarios(ApplicationDbContext context)
         {
-            if (context.Usuarios.Any()) return;
+            if (!context.Usuarios.Any(u => u.Id == UsuarioAdminId))
+            {
+                var senhaHash = BCrypt.Net.BCrypt.HashPassword("Admin@123");
+                var senha = new SenhaUsuarioVO(senhaHash);
+                var admin = new Usuario("Administrador", "admin@techchallenge.com", senha, PermissaoAdminId);
+                context.Entry(admin).Property(u => u.Id).CurrentValue = UsuarioAdminId;
+                context.Usuarios.Add(admin);
+            }
 
-            // Pre-computed BCrypt hash for "Admin@123"
-            var senhaHash = BCrypt.Net.BCrypt.HashPassword("Admin@123");
-            var senha = new SenhaUsuarioVO(senhaHash);
-            var admin = new Usuario("Administrador", "admin@techchallenge.com", senha, PermissaoAdminId);
-            context.Entry(admin).Property(u => u.Id).CurrentValue = UsuarioAdminId;
+            if (!context.Usuarios.Any(u => u.Id == UsuarioMecanicoId))
+            {
+                var senhaMecanicoHash = BCrypt.Net.BCrypt.HashPassword("Mecanico@123");
+                var senhaMecanico = new SenhaUsuarioVO(senhaMecanicoHash);
+                var mecanico = new Usuario("Mecanico", "mecanico@techchallenge.com", senhaMecanico, PermissaoMecanicoId);
+                context.Entry(mecanico).Property(u => u.Id).CurrentValue = UsuarioMecanicoId;
+                context.Usuarios.Add(mecanico);
+            }
 
-            context.Usuarios.Add(admin);
             context.SaveChanges();
         }
 

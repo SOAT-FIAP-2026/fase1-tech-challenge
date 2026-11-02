@@ -24,7 +24,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("{id:guid}")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Operador,Mecanico")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {
             var cliente = await _clienteService.ObterPorId(id);
@@ -33,7 +33,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Operador,Mecanico")]
         public async Task<IActionResult> ObterTodos()
         {
             var clientes = await _clienteService.ObterTodos();

@@ -21,7 +21,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("{id:guid}")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Operador,Mecanico")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {
             var pecaInsumo = await _pecaInsumoService.ObterPorId(id);
@@ -30,7 +30,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("buscar-por-descricao")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Operador,Mecanico")]
         public async Task<IActionResult> ObterPorDescricao([FromQuery] string descricao)
         {
             var pecaInsumo = await _pecaInsumoService.ObterPorDescricao(descricao);
@@ -39,7 +39,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Operador,Mecanico")]
         public async Task<IActionResult> ObterTodos()
         {
             var pecasInsumos = await _pecaInsumoService.ObterTodos();
