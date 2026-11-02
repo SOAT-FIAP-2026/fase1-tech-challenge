@@ -16,7 +16,12 @@ namespace Fiap.TechChallenge.Api.Configurations
             services.AddSwaggerGen(c =>
             {
                 // Configuração básica do documento
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechChallenge API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "TechChallenge Core API — Catálogo, Clientes, Veículos e Estoque",
+                    Version = "v1",
+                    Description = "Serviço Core do Tech Challenge: Gestão de Clientes, Veículos, Catálogo de Peças/Insumos e Serviços, Controle de Estoque e Autenticação de Colaboradores (Staff)."
+                });
                 c.SchemaFilter<LoginRequestExampleSchemaFilter>();
 
                 // 1. Adiciona o botão "Authorize" e define o formato esperado

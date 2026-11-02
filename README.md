@@ -1,6 +1,9 @@
-# Sistema Integrado de Atendimento e Execução de Serviços - Oficina Mecânica
+# Tech Challenge — Core Service (Catálogo, Clientes, Veículos e Estoque)
 
-Esta é a aplicação backend principal desenvolvida em **.NET 8** (C# 12), seguindo os princípios da **Clean Architecture** e **Domain-Driven Design (DDD)**, com foco em gestão de ordens de serviço, clientes, veículos, estoque e serviços para uma oficina mecânica de médio/grande porte.
+Esta é a aplicação backend Core desenvolvida em **.NET 8** (C# 12), seguindo os princípios da **Clean Architecture** e **Domain-Driven Design (DDD)**, com foco em gestão cadastral de clientes, veículos, catálogo de peças/insumos e serviços, controle de estoque e autenticação de colaboradores (Staff) para uma oficina mecânica.
+
+> ℹ️ **Evolução Arquitetural (Fase 4):**  
+> O domínio de **Ordem de Serviço** foi desacoplado para o microsserviço serverless [`os-microservice`](../os-microservice), e os domínios de **Diagnóstico Técnico & Execução** e **Orçamento & Pagamento** foram desacoplados para os microsserviços [`execution-service`](../execution-service) e [`billing-service`](../billing-service). Consulte [`ARQUITETURA_E_VALIDACAO_FASE4.md`](../shared/ARQUITETURA_E_VALIDACAO_FASE4.md) para a visão unificada da solução.
 
 A aplicação executa em contêineres orquestrados por **Kubernetes (AWS EKS)** com dimensionamento horizontal automático (**HPA**), integrada a uma arquitetura moderna em nuvem com **autenticação serverless por CPF**, **banco de dados gerenciado (AWS RDS PostgreSQL 16)** e **observabilidade ponta a ponta**.
 
