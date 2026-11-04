@@ -1,3 +1,5 @@
+using Fiap.TechChallenge.Contracts.CoreService;
+
 namespace Fiap.TechChallenge.Application.DTOs.Responses
 {
     public class VeiculoResponse
@@ -8,6 +10,8 @@ namespace Fiap.TechChallenge.Application.DTOs.Responses
         public string Modelo { get; set; } = string.Empty;
         public int Ano { get; set; }
 
+        public VeiculoResponse() { }
+
         public VeiculoResponse(Guid id, string placa, string marca, string modelo, int ano)
         {
             Id = id;
@@ -16,5 +20,13 @@ namespace Fiap.TechChallenge.Application.DTOs.Responses
             Modelo = modelo;
             Ano = ano;
         }
+
+        public VeiculoResponse(VeiculoCatalogoDto dto)
+            : this(dto.Id, dto.Placa, dto.Marca, dto.Modelo, dto.Ano) { }
+
+        public VeiculoCatalogoDto ToContract() => new(Id, Placa, Marca, Modelo, Ano);
+
+        public static implicit operator VeiculoCatalogoDto(VeiculoResponse response) => response.ToContract();
+        public static implicit operator VeiculoResponse(VeiculoCatalogoDto dto) => new(dto);
     }
 }

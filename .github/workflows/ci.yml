@@ -22,6 +22,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Checkout shared contracts
+        uses: actions/checkout@v4
+        with:
+          repository: SOAT-FIAP-2026/shared
+          ref: main
+          path: .shared
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Move shared to sibling directory (../shared)
+        run: |
+          rm -rf ../shared
+          mv .shared ../shared
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:

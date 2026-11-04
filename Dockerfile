@@ -1,7 +1,10 @@
+# syntax=docker/dockerfile:1
+
 # Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
+COPY --from=shared src/Fiap.TechChallenge.Contracts/Fiap.TechChallenge.Contracts.csproj /shared/src/Fiap.TechChallenge.Contracts/
 COPY src/Fiap.TechChallenge.Domain/Fiap.TechChallenge.Domain.csproj src/Fiap.TechChallenge.Domain/
 COPY src/Fiap.TechChallenge.Application/Fiap.TechChallenge.Application.csproj src/Fiap.TechChallenge.Application/
 COPY src/Fiap.TechChallenge.Infrastructure/Fiap.TechChallenge.Infrastructure.csproj src/Fiap.TechChallenge.Infrastructure/
@@ -10,6 +13,7 @@ COPY src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj src/Fiap.TechChall
 
 RUN dotnet restore src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj
 
+COPY --from=shared src/Fiap.TechChallenge.Contracts/ /shared/src/Fiap.TechChallenge.Contracts/
 COPY src/ src/
 RUN dotnet publish src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj \
     -c Release \

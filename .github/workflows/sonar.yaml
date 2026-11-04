@@ -16,6 +16,18 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Checkout shared contracts
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          repository: SOAT-FIAP-2026/shared
+          ref: main
+          path: .shared
+          token: ${{ secrets.GH_PAT || github.token }}
+      - name: Move shared to sibling directory (../shared)
+        shell: powershell
+        run: |
+          if (Test-Path ..\shared) { Remove-Item -Recurse -Force ..\shared }
+          Move-Item -Force .shared ..\shared
       - name: Cache SonarQube Cloud packages
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:

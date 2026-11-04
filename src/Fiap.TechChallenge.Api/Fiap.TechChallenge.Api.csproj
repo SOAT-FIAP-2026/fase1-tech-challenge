@@ -31,6 +31,7 @@
     <ProjectReference Include="..\Fiap.TechChallenge.Application\Fiap.TechChallenge.Application.csproj" />
     <ProjectReference Include="..\Fiap.TechChallenge.External\Fiap.TechChallenge.External.csproj" />
     <ProjectReference Include="..\Fiap.TechChallenge.Infrastructure\Fiap.TechChallenge.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Fiap.TechChallenge.Contracts\Fiap.TechChallenge.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

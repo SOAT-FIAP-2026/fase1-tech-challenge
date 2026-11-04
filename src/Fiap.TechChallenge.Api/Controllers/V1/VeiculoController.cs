@@ -2,6 +2,7 @@ using Fiap.TechChallenge.Application.DTOs.Common;
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.DTOs.Responses;
 using Fiap.TechChallenge.Application.Interfaces;
+using Fiap.TechChallenge.Contracts.AuthService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
     [ApiController]
     [Route("api/v1/veiculos")]
     [Produces("application/json")]
-    [Authorize(Roles = "Administrador,Operador,Mecanico")]
+    [Authorize(Roles = JwtAuthConstants.Roles.Administrador + "," + JwtAuthConstants.Roles.Operador + "," + JwtAuthConstants.Roles.Mecanico)]
     public class VeiculoController(IVeiculoService veiculoService) : ControllerBase
     {
         private readonly IVeiculoService _veiculoService = veiculoService;
@@ -21,7 +22,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         /// <param name="request">Dados do veículo</param>
         /// <returns>ID do veículo criado</returns>
         [HttpPost]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = JwtAuthConstants.Roles.Administrador)]
         [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -68,7 +69,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         /// <param name="request">Campos a serem atualizados</param>
         /// <returns>Dados atualizados do veículo</returns>
         [HttpPatch("{id:guid}")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = JwtAuthConstants.Roles.Administrador)]
         [ProducesResponseType(typeof(VeiculoResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -85,7 +86,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         /// </summary>
         /// <param name="id">ID do veículo</param>
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = JwtAuthConstants.Roles.Administrador)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Deletar([FromRoute] Guid id)

@@ -1,3 +1,4 @@
+using Fiap.TechChallenge.Contracts.AuthService;
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.Domain.ValueObjects;
 
@@ -56,21 +57,21 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
         {
             if (!context.Permissoes.Any(p => p.Id == PermissaoAdminId))
             {
-                var admin = new Permissao("Administrador");
+                var admin = new Permissao(JwtAuthConstants.Roles.Administrador);
                 context.Entry(admin).Property(p => p.Id).CurrentValue = PermissaoAdminId;
                 context.Permissoes.Add(admin);
             }
 
             if (!context.Permissoes.Any(p => p.Id == PermissaoOperadorId))
             {
-                var operador = new Permissao("Operador");
+                var operador = new Permissao(JwtAuthConstants.Roles.Operador);
                 context.Entry(operador).Property(p => p.Id).CurrentValue = PermissaoOperadorId;
                 context.Permissoes.Add(operador);
             }
 
             if (!context.Permissoes.Any(p => p.Id == PermissaoMecanicoId))
             {
-                var mecanico = new Permissao("Mecanico");
+                var mecanico = new Permissao(JwtAuthConstants.Roles.Mecanico);
                 context.Entry(mecanico).Property(p => p.Id).CurrentValue = PermissaoMecanicoId;
                 context.Permissoes.Add(mecanico);
             }
@@ -114,7 +115,7 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
             {
                 var senhaHash = BCrypt.Net.BCrypt.HashPassword("Admin@123");
                 var senha = new SenhaUsuarioVO(senhaHash);
-                var admin = new Usuario("Administrador", "admin@techchallenge.com", senha, PermissaoAdminId);
+                var admin = new Usuario(JwtAuthConstants.Roles.Administrador, "admin@techchallenge.com", senha, PermissaoAdminId);
                 context.Entry(admin).Property(u => u.Id).CurrentValue = UsuarioAdminId;
                 context.Usuarios.Add(admin);
             }
@@ -123,7 +124,7 @@ namespace Fiap.TechChallenge.Infrastructure.Data.Seed
             {
                 var senhaMecanicoHash = BCrypt.Net.BCrypt.HashPassword("Mecanico@123");
                 var senhaMecanico = new SenhaUsuarioVO(senhaMecanicoHash);
-                var mecanico = new Usuario("Mecanico", "mecanico@techchallenge.com", senhaMecanico, PermissaoMecanicoId);
+                var mecanico = new Usuario(JwtAuthConstants.Roles.Mecanico, "mecanico@techchallenge.com", senhaMecanico, PermissaoMecanicoId);
                 context.Entry(mecanico).Property(u => u.Id).CurrentValue = UsuarioMecanicoId;
                 context.Usuarios.Add(mecanico);
             }

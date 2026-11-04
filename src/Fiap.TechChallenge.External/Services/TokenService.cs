@@ -1,3 +1,4 @@
+using Fiap.TechChallenge.Contracts.AuthService;
 using Fiap.TechChallenge.Domain.Entities;
 using Fiap.TechChallenge.External.Configurations;
 using Fiap.TechChallenge.Domain.Interfaces.Service;
@@ -26,7 +27,7 @@ namespace Fiap.TechChallenge.External.Services
                 {
                     new Claim(ClaimTypes.Name, usuario.Nome.Valor),
                     new Claim(ClaimTypes.Email, usuario.Email.Endereco),
-                    new Claim("UsuarioId", usuario.Id.ToString()),
+                    new Claim(JwtAuthConstants.Claims.UsuarioId, usuario.Id.ToString()),
                     new Claim(ClaimTypes.Role, usuario.Permissao.Descricao.Valor)
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),

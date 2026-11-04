@@ -1,3 +1,5 @@
+using Fiap.TechChallenge.Contracts.Common;
+
 namespace Fiap.TechChallenge.Application.DTOs.Common
 {
     public class PagedResult<T>
@@ -6,7 +8,7 @@ namespace Fiap.TechChallenge.Application.DTOs.Common
         public int Page { get; }
         public int PageSize { get; }
         public int TotalItems { get; }
-        public int TotalPages => (int)Math.Ceiling((double)TotalItems / PageSize);
+        public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalItems / PageSize) : 0;
         public bool HasPreviousPage => Page > 1;
         public bool HasNextPage => Page < TotalPages;
 
@@ -17,5 +19,13 @@ namespace Fiap.TechChallenge.Application.DTOs.Common
             PageSize = pageSize;
             TotalItems = totalItems;
         }
+
+        public PagedResult(PagedResultContrato<T> contract)
+            : this(contract.Items, contract.Page, contract.PageSize, contract.TotalItems) { }
+
+        public PagedResultContrato<T> ToContract() => new(Items, Page, PageSize, TotalItems);
+
+        public static implicit operator PagedResultContrato<T>(PagedResult<T> result) => result.ToContract();
+        public static implicit operator PagedResult<T>(PagedResultContrato<T> contract) => new(contract);
     }
 }
