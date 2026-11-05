@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Fiap.TechChallenge.Domain\Fiap.TechChallenge.Domain.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Fiap.TechChallenge.Contracts\Fiap.TechChallenge.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

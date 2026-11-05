@@ -1,5 +1,6 @@
 using Fiap.TechChallenge.Application.DTOs.Requests;
 using Fiap.TechChallenge.Application.Interfaces;
+using Fiap.TechChallenge.Contracts.AuthService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +13,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         private readonly IEstoqueService _estoqueService = estoqueService;
 
         [HttpPost]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = JwtAuthConstants.Roles.Administrador)]
         public async Task<IActionResult> Criar(EstoqueRequest request)
         {
             Guid id = await _estoqueService.Criar(request);
@@ -21,7 +22,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("quantidade/peca/{idPecaInsumo:guid}")]
-        [Authorize(Roles = "Administrador,Operador,Mecanico")]
+        [Authorize(Roles = JwtAuthConstants.Roles.Administrador + "," + JwtAuthConstants.Roles.Operador + "," + JwtAuthConstants.Roles.Mecanico)]
         public async Task<IActionResult> VerificarQuantidadePorIdPecaInsumo(Guid idPecaInsumo)
         {
             int? quantidade = await _estoqueService.VerificarQuantidadePorIdPecaInsumo(idPecaInsumo);
@@ -33,7 +34,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpGet("quantidade/descricao")]
-        [Authorize(Roles = "Administrador,Operador,Mecanico")]
+        [Authorize(Roles = JwtAuthConstants.Roles.Administrador + "," + JwtAuthConstants.Roles.Operador + "," + JwtAuthConstants.Roles.Mecanico)]
         public async Task<IActionResult> VerificarQuantidadePorDescricaoPeca([FromQuery] string descricao)
         {
             int? quantidade = await _estoqueService.VerificarQuantidadePorDescricaoPeca(descricao);
@@ -45,7 +46,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPut("{idPecaInsumo:guid}/adicionar-quantidade")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = JwtAuthConstants.Roles.Administrador)]
         public async Task<IActionResult> AdicionarQuantidade(Guid idPecaInsumo, [FromBody] int quantidade)
         {
             await _estoqueService.AdicionarQuantidade(idPecaInsumo, quantidade);
@@ -54,7 +55,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpPut("{idPecaInsumo:guid}/remover-quantidade")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = JwtAuthConstants.Roles.Administrador)]
         public async Task<IActionResult> RemoverQuantidade(Guid idPecaInsumo, [FromBody] int quantidade)
         {
             await _estoqueService.RemoverQuantidade(idPecaInsumo, quantidade);
@@ -63,7 +64,7 @@ namespace Fiap.TechChallenge.Api.Controllers.V1
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = JwtAuthConstants.Roles.Administrador)]
         public async Task<IActionResult> Deletar(Guid id)
         {
             await _estoqueService.Deletar(id);

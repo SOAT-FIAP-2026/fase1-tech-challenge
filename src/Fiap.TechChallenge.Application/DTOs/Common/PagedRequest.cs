@@ -1,9 +1,11 @@
+using Fiap.TechChallenge.Contracts.Common;
+
 namespace Fiap.TechChallenge.Application.DTOs.Common
 {
     public class PagedRequest
     {
-        private const int MaxPageSize = 100;
-        private const int DefaultPageSize = 10;
+        public const int MaxPageSize = PagedRequestContrato.MaxPageSize;
+        public const int DefaultPageSize = PagedRequestContrato.DefaultPageSize;
 
         private int _page = 1;
         private int _pageSize = DefaultPageSize;
@@ -21,5 +23,13 @@ namespace Fiap.TechChallenge.Application.DTOs.Common
         }
 
         public int Skip => (Page - 1) * PageSize;
+
+        public PagedRequestContrato ToContract() => new(Page, PageSize);
+
+        public static implicit operator PagedRequestContrato(PagedRequest request) =>
+            new(request.Page, request.PageSize);
+
+        public static implicit operator PagedRequest(PagedRequestContrato contract) =>
+            new() { Page = contract.Page, PageSize = contract.PageSize };
     }
 }

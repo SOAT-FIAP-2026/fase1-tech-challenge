@@ -41,6 +41,7 @@ services:
       - "${API_PORT:-8080}:8080"
     volumes:
       - .:/src
+      - ../shared:/shared:ro
     working_dir: /src
     command: ["dotnet", "watch", "--project", "src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj", "run", "--no-launch-profile"]
 
