@@ -23,10 +23,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout shared contracts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: SOAT-FIAP-2026/shared
           ref: main
@@ -39,7 +39,7 @@ jobs:
           mv .shared ../shared
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -60,10 +60,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout shared contracts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: SOAT-FIAP-2026/shared
           ref: main
@@ -136,10 +136,10 @@ jobs:
             echo "  - DOCKER_CONFIG_JSON_BASE64"
             exit 1
           fi
-          
+
           # Substituir as variáveis no template
           envsubst < k8s/overlays/aws/secrets.yaml.template > k8s/overlays/aws/secrets.yaml
-          
+
           echo "✅ Secrets gerados com sucesso via envsubst"
 
       - name: Aplicar manifestos Kubernetes
