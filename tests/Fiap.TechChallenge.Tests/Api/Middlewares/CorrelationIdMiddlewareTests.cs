@@ -1,4 +1,5 @@
 using Fiap.TechChallenge.Api.Middlewares;
+using Fiap.TechChallenge.Contracts.Common;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -13,14 +14,22 @@ public class CorrelationIdMiddlewareTests
     {
         var context = new DefaultHttpContext();
         context.Request.Headers[CorrelationIdMiddleware.HeaderName] = "correlation-test";
+        string? ambientCorrelation = null;
+
         var middleware = new CorrelationIdMiddleware(
-            _ => Task.CompletedTask,
+            _ =>
+            {
+                ambientCorrelation = CorrelationContext.Current;
+                return Task.CompletedTask;
+            },
             Mock.Of<ILogger<CorrelationIdMiddleware>>());
 
         await middleware.InvokeAsync(context);
 
+        ambientCorrelation.Should().Be("correlation-test");
         context.Response.Headers[CorrelationIdMiddleware.HeaderName]
             .ToString().Should().Be("correlation-test");
+        CorrelationContext.Current.Should().BeNull();
     }
 
     [Fact]

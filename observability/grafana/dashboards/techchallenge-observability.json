@@ -736,7 +736,7 @@
             "uid": "tempo"
           },
           "queryType": "traceql",
-          "query": "{ resource.service.name = \"techchallenge-api\" }",
+          "query": "{ resource.service.name =~ \"techchallenge-.*\" }",
           "limit": 20,
           "refId": "A"
         }
