@@ -37,9 +37,16 @@ kubectl apply -f "$BASE_DIR/namespace.yaml"
 echo "🔧 Aplicando ConfigMap e Secrets..."
 kubectl apply -f "$OVERLAY_DIR/configmap.yaml"
 
-# Gera e atualiza o secrets.yaml com os dados vigentes da AWS (SSM):
-echo "🔍 Obtendo credenciais atualizadas do AWS SSM Parameter Store..."
-  
+# secrets.yaml nao e versionado. Quando ja existir (ex: gerado via envsubst no CI), preserva o arquivo:
+if [ -f "$OVERLAY_DIR/secrets.yaml" ]; then
+  echo "   ✅ $OVERLAY_DIR/secrets.yaml já existe (preservando arquivo gerado; não será sobrescrito)."
+elif [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+  echo "❌ Erro: $OVERLAY_DIR/secrets.yaml não encontrado no ambiente CI após etapa de envsubst."
+  exit 1
+else
+  # Gera o secrets.yaml com os dados vigentes da AWS (SSM):
+  echo "🔍 Obtendo credenciais atualizadas do AWS SSM Parameter Store..."
+
   # 1. Busca Connection String diretamente do SSM Parameter Store (publicado pelo soat-db)
   DB_CONN=$(aws ssm get-parameter \
     --name "/techchallenge/prod/db_connection_string" \
@@ -84,9 +91,10 @@ echo "🔍 Obtendo credenciais atualizadas do AWS SSM Parameter Store..."
     export DOCKER_CONFIG_JSON_BASE64=$(echo -n '{"auths":{}}' | base64)
   fi
 
-  # 3. Substitui as variáveis no template via envsubst
+  # 4. Substitui as variáveis no template via envsubst
   envsubst < "$OVERLAY_DIR/secrets.yaml.template" > "$OVERLAY_DIR/secrets.yaml"
   echo "   ✅ $OVERLAY_DIR/secrets.yaml gerado com sucesso!"
+fi
 
 kubectl apply -f "$OVERLAY_DIR/secrets.yaml"
 

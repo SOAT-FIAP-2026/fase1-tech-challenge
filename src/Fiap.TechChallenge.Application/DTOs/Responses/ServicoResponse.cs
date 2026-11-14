@@ -24,7 +24,7 @@ namespace Fiap.TechChallenge.Application.DTOs.Responses
         public ServicoResponse(ServicoCatalogoDto dto)
             : this(dto.Id, dto.Nome, dto.Descricao ?? string.Empty, dto.ValorUnitario, dto.TempoEstimadoMinutos) { }
 
-        public ServicoCatalogoDto ToContract() => new(Id, Nome, ValorUnitario, TempoEstimadoMinutos, Descricao);
+        public ServicoCatalogoDto ToContract() => new(Id, Nome, Descricao, ValorUnitario, TempoEstimadoMinutos);
 
         public static implicit operator ServicoCatalogoDto(ServicoResponse response) => response.ToContract();
         public static implicit operator ServicoResponse(ServicoCatalogoDto dto) => new(dto);

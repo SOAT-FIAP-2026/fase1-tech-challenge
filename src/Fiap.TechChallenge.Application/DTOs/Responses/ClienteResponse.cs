@@ -25,10 +25,10 @@ namespace Fiap.TechChallenge.Application.DTOs.Responses
             : this(dto.Id, dto.Nome, dto.CpfCnpj, dto.Email, dto.Celular) { }
 
         public ClienteResponse(ClienteCatalogoDto dto)
-            : this(dto.Id, dto.Nome, string.Empty, dto.Email, dto.Celular ?? string.Empty) { }
+            : this(dto.Id, dto.Nome, dto.CpfCnpj, dto.Email, dto.Celular ?? string.Empty) { }
 
         public ClienteDetalhadoDto ToContract() => new(Id, Nome, CpfCnpj, Email, Celular);
-        public ClienteCatalogoDto ToCatalogoContract() => new(Id, Nome, Email, Celular);
+        public ClienteCatalogoDto ToCatalogoContract() => new(Id, Nome, CpfCnpj, Email, Celular);
 
         public static implicit operator ClienteDetalhadoDto(ClienteResponse response) => response.ToContract();
         public static implicit operator ClienteResponse(ClienteDetalhadoDto dto) => new(dto);

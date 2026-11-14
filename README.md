@@ -1,169 +1,180 @@
-# Tech Challenge — Core Service (Catálogo, Clientes, Veículos e Estoque)
+# Tech Challenge — Fase 4 | Core Service (Catálogo, Clientes, Veículos, Estoque & Auth Staff)
 
-Esta é a aplicação backend Core desenvolvida em **.NET 8** (C# 12), seguindo os princípios da **Clean Architecture** e **Domain-Driven Design (DDD)**, com foco em gestão cadastral de clientes, veículos, catálogo de peças/insumos e serviços, controle de estoque e autenticação de colaboradores (Staff) para uma oficina mecânica.
+Aplicação backend **Core Service** do ecossistema de oficina mecânica do **Tech Challenge — Fase 4**, desenvolvida em **.NET 8 (C# 12)** com **Clean Architecture** e **Domain-Driven Design (DDD)**.
 
-> ℹ️ **Evolução Arquitetural (Fase 4):**  
-> O domínio de **Ordem de Serviço** foi desacoplado para o microsserviço serverless [`os-microservice`](../os-microservice), e os domínios de **Diagnóstico Técnico & Execução** e **Orçamento & Pagamento** foram desacoplados para os microsserviços [`execution-service`](../execution-service) e [`billing-service`](../billing-service). Consulte [`ARQUITETURA_E_VALIDACAO_FASE4.md`](../shared/ARQUITETURA_E_VALIDACAO_FASE4.md) para a visão unificada da solução.
+Na **Fase 4**, o antigo monólito da Fase 3 foi decomposto em **4 microsserviços de negócio independentes** com persistência poliglota, mensageria assíncrona (**AWS SNS + SQS com DLQ**) e **Saga Pattern Híbrida**. Este repositório (`fase1-tech-challenge`) concentra exclusivamente o domínio Core:
 
-A aplicação executa em contêineres orquestrados por **Kubernetes (AWS EKS)** com dimensionamento horizontal automático (**HPA**), integrada a uma arquitetura moderna em nuvem com **autenticação serverless por CPF**, **banco de dados gerenciado (AWS RDS PostgreSQL 16)** e **observabilidade ponta a ponta**.
+- **Clientes e Veículos:** cadastro, consulta e validação cadastral (incluindo consulta por CPF/CNPJ).
+- **Catálogo de Serviços e Peças/Insumos:** preços unitários, tempos estimados e métricas de tempo de execução.
+- **Controle de Estoque:** consulta de saldo, baixa atômica (reserva de peças) e reposição/estorno compensatório acionado pela Saga.
+- **Autenticação Staff:** login e cadastro de colaboradores (`Administrador`, `Operador`, `Mecanico`) com emissão de JWT (`Issuer = TechChallenge`, `Audience = techchallenge.com.br`).
 
----
-
-## 🎯 Tech Challenge - Fase 3
-
-Na **Fase 3**, o sistema foi elevado a um patamar de **operação corporativa**, garantindo alta disponibilidade, segurança de ponta a ponta, isolamento de responsabilidades, automação completa de infraestrutura e visibilidade operacional em tempo real:
-
-- 🔐 **Autenticação Serverless na Borda (Edge Layer):**
-  - Implementação de **AWS API Gateway** para roteamento e controle de acesso.
-  - Criação de **Function Serverless (AWS Lambda)** em .NET 8 para validação algorítmica de CPF, consulta de existência/status do cliente no PostgreSQL (RDS) e emissão de tokens **JWT (HMAC-SHA256)** para acesso às rotas protegidas.
-- 📦 **Segregação em 4 Repositórios Independentes:**
-  - Separação estrita de domínios com pipelines dedicadas de CI/CD, branch protection na `main` e permissão concedida ao usuário auditor `soat-architecture`.
-- ☁️ **Infraestrutura como Código (Terraform) na AWS:**
-  - Provisionamento 100% automatizado de VPC multi-AZ, cluster **AWS EKS**, **Application Load Balancer (ALB)** público integrado via Target Groups e NodePorts, e banco de dados **AWS RDS PostgreSQL 16**.
-- 🔭 **Monitoramento e Observabilidade Corporativa:**
-  - Instrumentação nativa com **OpenTelemetry (OTLP)** exportando traces para o **Grafana Tempo**.
-  - Logs estruturados em formato **JSON** com correlação ponta a ponta via `X-Correlation-ID` propagado e consultável no **Grafana Loki**.
-  - Coleta contínua de métricas com **Prometheus**, sondas de uptime com **Blackbox Exporter** e alertas automatizados (**PrometheusRule** / **Alertmanager** / **CloudWatch Alarms**).
-  - Dashboards executivos no **Grafana** cobrindo volume diário de OS, tempo médio por etapa (Diagnóstico, Execução, Finalização) e falhas de integrações.
-- 🗃️ **Modelagem de Dados e Consistência Relacional:**
-  - Banco relacional com 11 entidades, integridade referencial ACID, diagrama ER completo e máquina de estados da Ordem de Serviço com 9 status estritos.
+> ℹ️ **Visão Consolidada do Ecossistema (Fase 4):**  
+> Os domínios de **Ordem de Serviço**, **Diagnóstico Técnico & Produção** e **Orçamento & Pagamento** residem nos microsserviços [`os-microservice`](../os-microservice/README.md), [`execution-service`](../execution-service/README.md) e [`billing-service`](../billing-service/README.md). Contratos compartilhados, suíte BDD E2E e visão consolidada estão centralizados em [`shared`](../shared/README.md) e [`ARQUITETURA_E_VALIDACAO_FASE4.md`](../shared/ARQUITETURA_E_VALIDACAO_FASE4.md).
 
 ---
 
-## 📦 Matriz de Repositórios da Solução (Fase 3)
+## 🧩 Papel no Ecossistema de Microsserviços (Fase 4)
 
-O projeto foi desacoplado em **quatro repositórios independentes**, cada um com seu pipeline de CI/CD automatizado:
-
-| Repositório | Responsabilidade | Tecnologias Principais | CI/CD |
+| Serviço / Repositório | Responsabilidade no Ecossistema | Banco de Dados (Isolado) | Comunicação |
 |---|---|---|---|
-| 🔐 [**lambda-auth-function**](https://github.com/SOAT-FIAP-2026/lambda-auth-function) | Função Serverless de Autenticação por CPF, consulta ao banco e emissão de JWT | .NET 8, C#, Dapper, Npgsql, JWT, CloudWatch Logs | GitHub Actions (Build, Testes, SonarQube e Terraform Apply) |
-| ☸️ [**tech-challenge-infra-k8s**](https://github.com/SOAT-FIAP-2026/soat-infra) | Infraestrutura de Cluster EKS, Rede VPC, Application Load Balancer (ALB) e Observabilidade | Terraform, AWS EKS, ALB, Helm (Prometheus, Grafana, Loki, Tempo, OTel) | GitHub Actions (Terraform Plan, Validations e Apply) |
-| 🗄️ [**tech-challenge-infra-db**](https://github.com/SOAT-FIAP-2026/soat-db) | Infraestrutura do Banco de Dados Gerenciado desacoplado e alarmes | Terraform, AWS RDS PostgreSQL 16, Security Groups, CloudWatch Alarms | GitHub Actions (Terraform Plan e Apply) |
-| 🚀 [**fase1-tech-challenge**](https://github.com/SOAT-FIAP-2026/fase1-tech-challenge) *(Este repo)* | Aplicação Principal Backend, Manifestos Kubernetes (HPA, NodePort), Testes e Observabilidade | .NET 8, Clean Arch, DDD, EF Core, OpenTelemetry, K8s Manifests | GitHub Actions (Build, Testes Unitários + Testcontainers, SonarCloud e Deploy EKS) |
+| 🏛️ **`fase1-tech-challenge`** *(Este repo)* | **Core Service:** Clientes, Veículos, Catálogo (Serviços/Peças), Estoque e Auth Staff | **PostgreSQL 16 (AWS RDS)** (`techchallengedb`) | REST HTTP v1 + Swagger OpenAPI |
+| ⚡ [`os-microservice`](../os-microservice/README.md) | **Ordem de Serviço:** ciclo de vida da OS, Saga de reserva/estorno e Transactional Outbox | **Amazon DynamoDB** (Single-Table NoSQL) | REST HTTP + DynamoDB Streams + SNS/SQS |
+| 🔧 [`execution-service`](../execution-service/README.md) | **Diagnóstico & Produção:** laudo técnico, fila e execução de tarefas mecânicas | **PostgreSQL 16 Dedicado** (`techchallenge_execution_db`) | REST HTTP + SNS/SQS |
+| 💳 [`billing-service`](../billing-service/README.md) | **Orçamento & Pagamento:** geração de orçamento, cobrança Pix/Boleto e webhook Mercado Pago | **PostgreSQL 16 Dedicado** (`techchallenge_billing_db`) | REST HTTP + SNS/SQS + Webhook |
+| 🔐 [`lambda-auth-function`](../lambda-auth-function/README.md) | **Edge Facade Serverless (Domínio Core):** valida CPF do cliente e emite JWT de cliente | Lê tabela de clientes do Core RDS | API Gateway HTTP + AWS Lambda |
+| 📦 [`shared`](../shared/README.md) | Contratos compartilhados (`Fiap.TechChallenge.Contracts`), `CorrelationContext`, testes BDD E2E e Docker Compose unificado | — | Referência de projeto (`../shared`) |
+| ☁️ `soat-infra` & `soat-db` | Infraestrutura como código (VPC, AWS EKS, RDS, API Gateway, SNS/SQS, Prometheus/Grafana/Loki/Tempo) | — | Terraform + Helm |
 
-> 🛡️ **Políticas de Governança e Proteção:**
-> - Branch `main` protegida em todos os repositórios (sem commits diretos, merge exclusivamente via Pull Request com validação do pipeline).
-> - Usuário `soat-architecture` adicionado com permissão de colaborador em todos os 4 repositórios.
+### Isolamento de Banco de Dados (PostgreSQL 16 RDS)
 
----
-
-## 🔗 Entregáveis Oficiais
-
-- 🎥 **Vídeo de Demonstração (YouTube):** [Assista à demonstração completa](https://www.youtube.com/watch?v=kkmQnF3PrXk) *(Autenticação por CPF, execução do CI/CD com deploy automatizado, consumo de APIs protegidas, dashboards de observabilidade ao vivo, logs JSON correlacionados e distributed traces no Tempo)*.
-- 📚 **Swagger UI da API:**
-  - **AWS Produção (ALB):** [http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com/swagger](http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com/swagger)
-  - **Ambiente Local:** [http://localhost:8080/swagger](http://localhost:8080/swagger)
-- 📮 **Collections Postman:**
-  - API Principal: [`docs/postman/techchallenge-api.postman_collection.json`](./docs/postman/techchallenge-api.postman_collection.json) *(Fluxo completo da Ordem de Serviço, clientes, veículos, peças e estoque)*.
-  - Lambda Auth: [`lambda-auth-function postman collection`](https://github.com/SOAT-FIAP-2026/lambda-auth-function/blob/main/docs/postman/lambda-auth.postman_collection.json).
-- 📊 **Painel de Observabilidade (Grafana UI):**
-  - **AWS Produção:** [http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com:3000](http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com:3000) *(Usuário: `admin` / Senha: `admin`)*
-  - **Ambiente Local:** [http://localhost:3000](http://localhost:3000)
-- 📖 **Central de Documentação de Arquitetura:**
-  - 🧩 [Diagrama de Componentes na Nuvem (AWS)](./docs/component-diagram.md)
-  - 🔄 [Diagrama de Sequência (Autenticação CPF + Ciclo da OS)](./docs/sequence-diagram.md)
-  - 🗃️ [Modelo de Dados Relacional e Diagrama ER](./docs/database-model.md) *(11 entidades, máquina de estados da OS e justificativa técnica)*
-  - 📜 [RFC-001: Escolha do Provedor de Nuvem (AWS)](./docs/rfcs/RFC-001-cloud-provider-choice.md)
-  - 📜 [RFC-002: Escolha do Banco de Dados Gerenciado (PostgreSQL 16)](./docs/rfcs/RFC-002-managed-database-choice.md)
-  - 📜 [RFC-003: Estratégia de Autenticação Serverless (Lambda + JWT)](./docs/rfcs/RFC-003-serverless-authentication-strategy.md)
-  - 🏛️ [ADR-001: Padrão de Comunicação entre Componentes (REST/HTTP)](./docs/adrs/ADR-001-communication-pattern.md)
-  - 🏛️ [ADR-002: Auto-scaling de Pods via Kubernetes HPA](./docs/adrs/ADR-002-kubernetes-hpa-autoscaling.md)
-  - 🏛️ [ADR-003: Stack Corporativa de Observabilidade](./docs/adrs/ADR-003-observability-stack.md)
-  - 🔭 [Guia Operacional de Observabilidade e Métricas](./docs/observability.md)
-  - 📋 [Especificação Oficial do Tech Challenge Fase 3](./docs/tech-challenge-spec/TC_FASE3.md)
+- Este serviço possui seu próprio banco relacional **PostgreSQL 16** (provisionado em **AWS RDS** na nuvem e via contêiner `postgres:16` no `docker-compose.yml` local), sem chaves estrangeiras cruzadas ou compartilhamento de tabelas com `os-microservice`, `execution-service` ou `billing-service`.
+- Nenhum outro microsserviço de negócio acessa o PostgreSQL do Core diretamente: `os-microservice` consulta clientes, veículos, catálogo e executa reserva/estorno de estoque exclusivamente via API REST (`CoreApiClient` com contratos de `Fiap.TechChallenge.Contracts.CoreService`).
+- Como decisão formal de fronteira arquitetural, apenas `lambda-auth-function` atua como **Edge Facade Serverless** pertencente ao domínio de identidade do Core para autenticação de clientes por CPF.
 
 ---
 
-## 🏗️ Arquitetura e Infraestrutura
-
-Abaixo está o desenho da arquitetura integrada implementada na nuvem AWS para a Fase 3:
+## 🏗️ Arquitetura do Ecossistema e do Core Service
 
 ```mermaid
-graph TB
-    subgraph Clients["🌐 Clientes & Operação"]
-        USER["Cliente / Mecânico / Postman"]
+flowchart TB
+    subgraph Actors["👥 Atores"]
+        CLI["🙋 Cliente"]
+        STAFF["👨‍🔧 Admin / Operador / Mecânico"]
     end
 
-    subgraph Edge["🔐 Borda & Autenticação (Edge Layer)"]
-        APIGW["AWS API Gateway<br/>(HTTP API)"]
-        LAMBDA["AWS Lambda Auth<br/>(.NET 8 Serverless)<br/>Valida CPF → Emite JWT"]
+    subgraph Edge["🔐 Borda & Identidade"]
+        APIGW["AWS API Gateway HTTP"]
+        LAMBDA_AUTH["lambda-auth-function\n(Edge Facade do Core)\nEmite JWT Cliente via CPF"]
     end
 
-    subgraph AWS["☁️ AWS Cloud (sa-east-1)"]
-        subgraph Net["VPC & Roteamento (Terraform)"]
-            ALB["AWS Application Load Balancer (ALB)<br/>fiap-soat-terraform-alb-*.elb.amazonaws.com"]
-        end
-
-        subgraph EKS["Cluster Kubernetes (AWS EKS - 3 nós t3.small)"]
-            subgraph NS_App["Namespace: techchallenge"]
-                SVC_API["Service: api-service<br/>NodePort: 30080"]
-                POD1["API Pod 1 (.NET 8)"]
-                POD2["API Pod 2 (.NET 8)"]
-                HPA["HPA (1 a 5 pods)<br/>CPU 70% / Memória 80%"]
-                HPA -.-> |Auto-scaling| POD1
-            end
-
-            subgraph NS_Mon["Namespace: monitoring (Observabilidade)"]
-                SVC_GRAF["Service: grafana<br/>NodePort: 30300"]
-                GRAFANA["Grafana (:3000)<br/>Dashboards & Alertas"]
-                PROM["Prometheus (:9090)<br/>Métricas & Scraping"]
-                OTEL["OpenTelemetry Collector (:4318)<br/>Recepção OTLP HTTP"]
-                TEMPO["Grafana Tempo (:3200)<br/>Distributed Traces"]
-                LOKI["Grafana Loki (:3100)<br/>Logs Estruturados JSON"]
-                BBOX["Blackbox Exporter<br/>Probes de Uptime"]
-            end
-        end
-
-        subgraph DB["🗄️ Dados Gerenciados"]
-            RDS[("AWS RDS PostgreSQL 16<br/>techchallengedb<br/>Multi-AZ / Subnets Privadas")]
-        end
+    subgraph Core["🏛️ fase1-tech-challenge — Core Service (.NET 8 / AWS EKS)"]
+        direction TB
+        API["Core Web API (:8080)\nClientes | Veículos | Serviços | Peças\nEstoques | Auth Staff | /metrics | /health"]
+        CORE_DB[("🗄️ AWS RDS PostgreSQL 16\nBanco Isolado do Core\n(techchallengedb)")]
+        API <-->|EF Core 8| CORE_DB
     end
 
-    subgraph CICD["🤖 Pipelines CI/CD (GitHub Actions)"]
-        GHA_APP["fase1-tech-challenge:<br/>Build + Testes + Testcontainers + SonarCloud + EKS Deploy"]
-        GHA_LAMBDA["lambda-auth-function:<br/>Build + Testes + Deploy Terraform"]
-        GHA_K8S["tech-challenge-infra-k8s:<br/>Terraform EKS + ALB + Monitoring"]
-        GHA_DB["tech-challenge-infra-db:<br/>Terraform RDS + CloudWatch"]
+    subgraph Ecosystem["⚙️ Demais Microsserviços (Fase 4)"]
+        OS["⚡ os-microservice\n(.NET 8 + DynamoDB Single-Table\n+ Transactional Outbox)"]
+        EXEC["🔧 execution-service\n(.NET 8 + PostgreSQL 16 Isolado)"]
+        BILL["💳 billing-service\n(.NET 8 + PostgreSQL 16 Isolado)"]
     end
 
-    %% Fluxo de Autenticação
-    USER -->|1. POST /auth (CPF)| APIGW
-    APIGW -->|2. Invoca| LAMBDA
-    LAMBDA -->|3. Valida cliente ativo| RDS
-    LAMBDA -->|4. Retorna JWT Bearer| USER
+    subgraph Messaging["📬 Mensageria AWS"]
+        SNS{{"📢 AWS SNS Topic\ntechchallenge-eventos"}}
+        SQS["📫 Filas SQS + DLQs\n(OS, Compensação, Execução, Billing)"]
+    end
 
-    %% Fluxo de Acesso à Aplicação
-    USER -->|5. HTTP com JWT Bearer e X-Correlation-ID| ALB
-    ALB -->|Roteia :80 para NodePort 30080| SVC_API
-    ALB -->|Roteia :3000 para NodePort 30300| SVC_GRAF
-    SVC_API --> POD1
-    SVC_API --> POD2
-    SVC_GRAF --> GRAFANA
+    subgraph Obs["🔭 Observabilidade"]
+        OTEL["OTel Collector / Tempo / Loki / Prometheus / Grafana"]
+    end
 
-    %% Comunicação Pods com Banco e Observabilidade
-    POD1 -->|Leitura / Escrita (EF Core)| RDS
-    POD2 -->|Leitura / Escrita (EF Core)| RDS
-    POD1 -.->|Traces OTLP /v1/traces| OTEL
-    POD1 -.->|Logs JSON stdout| LOKI
-    PROM -.->|Scrape /metrics| POD1
+    CLI -->|POST /auth/token CPF| APIGW --> LAMBDA_AUTH
+    LAMBDA_AUTH -.->|Consulta CPF no domínio Core| CORE_DB
+    STAFF -->|POST /api/v1/Autenticacao/Login| API
 
-    %% Observabilidade interna
-    OTEL --> TEMPO
-    GRAFANA --> PROM
-    GRAFANA --> LOKI
-    GRAFANA --> TEMPO
-    BBOX -.->|Health probe /health/ready| SVC_API
+    OS -->|REST GET Catálogo/Cliente/Veículo\nPUT remover-quantidade / adicionar-quantidade\n+ X-Correlation-ID| API
+
+    OS <-->|Eventos & Compensação| SNS
+    SNS --> SQS
+    SQS --> EXEC & BILL & OS
+    EXEC -->|Eventos Diagnóstico/Produção| SNS
+    BILL -->|Eventos Pagamento/Compensação| SNS
+
+    API -.->|OTLP Traces/Logs + /metrics| OTEL
 ```
 
-### Arquitetura de Software (.NET 8 — Clean Architecture & DDD)
+### Camadas Internas (.NET 8 — Clean Architecture & DDD)
 
-O repositório principal está estritamente estruturado em camadas desacopladas:
+- **`Fiap.TechChallenge.Domain`**: Entidades (`Cliente`, `Veiculo`, `Servico`, `PecaInsumo`, `Estoque`, `Usuario`, `Permissao`), Value Objects, exceções de domínio e interfaces de repositório.
+- **`Fiap.TechChallenge.Application`**: Serviços de aplicação (`ClienteService`, `VeiculoService`, `ServicoService`, `PecaInsumoService`, `EstoqueService`, `AutenticacaoService`), DTOs de request/response e mapeamento bidirecional para `Fiap.TechChallenge.Contracts.CoreService`.
+- **`Fiap.TechChallenge.Infrastructure`**: `ApplicationDbContext` (Entity Framework Core 8 + Npgsql), configurações de mapeamento, migrations e `DatabaseSeed`.
+- **`Fiap.TechChallenge.External`**: Implementação de serviços externos (`TokenService`, `JwtSecretResolver`, `ResendEmailService`, `BCryptCrypto`).
+- **`Fiap.TechChallenge.Api`**: Controllers v1, `CorrelationIdMiddleware`, `RequestObservabilityMiddleware`, `ExceptionHandlingMiddleware`, `HealthCheckResponseWriter`, `ObservabilityMetrics` e configuração Swagger/JWT/OpenTelemetry.
+- **`../shared/src/Fiap.TechChallenge.Contracts`**: Biblioteca compartilhada referenciada pelos projetos para padronizar rotas (`CoreApiRoutes`), DTOs (`ClienteCatalogoDto`, `ServicoCatalogoDto`, `VeiculoCatalogoDto`, `PecaInsumoCatalogoDto`, etc.), constantes de JWT (`JwtAuthConstants`) e propagação de `X-Correlation-ID` (`CorrelationContext`).
 
-- **`Fiap.TechChallenge.Domain`**: Camada central e agnóstica a frameworks. Contém as entidades de negócio (`Cliente`, `Veiculo`, `OrdemServico`, `ItemServico`, `ItemPeca`, `PecaInsumo`, etc.), Value Objects, enums de status, regras de negócio e interfaces de repositório.
-- **`Fiap.TechChallenge.Application`**: Casos de uso (Use Cases) do sistema, comandos, consultas (CQRS pattern), DTOs e mapeamentos.
-- **`Fiap.TechChallenge.Infrastructure`**: Implementação da persistência com **Entity Framework Core**, mapeamentos relacionais, migrations, seeds de banco e repositórios.
-- **`Fiap.TechChallenge.External`**: Gateways de comunicação com serviços e provedores externos.
-- **`Fiap.TechChallenge.Api`**: Ponto de entrada REST contendo Controllers, Middlewares de autenticação JWT, Middleware de correlação (`X-Correlation-ID`), documentação Swagger OpenAPI e exportação de telemetria OpenTelemetry.
+---
+
+## 🔄 Implementação e Justificativa do Saga Pattern
+
+### Justificativa Arquitetural
+
+Com a migração do monólito da Fase 3 para microsserviços independentes e persistência poliglota (**DynamoDB NoSQL** no `os-microservice` e bancos **PostgreSQL 16 isolados** em `fase1-tech-challenge`, `execution-service` e `billing-service`), transações distribuídas bloqueantes baseadas em **Two-Phase Commit (2PC)** introduziriam alto acoplamento temporal, contenção de locks e degradação de disponibilidade.
+
+Para garantir **consistência eventual com recuperação determinística em falhas**, o ecossistema adota uma **Saga Híbrida**:
+
+1. **Etapa Orquestrada (`os-microservice` ↔ Core Service):** ao finalizar o diagnóstico técnico, o `os-microservice` (`ReservaEstoqueSaga`) executa de forma síncrona a validação do catálogo e a reserva atômica das peças no Core Service via HTTP REST. Em caso de falha parcial durante a reserva de múltiplos itens (por exemplo, saldo insuficiente no último item), as baixas já efetivadas são enfileiradas para estorno assíncrono via SQS (`CompensacaoFilaFunction`).
+2. **Etapa Coreografada (AWS SNS/SQS entre `os-microservice`, `execution-service` e `billing-service`):** após a reserva de estoque, o fluxo segue por eventos assíncronos no tópico SNS (`techchallenge-eventos-<stage>`) com filas SQS e DLQs dedicadas. Caso o pagamento seja recusado/cancelado (`PagamentoCanceladoCompensacaoEvent`) ou a produção seja cancelada na oficina (`ProducaoCanceladaEvent`), os assinantes (`CompensacaoEventoFunction` no `os-microservice`) cancelam a OS no DynamoDB e acionam o Core para estornar as peças previamente reservadas.
+
+### Papel do Core Service (`fase1-tech-challenge`) na Saga
+
+O Core é o **Source of Truth** do saldo físico/lógico de peças e insumos e provê os endpoints transacionais locais consumidos pelo `os-microservice`:
+
+| Operação na Saga | Endpoint no Core (`EstoqueController`) | Comportamento e Garantias |
+|---|---|---|
+| **Consulta prévia de saldo** | `GET /api/v1/estoques/quantidade/peca/{idPecaInsumo}` | Retorna a quantidade atual ou `404 Not Found` se não houver estoque cadastrado para a peça. |
+| **Reserva / Baixa de estoque** | `PUT /api/v1/estoques/{idPecaInsumo}/remover-quantidade` *(body JSON: `int`)* | Executa `Estoque.RemoverQuantidade(quantidade)` no PostgreSQL. Valida `quantidade > 0` e bloqueia saldo negativo (`InvalidOperationException("Estoque insuficiente.")` → `HTTP 400` via `ExceptionHandlingMiddleware`), disparando o rollback compensatório no orquestrador quando falha. |
+| **Compensação / Estorno de estoque** | `PUT /api/v1/estoques/{idPecaInsumo}/adicionar-quantidade` *(body JSON: `int`)* | Executa `Estoque.AdicionarQuantidade(quantidade)` no PostgreSQL para devolver as unidades reservadas quando ocorre falha parcial na reserva, recusa/cancelamento de pagamento ou cancelamento de produção. |
+
+> 🛡️ **Idempotência na Compensação:** A execução idempotente do estorno em entregas repetidas de SNS/SQS é coordenada pelo `os-microservice` mediante chave de controle `COMPENSACAO#{id}` no DynamoDB antes de invocar `PUT /api/v1/estoques/{idPecaInsumo}/adicionar-quantidade` no Core, garantindo que reprocessamentos da fila não dupliquem a reposição de saldo. Todas as requisições carregam `X-Correlation-ID` (`CorrelationIdMiddleware`) para rastreamento distribuído ponta a ponta.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant EXEC as 🔧 execution-service
+    participant SNS as 📢 AWS SNS / SQS
+    participant OS as ⚡ os-microservice (Saga)
+    participant CORE as 🏛️ fase1-tech-challenge (Core)
+    participant BILL as 💳 billing-service
+
+    EXEC->>SNS: DiagnosticoTecnicoConcluidoEvent
+    SNS->>OS: Aciona ReservaEstoqueSaga (X-Correlation-ID)
+    OS->>CORE: GET /api/v1/servicos/{id} & /api/v1/pecas-insumos/{id}
+    loop Para cada peça do diagnóstico
+        OS->>CORE: PUT /api/v1/estoques/{idPecaInsumo}/remover-quantidade
+    end
+
+    alt Falha em alguma peça (HTTP 400 - Estoque insuficiente)
+        CORE-->>OS: 400 Bad Request { message, traceId }
+        OS->>SNS: Enfileira compensação SQS (itens já reservados)
+        SNS->>CORE: CompensacaoFilaFunction → PUT /api/v1/estoques/{id}/adicionar-quantidade
+        OS->>SNS: DiagnosticoRejeitadoEvent → reabre diagnóstico
+    else Reserva concluída com sucesso
+        OS->>SNS: DiagnosticoFinalizadoEvent → Billing gera orçamento
+        alt Recusa de Pagamento ou Cancelamento de Produção
+            BILL->>SNS: PagamentoCanceladoCompensacaoEvent
+            SNS->>OS: CompensacaoEventoFunction (idempotência COMPENSACAO#{id})
+            OS->>CORE: PUT /api/v1/estoques/{idPecaInsumo}/adicionar-quantidade
+            OS->>SNS: OrdemServicoCanceladaEvent
+        end
+    end
+```
+
+---
+
+## 🔌 Endpoints da API (Core v1)
+
+| Controller | Rota Base | Principais Operações | Autorização |
+|---|---|---|---|
+| `AutenticacaoController` | `/api/v1/Autenticacao` | `POST /Login`, `POST /Cadastrar` | `Login` anônimo; `Cadastrar` (`Administrador`) |
+| `ClienteController` | `/api/v1/clientes` | CRUD + `GET /buscar-por-cpf-cnpj?cpfCnpj=` | `Administrador` (escrita); Staff (leitura); `buscar-por-cpf-cnpj` anônimo |
+| `VeiculoController` | `/api/v1/veiculos` | `POST`, `GET` paginado (`PagedRequest`), `GET /{id}`, `PATCH /{id}`, `DELETE /{id}` | `Administrador` (escrita); Staff (leitura) |
+| `ServicoController` | `/api/v1/servicos` | CRUD + `GET /metricas-tempo` | `Administrador` (escrita); Staff (leitura); `metricas-tempo` anônimo |
+| `PecaInsumoController` | `/api/v1/pecas-insumos` | CRUD + `GET /buscar-por-descricao?descricao=` | `Administrador` (escrita); Staff (leitura) |
+| `EstoqueController` | `/api/v1/estoques` | `POST`, `GET /quantidade/peca/{idPecaInsumo}`, `GET /quantidade/descricao`, `PUT /{idPecaInsumo}/remover-quantidade`, `PUT /{idPecaInsumo}/adicionar-quantidade`, `DELETE /{id}` | `Administrador` (escrita/baixa/estorno); Staff (consulta) |
+| `PingController` & Probes | `/api/ping`, `/health*`, `/metrics` | `GET /api/ping`, `/health`, `/health/live`, `/health/ready`, `/metrics`, `/swagger` | Anônimo |
+
+### Credenciais Iniciais (DatabaseSeed)
+
+Executado automaticamente no startup (`DatabaseSeed.Apply(db)` em `Program.cs`):
+
+- **Colaboradores (Staff):**
+  - `admin@techchallenge.com` / `Admin@123` (Role: `Administrador`)
+  - `mecanico@techchallenge.com` / `Mecanico@123` (Role: `Mecanico`)
+- **Clientes Seed (para testes com `lambda-auth-function`):**
+  - **João Silva:** CPF `282.027.830-20`
+  - **Maria Oliveira:** CPF `312.408.510-81`
 
 ---
 
@@ -171,268 +182,158 @@ O repositório principal está estritamente estruturado em camadas desacopladas:
 
 | Camada | Tecnologias |
 |---|---|
-| **Backend & Core** | .NET 8 (C# 12), ASP.NET Core Web API, Clean Architecture, Domain-Driven Design (DDD) |
-| **Persistência & Dados** | Entity Framework Core 8, PostgreSQL 16, Dapper (na Lambda) |
-| **Autenticação & Segurança** | JWT (JSON Web Tokens HMAC-SHA256), AWS API Gateway, AWS Lambda Serverless |
-| **Conteinerização & K8s** | Docker, Kubernetes (AWS EKS v1.35), HPA (Horizontal Pod Autoscaler), NodePort |
-| **Infraestrutura como Código** | Terraform (>= 1.5.0), AWS Provider, Helm Provider |
-| **Nuvem (AWS)** | Amazon EKS, AWS RDS PostgreSQL, Application Load Balancer (ALB), VPC, IAM, CloudWatch |
-| **Observabilidade** | OpenTelemetry .NET SDK, Prometheus, Grafana, Grafana Loki, Grafana Tempo, Blackbox Exporter |
-| **Testes & Qualidade** | xUnit, Moq, FluentAssertions, Testcontainers PostgreSQL, Coverlet, ReportGenerator, SonarCloud |
-| **CI/CD** | GitHub Actions com deploys automatizados e proteção de branches |
+| **Runtime & Framework** | .NET 8 (C# 12), ASP.NET Core Web API, Clean Architecture, DDD |
+| **Persistência** | Entity Framework Core 8, PostgreSQL 16 (`Npgsql.EntityFrameworkCore.PostgreSQL`) |
+| **Segurança** | JWT Bearer (HMAC-SHA256), BCrypt (`BCrypt.Net-Next`), Roles via `JwtAuthConstants` |
+| **Observabilidade** | OpenTelemetry (`OTLP`), Prometheus (`/metrics`), JSON Console Logs, `X-Correlation-ID` |
+| **Testes & Qualidade** | xUnit, Moq, FluentAssertions, `Microsoft.AspNetCore.Mvc.Testing`, Testcontainers PostgreSQL, Coverlet, SonarCloud |
+| **Containers & K8s** | Docker multi-stage (`shared=../shared`), Docker Compose, Kubernetes (base + overlays local/AWS), HPA (1–5 réplicas) |
+| **CI/CD** | GitHub Actions (`ci.yml`, `cd.yaml`, `sonar.yaml`) |
 
 ---
 
-## 🔐 Autenticação, Rotas Protegidas e Consumo via CPF
-
-Conforme os requisitos da Fase 3, as rotas sensíveis do sistema (gestão de clientes, abertura e alteração de ordens de serviço, aprovação de orçamentos) exigem autenticação baseada em token JWT emitido após validação do CPF do cliente.
-
-### 1. Fluxo de Autenticação Serverless
-
-1. O cliente envia uma requisição `POST` para o endpoint de autenticação com o CPF cadastrado:
-   - **Endpoint AWS (API Gateway):** `https://mwmjdq6xbe.execute-api.sa-east-1.amazonaws.com/auth` (ou rota do gateway `/auth/token`)
-   - **Payload:**
-     ```json
-     {
-       "cpf": "282.027.830-20"
-     }
-     ```
-2. A **Function Serverless (AWS Lambda)** valida o formato e dígitos verificadores do CPF, realiza a consulta no PostgreSQL RDS para assegurar que o cliente existe e não está inativo/bloqueado, e devolve o token JWT:
-   ```json
-   {
-     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-     "token_type": "Bearer",
-     "expires_in": 3600
-   }
-   ```
-3. O cliente consome as rotas protegidas da API passando o token no header `Authorization: Bearer <token>` e opcionalmente o identificador de correlação `X-Correlation-ID`.
-
-### 2. Clientes Disponíveis para Testes (Seed Inicial)
-
-O banco de dados já inicializa com clientes válidos para testes de autenticação:
-
-| Cliente | CPF | Status no Banco | Acesso |
-|---|---|---|---|
-| **João Silva** | `282.027.830-20` | Ativo | Autorizado (Gera JWT) |
-| **Maria Oliveira** | `312.408.510-81` | Ativo | Autorizado (Gera JWT) |
-
-> 🔑 **Usuário Administrador (Fallback):**
-> - **E-mail:** `admin@techchallenge.com`
-> - **Senha:** `Admin@123`
-
----
-
-## 🔭 Monitoramento e Observabilidade
-
-O ambiente conta com uma stack corporativa de observabilidade unificada integrada via OpenTelemetry:
-
-### 1. Métricas de Negócio e Operacionais
-
-| Métrica | Tipo | Descrição |
-|---|---|---|
-| `techchallenge.orders.created` | Counter | Volume diário de ordens de serviço geradas |
-| `techchallenge.orders.status.duration` | Histogram | Tempo médio de execução por status (*Diagnóstico*, *Execução*, *Finalização*) |
-| `techchallenge.orders.processing.failures` | Counter | Falhas no processamento de ordens de serviço (dispara alertas) |
-| `techchallenge.integrations.requests` | Counter | Volume de chamadas a integrações externas |
-| `techchallenge.integrations.errors` | Counter | Taxa de falhas de comunicação externa |
-| `techchallenge.http.request.duration` | Histogram | Latência das requisições HTTP da API |
-| `container_cpu_usage_seconds_total` | Counter | Consumo de CPU dos pods no cluster EKS |
-| `container_memory_working_set_bytes` | Gauge | Consumo de memória dos pods no cluster EKS |
-| `probe_success` | Gauge | Uptime e health checks monitorados via Blackbox Exporter |
-
-### 2. Logs Estruturados em JSON & Rastreabilidade Ponta a Ponta
-
-- Todas as saídas de log são serializadas em formato **JSON** estruturado (`timestamp`, `level`, `message`, `correlation_id`, `trace_id`, `span_id`).
-- O header `X-Correlation-ID` é recebido no API Gateway / Lambda e propagado pela API .NET em todas as camadas e chamadas externas.
-- No **Grafana**, o painel de logs do **Loki** possui a variável de filtro **Correlation ID** no topo: ao filtrar por um ID, visualizam-se todas as linhas do fluxo daquela requisição.
-- Informações sensíveis (como dígitos completos de CPF e senhas) **nunca** são expostas em texto puro nos logs.
-
-### 3. Distributed Tracing com OpenTelemetry e Grafana Tempo
-
-- A API .NET exporta traces distribuídos via protocolo **OTLP/HTTP** (`http://opentelemetry-collector.monitoring.svc.cluster.local:4318/v1/traces`).
-- O **Grafana Tempo** ingere os spans permitindo inspeção detalhada do tempo gasto em middlewares, chamadas de banco (Entity Framework Core) e integrações.
-
-### 4. Dashboards do Grafana e Alertas
-
-O Grafana já possui dashboards provisionados para visualização imediata:
-1. **Tech Challenge - Executivo de Ordens de Serviço:** Volume diário de ordens criadas, status atual e taxas de conclusão.
-2. **Tech Challenge - Tempos de Ciclo:** Tempo médio gasto nas etapas de Diagnóstico, Execução e Entrega.
-3. **Tech Challenge - Saúde da Aplicação e Falhas:** Taxas de erro HTTP 5xx, falhas de processamento e latência p95/p99.
-4. **Infraestrutura Kubernetes:** Consumo de CPU/Memória por pod, nós ativos e métricas do HPA.
-5. **Alertas Configurados:** Regras no PrometheusRule / Alertmanager disparadas em caso de indisponibilidade da API (`probe_success == 0`) ou pico de falhas de processamento de OS.
-
----
-
-## 🚀 Como Executar o Projeto
+## 🚀 Como Executar, Compilar e Fazer Deploy
 
 ### Pré-requisitos
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [Docker](https://www.docker.com/products/docker-desktop) e [Docker Compose](https://docs.docker.com/compose/install/)
-- [AWS CLI v2](https://aws.amazon.com/cli/) autenticado (para ambiente AWS)
-- [kubectl](https://kubernetes.io/docs/tasks/tools/) e [Terraform >= 1.5](https://www.terraform.io/)
 
----
+- [.NET 8 SDK](https://dotnet.microsoft.com/download) (`8.0.x`)
+- [Docker](https://www.docker.com/products/docker-desktop) (necessário também para os testes de integração com Testcontainers PostgreSQL)
+- Repositório [`shared`](../shared) clonado no **diretório irmão** (`../shared`), pois os `.csproj` referenciam `../../../shared/src/Fiap.TechChallenge.Contracts/Fiap.TechChallenge.Contracts.csproj`.
 
-### Opção 1: Execução Local (.NET CLI)
+> ⚠️ **Nota sobre `.slnx` no .NET 8 SDK:**  
+> Este repositório contém `Fiap.TechChallenge.Api.slnx`, cujo formato XML `<Solution>` **não é suportado pelo .NET 8 SDK** (`error MSB4068: The element <Solution> is unrecognized, or not supported in this context`). Por isso, todos os comandos `dotnet restore`, `dotnet build` e `dotnet test` (incluindo nos pipelines `ci.yml` e `cd.yaml`) devem apontar diretamente para os arquivos `.csproj`:
+> - `src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj`
+> - `tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Tests.csproj`
 
-1. Crie o arquivo `.env` na raiz:
-   ```bash
-   cp .env.example .env
-   ```
-2. Restaure as dependências e compile:
-   ```bash
-   dotnet restore fase1-tech-challenge.sln
-   dotnet build fase1-tech-challenge.sln
-   ```
-3. Execute a API:
-   ```bash
-   dotnet run --project src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj
-   ```
-   Acesse a documentação Swagger em: `http://localhost:8080/swagger`.
-
----
-
-### Opção 2: Execução com Docker Compose (Ambiente Completo Local)
-
-O `docker-compose.yml` sobe a aplicação, PostgreSQL e toda a stack local de observabilidade (Prometheus, Grafana, Loki, Tempo e Alertmanager):
+### Opção 1: Build e Execução Local via .NET CLI
 
 ```bash
+# 1. Configurar variáveis de ambiente
+cp .env.example .env
+
+# 2. Restaurar dependências dos projetos
+dotnet restore src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj
+dotnet restore tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Tests.csproj
+
+# 3. Compilar em Release
+dotnet build src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj --configuration Release --no-restore
+
+# 4. Executar a API Core (Swagger em http://localhost:8080/swagger)
+dotnet run --project src/Fiap.TechChallenge.Api/Fiap.TechChallenge.Api.csproj
+```
+
+### Opção 2: Docker Compose (Core API + PostgreSQL 16 + Observabilidade Local)
+
+Sobe `postgres:16`, `api-dev` (montando `../shared:/shared:ro`), `prometheus`, `blackbox-exporter`, `alertmanager`, `loki`, `tempo`, `otel-collector` e `grafana`:
+
+```bash
+cp .env.example .env
 docker compose up -d
 ```
 
-| Serviço | URL | Credenciais |
-|---|---|---|
-| **Swagger UI (API)** | `http://localhost:8080/swagger` | — |
-| **Health Check API** | `http://localhost:8080/health` | — |
-| **Métricas Prometheus** | `http://localhost:8080/metrics` | — |
-| **Grafana UI** | `http://localhost:3000` | `admin` / `admin` |
-| **Prometheus UI** | `http://localhost:9090` | — |
-| **Alertmanager UI** | `http://localhost:9093` | — |
+- **Swagger UI:** `http://localhost:8080/swagger`
+- **Health Checks:** `http://localhost:8080/health`, `/health/live`, `/health/ready`
+- **Métricas Prometheus:** `http://localhost:8080/metrics`
+- **Grafana:** `http://localhost:3000` (`admin` / `admin`)
+
+### Opção 3: Kubernetes (Local e AWS EKS)
+
+Consulte [`k8s/README.md`](./k8s/README.md) para detalhes de manifestos `base` + `overlays`:
+
+- **Cluster Local (Minikube / Kind):**
+  ```bash
+  ./k8s/overlays/local/deploy.sh
+  ```
+- **AWS EKS (Manual ou via `cd.yaml`):**
+  ```bash
+  aws eks update-kubeconfig --name eks-fiap-soat-terraform --region sa-east-1
+  ./k8s/overlays/aws/deploy.sh
+  ```
+  Quando `k8s/overlays/aws/secrets.yaml` já existir (por exemplo, gerado via `envsubst` no pipeline `.github/workflows/cd.yaml`), o script `deploy.sh` preserva o arquivo existente sem sobrescrevê-lo. Em execuções manuais fora do CI sem `secrets.yaml`, o script obtém as credenciais do AWS SSM Parameter Store / RDS e gera o arquivo a partir de `secrets.yaml.template`.
 
 ---
 
-### Opção 3: Execução em Kubernetes Local (Kind / Minikube)
+## 🧪 Evidências de Testes e Cobertura de Código (≥ 80%)
 
-Para testar os manifestos Kubernetes, HPA e ServiceMonitors em cluster local:
+A suíte combina testes unitários (Domínio, Value Objects, Aplicação, Controllers, Middlewares e Serviços Externos) e testes de integração/E2E contra PostgreSQL 16 real usando **Testcontainers**.
+
+### Última Execução Verificada (`coverlet.runsettings`)
+
+| Métrica | Resultado Verificado | Meta Fase 4 |
+|---|---|:---:|
+| **Total de Testes Executados** | **246** | — |
+| **Testes Aprovados / Falhas / Ignorados** | **246 aprovados / 0 falhas / 0 ignorados** *(duração: 12 s)* | 100% passando |
+| **Cobertura de Linhas (`line-rate`)** | **87.09%** (`0.8709` — **1.856 / 2.131** linhas válidas) | **≥ 80%** ✅ |
+| **Cobertura de Branches (`branch-rate`)** | **79.51%** (`0.7951` — **264 / 332** branches válidos) | — |
+
+Os filtros em [`coverlet.runsettings`](./coverlet.runsettings) geram relatórios nos formatos `opencover` e `cobertura`, excluindo apenas projetos de teste (`[*Tests*]*`), o assembly externo de contratos (`[Fiap.TechChallenge.Contracts]*`) e migrations (`**/Migrations/*.cs`).
+
+### Como Reproduzir Localmente
+
+Recomenda-se gravar os artefatos de cobertura fora do repositório (por exemplo, em `/tmp/fase1-test-results`) para manter o diretório de testes limpo:
 
 ```bash
-./k8s/overlays/local/deploy.sh
+dotnet test tests/Fiap.TechChallenge.Tests/Fiap.TechChallenge.Tests.csproj \
+  --configuration Release \
+  --settings coverlet.runsettings \
+  --collect:"XPlat Code Coverage" \
+  --results-directory /tmp/fase1-test-results
 ```
 
-Consulte as instruções detalhadas em [**k8s/README.md**](./k8s/README.md).
-
----
-
-### Opção 4: Deploy no Ambiente de Produção AWS (EKS + ALB + RDS)
-
-A infraestrutura completa na AWS é orquestrada pelos repositórios de Terraform e pelos manifestos do EKS:
-
-1. **Provisionar Cluster EKS, VPC, ALB e Observabilidade:**
-   ```bash
-   cd "../tech-challenge-infra-k8s/environments/prod"
-   terraform init && terraform apply -auto-approve
-   ```
-2. **Atualizar kubeconfig do EKS:**
-   ```bash
-   aws eks update-kubeconfig --name eks-fiap-soat-terraform --region sa-east-1
-   ```
-3. **Provisionar o Banco de Dados RDS PostgreSQL:**
-   ```bash
-   cd "../tech-challenge-infra-db/environments/prod"
-   terraform init && terraform apply -auto-approve
-   ```
-4. **Instalar Recursos de Observabilidade no Cluster:**
-   ```bash
-   cd "../fase1-tech-challenge"
-   ./k8s/observability/install.sh
-   ```
-5. **Realizar o Deploy da Aplicação Backend:**
-   ```bash
-   ./k8s/overlays/aws/deploy.sh
-   ```
-
-O script automatizado lê o endpoint do RDS via AWS CLI, cria os Secrets de conexão e credenciais do Docker Hub, aplica os manifestos do Kubernetes e aguarda os pods ficarem em estado `Ready`.
-
----
-
-## 🌐 Endpoints do Ambiente de Produção (AWS)
-
-| Serviço | URL Pública / Endpoint | Descrição |
-|---|---|---|
-| 📖 **Swagger UI** | [http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com/swagger](http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com/swagger) | Documentação interativa das APIs da Oficina |
-| 🚀 **API Base URL** | `http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com` | Ponto de entrada das rotas da aplicação |
-| 🔐 **API Gateway Auth** | `https://mwmjdq6xbe.execute-api.sa-east-1.amazonaws.com/auth` | Rota serverless para emissão de JWT com CPF |
-| 📊 **Grafana UI** | [http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com:3000](http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com:3000) | Dashboards de negócio, métricas e traces |
-| ❤️ **Health Check** | `http://fiap-soat-terraform-alb-847091771.sa-east-1.elb.amazonaws.com/health/live` | Sonda de integridade da API |
-
----
-
-## 🧪 Testes, Cobertura e Qualidade de Código
-
-A suíte de testes inclui testes unitários para a camada de domínio e aplicação, além de **testes de integração E2E** executados contra uma instância real de PostgreSQL através de **Testcontainers**.
-
-### 1. Executar a Suíte de Testes
+Para gerar o relatório visual HTML com o `reportgenerator` listado em [`dotnet-tools.json`](./dotnet-tools.json):
 
 ```bash
-# Restaurar ferramentas locais (primeira execução)
 dotnet tool restore
-
-# Executar todos os testes da solução
-dotnet test fase1-tech-challenge.sln
+dotnet reportgenerator \
+  -reports:"/tmp/fase1-test-results/**/coverage.cobertura.xml" \
+  -targetdir:"/tmp/fase1-test-results/CoverageReport" \
+  -reporttypes:"Html;HtmlSummary"
 ```
 
-### 2. Gerar Relatório de Cobertura de Código (HTML)
+### Qualidade Contínua e Pipelines (CI/CD & SonarCloud)
 
-```bash
-# Executar testes coletando métricas de cobertura Coverlet
-dotnet test fase1-tech-challenge.sln --configuration Release --settings coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory ./TestResults
-
-# Gerar relatório HTML amigável
-dotnet reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html;HtmlSummary"
-```
-
-Abra o arquivo `TestResults/CoverageReport/index.html` no navegador para visualizar o mapa de calor da cobertura de código.
+- **CI (Pull Requests para `main`):** [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) faz checkout multi-repositório (`SOAT-FIAP-2026/shared` para `../shared`), restaura/compila `Fiap.TechChallenge.Tests.csproj`, executa os testes com `coverlet.runsettings` e envia `coverage.opencover.xml` ao SonarCloud (`SOAT-FIAP-2026_fase1-tech-challenge`).
+- **SonarQube / SonarCloud (`push` na `main`):** [`.github/workflows/sonar.yaml`](./.github/workflows/sonar.yaml) *(referenciado na documentação do ecossistema junto ao padrão `sonar.yml`)* executa análise estática e publicação de cobertura OpenCover no SonarCloud.
+- **CD (`push` em `main` / `feat/infra`):** [`.github/workflows/cd.yaml`](./.github/workflows/cd.yaml) executa `build-and-test`, publica a imagem Docker multi-stage (`shared=../shared`) no Docker Hub e realiza o rollout no cluster AWS EKS via `envsubst` + `k8s/overlays/aws/deploy.sh`.
 
 ---
 
 ## 📁 Estrutura do Repositório
 
-```
+```text
 fase1-tech-challenge/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                    # Pipeline de CI (Build, Testes, Cobertura)
-│       ├── cd.yaml                   # Pipeline de CD (Deploy automatizado no EKS)
-│       └── sonar.yaml                # Análise estática de código com SonarCloud
-├── docs/                             # Central de Documentação Técnica
-│   ├── adrs/                         # Architecture Decision Records (ADR-001 a ADR-003)
-│   ├── rfcs/                         # Requests for Comments (RFC-001 a RFC-003)
-│   ├── postman/                      # Collections Postman completas da API
-│   ├── tech-challenge-spec/          # Especificações oficiais da Fase 3
-│   ├── component-diagram.md          # Diagrama de componentes da arquitetura em nuvem
-│   ├── sequence-diagram.md           # Diagrama de sequência de auth e ordem de serviço
-│   ├── database-model.md             # Diagrama ER e máquina de estados da OS
-│   └── observability.md              # Documentação detalhada da stack de observabilidade
-├── k8s/                              # Manifestos Kubernetes
-│   ├── base/                         # ConfigMaps, Secrets, Deployment, Service, HPA
-│   ├── overlays/                     # Ambientes (local e AWS prod com scripts de deploy)
-│   └── observability/                # ServiceMonitor, PrometheusRule e Dashboards Grafana
+├── .github/workflows/
+│   ├── ci.yml                         # Build, testes, Coverlet e SonarCloud em PRs
+│   ├── cd.yaml                         # Build, push Docker Hub e deploy no AWS EKS
+│   └── sonar.yaml                      # Análise SonarCloud em push na main
+├── docs/                               # Documentação histórica da Fase 3 e Postman
+│   ├── adrs/                           # ADR-001 a ADR-003
+│   ├── rfcs/                           # RFC-001 a RFC-003
+│   └── postman/                        # Collection Postman (techchallenge-api.postman_collection.json)
+├── k8s/
+│   ├── base/                           # Namespace, Deployment, HPA, Ingress, ConfigMap
+│   ├── overlays/local/                 # Manifestos e scripts de deploy local
+│   ├── overlays/aws/                   # ConfigMap, Service, secrets.yaml.template e deploy.sh (EKS)
+│   ├── metrics-server/                 # Instalação do Metrics Server
+│   └── observability/                  # ServiceMonitor, Probe e PrometheusRule
+├── observability/                      # Configurações locais (Grafana, Prometheus, Loki, Tempo, OTel, Alertmanager)
 ├── src/
-│   ├── Fiap.TechChallenge.Domain/    # Entidades de Domínio, Interfaces e Regras DDD
-│   ├── Fiap.TechChallenge.Application/ # Casos de Uso, Handlers e DTOs
-│   ├── Fiap.TechChallenge.Infrastructure/# EF Core, Repositórios, Migrations e Seeds
-│   ├── Fiap.TechChallenge.External/  # Gateways de integração externa
-│   └── Fiap.TechChallenge.Api/       # Controllers, Swagger, Middlewares e OpenTelemetry
+│   ├── Fiap.TechChallenge.Domain/      # Entidades, VOs, exceções e interfaces de repositório
+│   ├── Fiap.TechChallenge.Application/ # Services, DTOs e mapeamentos de contratos
+│   ├── Fiap.TechChallenge.Infrastructure/ # EF Core 8, Migrations e DatabaseSeed
+│   ├── Fiap.TechChallenge.External/    # JWT, BCrypt e Resend email
+│   └── Fiap.TechChallenge.Api/         # Controllers v1, Middlewares, Observability e Program/Startup
 ├── tests/
-│   └── Fiap.TechChallenge.Tests/     # Testes Unitários e Integração E2E (Testcontainers)
-├── Dockerfile                        # Multi-stage Dockerfile otimizado para .NET 8
-├── docker-compose.yml                # Ambiente local completo (API + BD + Observabilidade)
-├── dotnet-tools.json                 # Ferramentas locais .NET (ReportGenerator)
-└── README.md                         # Documentação principal da aplicação
+│   └── Fiap.TechChallenge.Tests/       # 246 testes unitários e integração (Testcontainers PostgreSQL)
+├── coverlet.runsettings                # Configuração Coverlet (OpenCover + Cobertura)
+├── Dockerfile                          # Build multi-stage com build-context shared=../shared
+├── docker-compose.yml                  # API Core + PostgreSQL 16 + Stack Observabilidade
+├── dotnet-tools.json                   # reportgenerator e dotnet-ef
+└── README.md                           # Documentação principal (Fase 4)
 ```
 
 ---
 
 ## 👥 Autores — Grupo SOAT FIAP
 
-Projeto desenvolvido como parte dos requisitos do **Tech Challenge - Fase 3** da Pós-Graduação em Software Architecture da **FIAP**.
+Projeto desenvolvido para a Pós-Graduação em **Software Architecture** da **FIAP** (**Tech Challenge — Fase 4**).
