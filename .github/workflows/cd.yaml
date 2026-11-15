@@ -90,7 +90,7 @@ jobs:
         with:
           images: ${{ env.DOCKERHUB_IMAGE }}
           tags: |
-            type=raw,value=latest
+            type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=long,prefix=sha256-
 
       - name: Build e Push da imagem
@@ -103,9 +103,74 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+  # Deploy automatizado num cluster Kubernetes efêmero (kind) com a imagem recém-publicada.
+  # Usa o overlay k8s/overlays/local (namespace, Secret, PostgreSQL, Deployment, Service e HPA).
   deploy-k8s:
     runs-on: ubuntu-latest
     needs: docker-build-push
+    env:
+      CLUSTER_NAME: techchallenge-ci
+      NAMESPACE: techchallenge
+      MANIFEST_IMAGE: gabrielnetto94/techchallenge-api:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Baixar a imagem publicada
+        run: |
+          docker pull $DOCKERHUB_IMAGE:sha256-${{ github.sha }}
+          docker tag $DOCKERHUB_IMAGE:sha256-${{ github.sha }} $MANIFEST_IMAGE
+
+      - name: Criar cluster Kubernetes (kind)
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: ${{ env.CLUSTER_NAME }}
+
+      - name: Carregar a imagem no cluster
+        run: kind load docker-image $MANIFEST_IMAGE --name $CLUSTER_NAME
+
+      - name: Aplicar manifestos (k8s/overlays/local)
+        run: |
+          chmod +x k8s/overlays/local/deploy.sh
+          JWT_SECRET="$(openssl rand -hex 32)" POSTGRES_PASSWORD="$(openssl rand -hex 16)" \
+            ./k8s/overlays/local/deploy.sh kind
+
+      - name: Smoke test
+        run: |
+          kubectl -n $NAMESPACE port-forward service/api-service 8080:80 > /tmp/port-forward.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/health/ready; then echo; exit 0; fi
+            sleep 2
+          done
+          echo "Health check falhou" >&2
+          exit 1
+
+      - name: Estado do cluster
+        if: always()
+        run: |
+          kubectl -n $NAMESPACE get deployments,pods,services,hpa -o wide
+          kubectl -n $NAMESPACE get deployment/api -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+
+      - name: Diagnóstico
+        if: failure()
+        run: |
+          kubectl -n $NAMESPACE describe deployment/api
+          kubectl -n $NAMESPACE describe pods
+          kubectl -n $NAMESPACE logs deployment/api --tail=200 || true
+
+  # Deploy no EKS da AWS. Só roda com a variável de repositório DEPLOY_EKS=true,
+  # depois de configurar os secrets AWS_ACCESS_KEY/AWS_SECRET_KEY e o cluster.
+  deploy-eks:
+    runs-on: ubuntu-latest
+    needs: docker-build-push
+    if: vars.DEPLOY_EKS == 'true'
 
     steps:
       - name: Checkout
