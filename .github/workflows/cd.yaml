@@ -139,8 +139,8 @@ jobs:
       - name: Aplicar manifestos (k8s/overlays/local)
         run: |
           chmod +x k8s/overlays/local/deploy.sh
-          JWT_SECRET="$(openssl rand -hex 32)" POSTGRES_PASSWORD="$(openssl rand -hex 16)" \
-            ./k8s/overlays/local/deploy.sh kind
+          # O postgres.yaml do overlay local usa a senha padrão do script; o cluster é descartado ao fim do job.
+          JWT_SECRET="$(openssl rand -hex 32)" ./k8s/overlays/local/deploy.sh kind
 
       - name: Smoke test
         run: |
